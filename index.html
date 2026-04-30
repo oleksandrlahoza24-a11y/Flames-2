@@ -14,8 +14,6 @@
     overflow: hidden;
     width: 100vw;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
     touch-action: none;
     user-select: none;
   }
@@ -59,41 +57,42 @@
   </div>
 </div>
 <script>
-const canvas  = document.getElementById("c");
-const ctx     = canvas.getContext("2d");
+const canvas = document.getElementById("c");
+const ctx    = canvas.getContext("2d");
 
 let W, H, groundY;
+
 function resize() {
   W = canvas.width  = window.innerWidth;
   H = canvas.height = window.innerHeight;
   groundY = H - ASSETS.world.groundHeight;
   WorldGen.generate(W, groundY);
-  Graphics.drawGrassBlades(offCanvas.getContext("2d"), W * 3, offCanvas.height - ASSETS.world.groundHeight, 1);
 }
 
-const offCanvas = document.createElement("canvas");
-
+resize();
 window.addEventListener("resize", resize);
 
 const p = {
-  x: 200, y: 300,
-  vx: 0, vy: 0,
-  r: ASSETS.player.radius,
-  angle: 0,
+  x:        300,
+  y:        200,
+  vx:       0,
+  vy:       0,
+  r:        ASSETS.player.radius,
+  angle:    0,
   onGround: false,
 };
 
-let cameraX = 0;
-const trail = [];
-const keys  = { left: false, right: false, jump: false };
-let jumpUsed = false;
+const trail   = [];
+const keys    = { left: false, right: false, jump: false };
+let jumpUsed  = false;
+let cameraX   = 0;
 
 function bindBtn(id, action) {
   const el = document.getElementById(id);
   el.addEventListener("touchstart", e => { e.preventDefault(); keys[action] = true;  }, { passive: false });
   el.addEventListener("touchend",   e => { e.preventDefault(); keys[action] = false; }, { passive: false });
-  el.addEventListener("mousedown",  () => { keys[action] = true;  });
-  el.addEventListener("mouseup",    () => { keys[action] = false; });
+  el.addEventListener("mousedown",  () => keys[action] = true);
+  el.addEventListener("mouseup",    () => keys[action] = false);
 }
 bindBtn("btn-left",  "left");
 bindBtn("btn-right", "right");
@@ -101,25 +100,34 @@ bindBtn("btn-jump",  "jump");
 
 function update() {
   const A = ASSETS.physics;
+
   if (keys.left)  p.vx -= A.moveForce;
   if (keys.right) p.vx += A.moveForce;
-  if (keys.jump && p.onGround && !jumpUsed) { p.vy = -A.jumpForce; jumpUsed = true; }
+
+  if (keys.jump && p.onGround && !jumpUsed) {
+    p.vy     = -A.jumpForce;
+    jumpUsed = true;
+  }
   if (!keys.jump) jumpUsed = false;
 
   p.vy += A.gravity;
   if (!keys.left && !keys.right) p.vx *= A.friction;
   p.vx = Math.max(-A.maxSpeed, Math.min(A.maxSpeed, p.vx));
+
   p.x += p.vx;
   p.y += p.vy;
 
-  if (p.y + p.r >= groundY) { p.y = groundY - p.r; p.vy = 0; p.onGround = true; }
-  else p.onGround = false;
+  if (p.y + p.r >= groundY) {
+    p.y       = groundY - p.r;
+    p.vy      = 0;
+    p.onGround = true;
+  } else {
+    p.onGround = false;
+  }
 
-  if (p.x - p.r < 0)  { p.x = p.r;     p.vx =  Math.abs(p.vx) * 0.4; }
-  if (p.x + p.r > W)  { p.x = W - p.r; p.vx = -Math.abs(p.vx) * 0.4; }
+  p.angle += p.vx * 0.06;
 
   cameraX = p.x - W / 2;
-  p.angle += p.vx * 0.06;
 
   trail.push({ x: p.x, y: p.y });
   if (trail.length > ASSETS.trail.maxLength) trail.shift();
@@ -128,18 +136,21 @@ function update() {
 function drawTrail() {
   for (let i = 0; i < trail.length; i++) {
     const alpha = (i / trail.length) * 0.5;
-    const r = ASSETS.trail.radius * (i / trail.length);
+    const r     = ASSETS.trail.radius * (i / trail.length);
+    const sx    = trail[i].x - cameraX;
     ctx.beginPath();
-    ctx.arc(trail[i].x, trail[i].y, r, 0, Math.PI * 2);
+    ctx.arc(sx, trail[i].y, r, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(233,69,96,${alpha})`;
     ctx.fill();
   }
 }
 
 function drawPlayer() {
-  const C = ASSETS.colors;
+  const C  = ASSETS.colors;
+  const sx = p.x - cameraX;
+
   ctx.save();
-  ctx.translate(p.x, p.y);
+  ctx.translate(sx, p.y);
   ctx.rotate(p.angle);
 
   ctx.beginPath();
@@ -150,9 +161,9 @@ function drawPlayer() {
   ctx.beginPath();
   ctx.arc(0, 0, p.r, 0, Math.PI * 2);
   const grad = ctx.createRadialGradient(-8, -8, 2, 0, 0, p.r);
-  grad.addColorStop(0, C.playerShine);
+  grad.addColorStop(0,   C.playerShine);
   grad.addColorStop(0.5, C.player);
-  grad.addColorStop(1, C.playerShadow);
+  grad.addColorStop(1,   C.playerShadow);
   ctx.fillStyle = grad;
   ctx.fill();
 
@@ -160,27 +171,29 @@ function drawPlayer() {
   ctx.moveTo(0, 0);
   ctx.lineTo(0, -p.r + 4);
   ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
+  ctx.lineWidth   = 3;
+  ctx.lineCap     = "round";
   ctx.stroke();
+
   ctx.restore();
 }
 
 function loop() {
   update();
+
   ctx.clearRect(0, 0, W, H);
 
   Graphics.drawSky(ctx, W, H, groundY);
+  WorldGen.draw(ctx, W, groundY, cameraX);
   Graphics.drawFloor(ctx, W, H, groundY);
   Graphics.drawGrassBlades(ctx, W, groundY, 1);
-  WorldGen.draw(ctx, W, groundY, cameraX);
 
   drawTrail();
   drawPlayer();
+
   requestAnimationFrame(loop);
 }
 
-resize();
 loop();
 </script>
 </body>
