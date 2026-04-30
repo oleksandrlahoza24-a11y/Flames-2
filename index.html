@@ -2,50 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The meta tag below prevents the iPad from zooming in when you double-tap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Pixel World</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #2c3e50;
+            background-color: #7ec850;
+            overflow: hidden; /* Prevents scrollbars */
+            font-family: sans-serif;
+            touch-action: none; /* Prevents swipe-to-refresh and scrolling on mobile */
+            user-select: none; /* Prevents highlighting text while tapping */
+        }
+        canvas {
+            display: block;
+            image-rendering: pixelated; 
+        }
+        
+        /* 🎮 ON-SCREEN D-PAD CONTROLS */
+        #dpad {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: grid;
+            grid-template-columns: 60px 60px 60px;
+            grid-template-rows: 60px 60px 60px;
+            gap: 10px;
+            opacity: 0.7; /* Slightly see-through */
+            z-index: 10;
+        }
+        .dbtn {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 2px solid white;
+            border-radius: 10px;
+            font-size: 24px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            color: white;
-            font-family: sans-serif;
+            cursor: pointer;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
         }
-        canvas {
-            background-color: #7ec850; /* Base grass color */
-            border: 4px solid #1a252f;
-            box-shadow: 0px 0px 20px rgba(0,0,0,0.5);
-            /* This CSS rule makes sure pixel art stays crisp and doesn't get blurry */
-            image-rendering: pixelated; 
+        .dbtn:active {
+            background-color: rgba(255, 255, 255, 0.5);
+            color: black;
         }
+        #btn-up { grid-column: 2; grid-row: 1; }
+        #btn-left { grid-column: 1; grid-row: 2; }
+        #btn-down { grid-column: 2; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
     </style>
 </head>
 <body>
 
-    <div>
-        <h2>Pixel World Explorer</h2>
-        <p>Use <b>W A S D</b> or <b>Arrow Keys</b> to walk around.</p>
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <!-- The Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- The On-Screen Controls for iPad/Mobile -->
+    <div id="dpad">
+        <div class="dbtn" id="btn-up">▲</div>
+        <div class="dbtn" id="btn-left">◀</div>
+        <div class="dbtn" id="btn-down">▼</div>
+        <div class="dbtn" id="btn-right">▶</div>
     </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
+        // Make canvas full screen
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Set initial size
+
         // ==========================================
         // 🎮 1. PLAYER SETTINGS
         // ==========================================
         const player = {
-            x: 400,
-            y: 300,
+            x: window.innerWidth / 2, // Start in the middle of the screen
+            y: window.innerHeight / 2,
             width: 20,
             height: 30,
-            color: "#e74c3c", // Red character
+            color: "#e74c3c",
             speed: 5,
             dx: 0,
             dy: 0
@@ -53,14 +95,14 @@
 
         // ==========================================
         // 🌲 2. THE ASSETS DIRECTORY
-        // Add, remove, or modify your world objects here!
         // ==========================================
         const worldAssets = {
             trees: [
                 { x: 100, y: 150, size: 40, color: '#27ae60', trunk: '#8e44ad' },
                 { x: 600, y: 100, size: 50, color: '#2ecc71', trunk: '#8e44ad' },
                 { x: 450, y: 400, size: 35, color: '#27ae60', trunk: '#8e44ad' },
-                { x: 700, y: 500, size: 60, color: '#229954', trunk: '#8e44ad' }
+                { x: 700, y: 500, size: 60, color: '#229954', trunk: '#8e44ad' },
+                { x: 200, y: 600, size: 45, color: '#2ecc71', trunk: '#8e44ad' }
             ],
             bushes: [
                 { x: 200, y: 400, size: 20, color: '#2ecc71' },
@@ -80,40 +122,56 @@
         };
 
         // ==========================================
-        // ⌨️ 3. INPUT HANDLING
+        // ⌨️ 3. INPUT HANDLING (Keyboard & Touch)
         // ==========================================
         const keys = {
             ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
             w: false, a: false, s: false, d: false
         };
 
+        // Keyboard Support
         window.addEventListener("keydown", (e) => {
             if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
         });
-
         window.addEventListener("keyup", (e) => {
             if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
         });
+
+        // Touch / Mouse Support for D-Pad
+        function bindDpad(buttonId, keyName) {
+            const btn = document.getElementById(buttonId);
+            
+            // For iPads/Phones (Touch)
+            btn.addEventListener("touchstart", (e) => { e.preventDefault(); keys[keyName] = true; });
+            btn.addEventListener("touchend", (e) => { e.preventDefault(); keys[keyName] = false; });
+            
+            // For testing on Computer with a mouse click
+            btn.addEventListener("mousedown", () => keys[keyName] = true);
+            btn.addEventListener("mouseup", () => keys[keyName] = false);
+            btn.addEventListener("mouseleave", () => keys[keyName] = false);
+        }
+
+        bindDpad("btn-up", "ArrowUp");
+        bindDpad("btn-down", "ArrowDown");
+        bindDpad("btn-left", "ArrowLeft");
+        bindDpad("btn-right", "ArrowRight");
 
         // ==========================================
         // ⚙️ 4. GAME LOGIC & PHYSICS
         // ==========================================
         function update() {
-            // Reset velocity
             player.dx = 0;
             player.dy = 0;
 
-            // Apply movement based on keys
             if (keys.ArrowUp || keys.w) player.dy = -player.speed;
             if (keys.ArrowDown || keys.s) player.dy = player.speed;
             if (keys.ArrowLeft || keys.a) player.dx = -player.speed;
             if (keys.ArrowRight || keys.d) player.dx = player.speed;
 
-            // Move player
             player.x += player.dx;
             player.y += player.dy;
 
-            // Keep player inside the canvas borders
+            // Keep player inside the full-screen canvas borders
             if (player.x < 0) player.x = 0;
             if (player.y < 0) player.y = 0;
             if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
@@ -124,7 +182,6 @@
         // 🎨 5. DRAWING THE WORLD
         // ==========================================
         function draw() {
-            // Clear the previous frame (redraws the grass background)
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw Water Ponds
@@ -139,7 +196,7 @@
                 ctx.fillRect(rock.x, rock.y, rock.width, rock.height);
             });
 
-            // Draw Bushes (Drawn as circles)
+            // Draw Bushes
             worldAssets.bushes.forEach(bush => {
                 ctx.fillStyle = bush.color;
                 ctx.beginPath();
@@ -147,12 +204,10 @@
                 ctx.fill();
             });
 
-            // Draw Trees (Trunk first, then leaves)
+            // Draw Trees
             worldAssets.trees.forEach(tree => {
-                // Trunk
-                ctx.fillStyle = '#5c4033'; // Brown trunk
+                ctx.fillStyle = '#5c4033'; 
                 ctx.fillRect(tree.x - 5, tree.y, 10, tree.size);
-                // Leaves
                 ctx.fillStyle = tree.color;
                 ctx.beginPath();
                 ctx.arc(tree.x, tree.y - tree.size / 2, tree.size, 0, Math.PI * 2);
@@ -170,10 +225,9 @@
         function gameLoop() {
             update();
             draw();
-            requestAnimationFrame(gameLoop); // Keeps the loop running smoothly
+            requestAnimationFrame(gameLoop);
         }
 
-        // Start the game!
         gameLoop();
     </script>
 </body>
