@@ -194,20 +194,55 @@
                     ctx.fill();
                 } 
                 else if (obj.type === 'tree') {
-                    // Shadow
-                    ctx.fillStyle = "rgba(0,0,0,0.1)";
+                    const cx = obj.x;
+                    const cy = obj.y;
+                    const s = obj.size;
+
+                    // 1. Ground Shadow (Offset slightly for light source)
+                    ctx.fillStyle = "rgba(0,0,0,0.15)";
                     ctx.beginPath();
-                    ctx.ellipse(obj.x, obj.y + 5, 15, 7, 0, 0, Math.PI * 2);
+                    ctx.ellipse(cx + (s * 0.2), cy + 8, s * 0.5, s * 0.2, 0, 0, Math.PI * 2);
                     ctx.fill();
-                    // Trunk
+
+                    // 2. Detailed Trunk
+                    // Main Trunk
                     ctx.fillStyle = obj.trunk; 
-                    ctx.fillRect(obj.x - 5, obj.y, 10, obj.size * 0.5);
-                    // Leaves
-                    ctx.fillStyle = obj.color;
+                    ctx.fillRect(cx - 6, cy, 12, s * 0.6);
+                    
+                    // Trunk Shading (Right side shadow)
+                    ctx.fillStyle = "rgba(0,0,0,0.2)";
+                    ctx.fillRect(cx, cy, 6, s * 0.6);
+
+                    // Bark Texture (Small vertical lines)
+                    ctx.strokeStyle = "rgba(255,255,255,0.1)";
+                    ctx.lineWidth = 1;
                     ctx.beginPath();
-                    ctx.arc(obj.x, obj.y - (obj.size * 0.3), obj.size, 0, Math.PI * 2);
+                    ctx.moveTo(cx - 3, cy + 5); ctx.lineTo(cx - 3, cy + (s * 0.4));
+                    ctx.moveTo(cx + 2, cy + 2); ctx.lineTo(cx + 2, cy + (s * 0.5));
+                    ctx.stroke();
+
+                    // 3. Multi-Layered Canopy (Leaves)
+                    // Bottom Shadow Layer (Darker)
+                    ctx.fillStyle = "rgba(0,0,0,0.2)";
+                    ctx.beginPath();
+                    ctx.arc(cx, cy - (s * 0.3), s * 1.05, 0, Math.PI * 2);
                     ctx.fill();
-                } 
+
+                    // Main Leaves (Primary Color)
+                    ctx.fillStyle = obj.color;
+                    // Draw three overlapping circles to create a "bushy" look
+                    ctx.beginPath();
+                    ctx.arc(cx, cy - (s * 0.5), s, 0, Math.PI * 2); // Center
+                    ctx.arc(cx - (s * 0.4), cy - (s * 0.3), s * 0.7, 0, Math.PI * 2); // Left clump
+                    ctx.arc(cx + (s * 0.4), cy - (s * 0.3), s * 0.7, 0, Math.PI * 2); // Right clump
+                    ctx.fill();
+
+                    // Top Highlight Layer (Simulating sunlight from top-left)
+                    ctx.fillStyle = "rgba(255,255,255,0.2)";
+                    ctx.beginPath();
+                    ctx.arc(cx - (s * 0.3), cy - (s * 0.7), s * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
                 else if (obj.type === 'player') {
                     // Player Shadow
                     ctx.fillStyle = "rgba(0,0,0,0.1)";
