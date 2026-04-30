@@ -1,130 +1,180 @@
-local Assets = require(script.Parent.Assets)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Pixel World</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            font-family: sans-serif;
+        }
+        canvas {
+            background-color: #7ec850; /* Base grass color */
+            border: 4px solid #1a252f;
+            box-shadow: 0px 0px 20px rgba(0,0,0,0.5);
+            /* This CSS rule makes sure pixel art stays crisp and doesn't get blurry */
+            image-rendering: pixelated; 
+        }
+    </style>
+</head>
+<body>
 
-workspace.StreamingEnabled = true
+    <div>
+        <h2>Pixel World Explorer</h2>
+        <p>Use <b>W A S D</b> or <b>Arrow Keys</b> to walk around.</p>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
 
-local Lighting = game:GetService("Lighting")
-Lighting.ClockTime  = 14
-Lighting.Brightness = 2
-Lighting.FogEnd     = 900
-Lighting.FogColor   = Color3.fromRGB(180, 220, 255)
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-local atmosphere         = Instance.new("Atmosphere")
-atmosphere.Density       = 0.35
-atmosphere.Offset        = 0.25
-atmosphere.Color         = Color3.fromRGB(199, 220, 255)
-atmosphere.Decay         = Color3.fromRGB(90, 130, 190)
-atmosphere.Glare         = 0
-atmosphere.Haze          = 1.5
-atmosphere.Parent        = Lighting
+        // ==========================================
+        // 🎮 1. PLAYER SETTINGS
+        // ==========================================
+        const player = {
+            x: 400,
+            y: 300,
+            width: 20,
+            height: 30,
+            color: "#e74c3c", // Red character
+            speed: 5,
+            dx: 0,
+            dy: 0
+        };
 
-local WORLD_SIZE = 600
-local HALF       = WORLD_SIZE / 2
+        // ==========================================
+        // 🌲 2. THE ASSETS DIRECTORY
+        // Add, remove, or modify your world objects here!
+        // ==========================================
+        const worldAssets = {
+            trees: [
+                { x: 100, y: 150, size: 40, color: '#27ae60', trunk: '#8e44ad' },
+                { x: 600, y: 100, size: 50, color: '#2ecc71', trunk: '#8e44ad' },
+                { x: 450, y: 400, size: 35, color: '#27ae60', trunk: '#8e44ad' },
+                { x: 700, y: 500, size: 60, color: '#229954', trunk: '#8e44ad' }
+            ],
+            bushes: [
+                { x: 200, y: 400, size: 20, color: '#2ecc71' },
+                { x: 230, y: 410, size: 25, color: '#27ae60' },
+                { x: 180, y: 420, size: 15, color: '#2ecc71' },
+                { x: 500, y: 200, size: 22, color: '#27ae60' }
+            ],
+            rocks: [
+                { x: 300, y: 100, width: 25, height: 15, color: '#7f8c8d' },
+                { x: 320, y: 110, width: 15, height: 10, color: '#95a5a6' },
+                { x: 100, y: 500, width: 30, height: 20, color: '#7f8c8d' }
+            ],
+            waterPonds: [
+                { x: 50, y: 50, width: 150, height: 80, color: '#3498db' },
+                { x: 550, y: 300, width: 200, height: 120, color: '#2980b9' }
+            ]
+        };
 
-workspace.Terrain:FillBlock(
-	CFrame.new(0, -4, 0),
-	Vector3.new(WORLD_SIZE, 8, WORLD_SIZE),
-	Enum.Material.Grass
-)
+        // ==========================================
+        // ⌨️ 3. INPUT HANDLING
+        // ==========================================
+        const keys = {
+            ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
+            w: false, a: false, s: false, d: false
+        };
 
-local worldFolder      = Instance.new("Folder")
-worldFolder.Name       = "WorldObjects"
-worldFolder.Parent     = workspace
+        window.addEventListener("keydown", (e) => {
+            if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+        });
 
-local objectCounts = {
-	Trees  = 120,
-	Bushes = 250,
-	Rocks  = 90,
-	Grass  = 500,
-}
+        window.addEventListener("keyup", (e) => {
+            if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
+        });
 
-local function randomPos()
-	return Vector3.new(
-		math.random(-HALF, HALF),
-		0,
-		math.random(-HALF, HALF)
-	)
-end
+        // ==========================================
+        // ⚙️ 4. GAME LOGIC & PHYSICS
+        // ==========================================
+        function update() {
+            // Reset velocity
+            player.dx = 0;
+            player.dy = 0;
 
-local function spawnTree(pos)
-	local data  = Assets.Trees[math.random(#Assets.Trees)]
-	local model = Instance.new("Model")
-	model.Name  = "Tree"
+            // Apply movement based on keys
+            if (keys.ArrowUp || keys.w) player.dy = -player.speed;
+            if (keys.ArrowDown || keys.s) player.dy = player.speed;
+            if (keys.ArrowLeft || keys.a) player.dx = -player.speed;
+            if (keys.ArrowRight || keys.d) player.dx = player.speed;
 
-	local trunk          = Instance.new("Part")
-	trunk.Size           = data.trunk.size
-	trunk.Color          = data.trunk.color
-	trunk.Material       = data.trunk.material
-	trunk.Anchored       = true
-	trunk.CastShadow     = false
-	trunk.Position       = pos + Vector3.new(0, data.trunk.size.Y / 2, 0)
-	trunk.Parent         = model
+            // Move player
+            player.x += player.dx;
+            player.y += player.dy;
 
-	local leaves         = Instance.new("Part")
-	leaves.Shape         = Enum.PartType.Ball
-	leaves.Size          = data.leaves.size
-	leaves.Color         = data.leaves.color
-	leaves.Material      = data.leaves.material
-	leaves.Anchored      = true
-	leaves.CastShadow    = false
-	leaves.Position      = pos + Vector3.new(0, data.trunk.size.Y + data.leaves.size.Y * 0.4, 0)
-	leaves.Parent        = model
+            // Keep player inside the canvas borders
+            if (player.x < 0) player.x = 0;
+            if (player.y < 0) player.y = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+            if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
+        }
 
-	model.Parent = worldFolder
-end
+        // ==========================================
+        // 🎨 5. DRAWING THE WORLD
+        // ==========================================
+        function draw() {
+            // Clear the previous frame (redraws the grass background)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-local function spawnBush(pos)
-	local data       = Assets.Bushes[math.random(#Assets.Bushes)]
-	local part       = Instance.new("Part")
-	part.Shape       = Enum.PartType.Ball
-	part.Size        = data.size
-	part.Color       = data.color
-	part.Material    = data.material
-	part.Anchored    = true
-	part.CastShadow  = false
-	part.Position    = pos + Vector3.new(0, data.size.Y * 0.4, 0)
-	part.Name        = "Bush"
-	part.Parent      = worldFolder
-end
+            // Draw Water Ponds
+            worldAssets.waterPonds.forEach(pond => {
+                ctx.fillStyle = pond.color;
+                ctx.fillRect(pond.x, pond.y, pond.width, pond.height);
+            });
 
-local function spawnRock(pos)
-	local data       = Assets.Rocks[math.random(#Assets.Rocks)]
-	local part       = Instance.new("Part")
-	part.Size        = data.size
-	part.Color       = data.color
-	part.Material    = data.material
-	part.Anchored    = true
-	part.CastShadow  = false
-	part.Position    = pos + Vector3.new(0, data.size.Y / 2, 0)
-	part.Rotation    = Vector3.new(math.random(-15, 15), math.random(0, 360), math.random(-15, 15))
-	part.Name        = "Rock"
-	part.Parent      = worldFolder
-end
+            // Draw Rocks
+            worldAssets.rocks.forEach(rock => {
+                ctx.fillStyle = rock.color;
+                ctx.fillRect(rock.x, rock.y, rock.width, rock.height);
+            });
 
-local function spawnGrass(pos)
-	local data       = Assets.Grass[math.random(#Assets.Grass)]
-	local part       = Instance.new("Part")
-	part.Size        = data.size
-	part.Color       = data.color
-	part.Material    = data.material
-	part.Anchored    = true
-	part.CastShadow  = false
-	part.Position    = pos + Vector3.new(0, data.size.Y / 2, 0)
-	part.Name        = "Grass"
-	part.Parent      = worldFolder
-end
+            // Draw Bushes (Drawn as circles)
+            worldAssets.bushes.forEach(bush => {
+                ctx.fillStyle = bush.color;
+                ctx.beginPath();
+                ctx.arc(bush.x, bush.y, bush.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
 
-local spawners = {
-	Trees  = spawnTree,
-	Bushes = spawnBush,
-	Rocks  = spawnRock,
-	Grass  = spawnGrass,
-}
+            // Draw Trees (Trunk first, then leaves)
+            worldAssets.trees.forEach(tree => {
+                // Trunk
+                ctx.fillStyle = '#5c4033'; // Brown trunk
+                ctx.fillRect(tree.x - 5, tree.y, 10, tree.size);
+                // Leaves
+                ctx.fillStyle = tree.color;
+                ctx.beginPath();
+                ctx.arc(tree.x, tree.y - tree.size / 2, tree.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
 
-for category, count in pairs(objectCounts) do
-	for i = 1, count do
-		spawners[category](randomPos())
-		if i % 15 == 0 then
-			task.wait()
-		end
-	end
-end
+            // Draw Player
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        // ==========================================
+        // 🔄 6. THE GAME LOOP
+        // ==========================================
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop); // Keeps the loop running smoothly
+        }
+
+        // Start the game!
+        gameLoop();
+    </script>
+</body>
+</html>
