@@ -197,68 +197,227 @@
                     const cx = obj.x;
                     const cy = obj.y;
                     const s = obj.size;
+                    const seed = Math.floor(obj.x); // Used to keep randomness consistent
 
-                    // 1. Ground Shadow (Offset slightly for light source)
-                    ctx.fillStyle = "rgba(0,0,0,0.15)";
+                    // --- 1. PROXIMITY SHADOW (GROUND AO) ---
+                    let groundGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, s * 1.5);
+                    groundGrad.addColorStop(0, 'rgba(0,0,0,0.3)');
+                    groundGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = groundGrad;
+                    ctx.save();
+                    ctx.scale(1, 0.4); // Flatten the circle into an ellipse
                     ctx.beginPath();
-                    ctx.ellipse(cx + (s * 0.2), cy + 8, s * 0.5, s * 0.2, 0, 0, Math.PI * 2);
+                    ctx.arc(cx, cy / 0.4 + 5, s * 1.2, 0, Math.PI * 2);
                     ctx.fill();
+                    ctx.restore();
 
-                    // 2. Detailed Trunk
-                    // Main Trunk
-                    ctx.fillStyle = obj.trunk; 
-                    ctx.fillRect(cx - 6, cy, 12, s * 0.6);
+                    // --- 2. THE TRUNK (Tapered with Root Flair) ---
+                    const trunkWidth = s * 0.25;
+                    const trunkHeight = s * 0.8;
                     
-                    // Trunk Shading (Right side shadow)
-                    ctx.fillStyle = "rgba(0,0,0,0.2)";
-                    ctx.fillRect(cx, cy, 6, s * 0.6);
+                    // Trunk Gradient (Bark Lighting)
+                    let trunkGrad = ctx.createLinearGradient(cx - trunkWidth, cy, cx + trunkWidth, cy);
+                    trunkGrad.addColorStop(0, '#3e2723'); // Deep shadow
+                    trunkGrad.addColorStop(0.4, obj.trunk); // Local color
+                    trunkGrad.addColorStop(1, '#a1887f'); // Rim light
 
-                    // Bark Texture (Small vertical lines)
-                    ctx.strokeStyle = "rgba(255,255,255,0.1)";
+                    ctx.fillStyle = trunkGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - trunkWidth * 1.5, cy + trunkHeight); // Left root
+                    ctx.quadraticCurveTo(cx - trunkWidth, cy + trunkHeight * 0.8, cx - trunkWidth, cy); // Left side
+                    ctx.lineTo(cx + trunkWidth, cy); // Top
+                    ctx.quadraticCurveTo(cx + trunkWidth, cy + trunkHeight * 0.8, cx + trunkWidth * 1.5, cy + trunkHeight); // Right side
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Procedural Bark Grain
+                    ctx.strokeStyle = "rgba(0,0,0,0.15)";
                     ctx.lineWidth = 1;
+                    for (let i = 0; i < 5; i++) {
+                        let lineX = cx - trunkWidth + (i * (trunkWidth * 0.5));
+                        ctx.beginPath();
+                        ctx.setLineDash([2, 4]); // Dotted bark feel
+                        ctx.moveTo(lineX, cy + (seed % 10));
+                        ctx.lineTo(lineX, cy + trunkHeight - (seed % 5));
+                        ctx.stroke();
+                    }
+                    ctx.setLineDash([]); // Reset dash
+
+                    // --- 3. THE CANOPY (Volumetric Clumping) ---
+                    // We draw the canopy in three passes: Deep Shadow, Mid-Tone, and Highlight
+                    
+                    const drawClump = (offsetX, offsetY, radius, color) => {
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(cx + offsetX, cy - (trunkHeight * 0.2) + offsetY, radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    };
+
+                    // Pass A: Deep Internal Shadows (The "Core")
+                    const shadowColor = "#1b5e20"; // Hardcoded dark green for depth
+                    [[0,-10, 1.1], [15, 5, 0.8], [-15, 5, 0.8]].forEach(set => {
+                        drawClump(set[0], set[1], s * set[2], shadowColor);
+                    });
+
+                    // Pass B: Main Foliage (Asymmetric Blobs)
+                    // We use the seed to jitter the clumps so every tree is shaped differently
+                    const jitterX = (seed % 10) - 5;
+                    const jitterY = (seed % 6);
+                    const clumps = [
+                        {x: 0, y: -s * 0.5, r: s},        // Top
+                        {x: -s * 0.5 + jitterX, y: 0, r: s * 0.8}, // Left
+                        {x: s * 0.5 - jitterX, y: jitterY, r: s * 0.8},  // Right
+                        {x: 0, y: s * 0.2, r: s * 0.6}    // Bottom hang
+                    ];
+                    
+                    clumps.forEach(c => drawClump(c.x, c.y, c.r, obj.color));
+
+                    // Pass C: Light Catchment (Subsurface Scattering Effect)
+                    ctx.globalCompositeOperation = "lighter"; // Blend mode for highlights
+                    clumps.forEach(c => {
+                        let leafGrad = ctx.createRadialGradient(
+                            cx + c.x - c.r * 0.3, cy - (trunkHeight * 0.2) + c.y - c.r * 0.3, 0,
+                            cx + c.x, cy - (trunkHeight * 0.2) + c.y, c.r
+                        );
+                        leafGrad.addColorStop(0, 'rgba(255,255,255,0.2)');
+                        leafGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                        drawClump(c.x, c.y, c.r, leafGrad);
+                    });
+                    ctx.globalCompositeOperation = "source-over";
+
+                    // --- 4. THE DETAILS (Fruits/Highlights) ---
+                    // Add small "specular" leaf glints based on seed
+                    ctx.fillStyle = "rgba(255,255,255,0.4)";
+                    for(let i=0; i<3; i++) {
+                        let lx = cx + Math.sin(seed + i) * (s * 0.5);
+                        let ly = cy - s + Math.cos(seed * i) * (s * 0.5);
+                        ctx.fillRect(lx, ly, 3, 3);
+                    }
+
+                    // --- 5. BRANCH PEAKING ---
+                    // Tiny branches that "poke through" the leaf canopy gaps
+                    ctx.strokeStyle = obj.trunk;
+                    ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.moveTo(cx - 3, cy + 5); ctx.lineTo(cx - 3, cy + (s * 0.4));
-                    ctx.moveTo(cx + 2, cy + 2); ctx.lineTo(cx + 2, cy + (s * 0.5));
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(cx + (seed % 20 - 10), cy - (s * 0.4));
                     ctx.stroke();
-
-                    // 3. Multi-Layered Canopy (Leaves)
-                    // Bottom Shadow Layer (Darker)
-                    ctx.fillStyle = "rgba(0,0,0,0.2)";
-                    ctx.beginPath();
-                    ctx.arc(cx, cy - (s * 0.3), s * 1.05, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Main Leaves (Primary Color)
-                    ctx.fillStyle = obj.color;
-                    // Draw three overlapping circles to create a "bushy" look
-                    ctx.beginPath();
-                    ctx.arc(cx, cy - (s * 0.5), s, 0, Math.PI * 2); // Center
-                    ctx.arc(cx - (s * 0.4), cy - (s * 0.3), s * 0.7, 0, Math.PI * 2); // Left clump
-                    ctx.arc(cx + (s * 0.4), cy - (s * 0.3), s * 0.7, 0, Math.PI * 2); // Right clump
-                    ctx.fill();
-
-                    // Top Highlight Layer (Simulating sunlight from top-left)
-                    ctx.fillStyle = "rgba(255,255,255,0.2)";
-                    ctx.beginPath();
-                    ctx.arc(cx - (s * 0.3), cy - (s * 0.7), s * 0.5, 0, Math.PI * 2);
-                    ctx.fill();
                 }
                 else if (obj.type === 'player') {
-                    // Player Shadow
-                    ctx.fillStyle = "rgba(0,0,0,0.1)";
+                    // --- 1. ANIMATION CONSTANTS ---
+                    const time = Date.now();
+                    const isMoving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight || 
+                                     keys.w || keys.a || keys.s || keys.d;
+                    
+                    // Procedural "Bob" (Breathing vs Running)
+                    const bobSpeed = isMoving ? 0.15 : 0.05;
+                    const bobAmt = isMoving ? 4 : 1.5;
+                    const bob = Math.sin(time * bobSpeed) * bobAmt;
+                    
+                    // Lean effect (tilt slightly while moving)
+                    const lean = isMoving ? (keys.ArrowLeft || keys.a ? -0.05 : (keys.ArrowRight || keys.d ? 0.05 : 0)) : 0;
+                    
+                    const px = obj.x;
+                    const py = obj.y + bob; // Apply bobbing to vertical position
+                    const pw = obj.width;
+                    const ph = obj.height;
+
+                    ctx.save();
+                    ctx.translate(px + pw / 2, py + ph / 2);
+                    ctx.rotate(lean);
+                    ctx.translate(-(px + pw / 2), -(py + ph / 2));
+
+                    // --- 2. DYNAMIC SHADOW ---
+                    // The shadow shrinks and grows as the player bobs/jumps
+                    const shadowScale = 1 - (bob / 20);
+                    ctx.fillStyle = "rgba(0,0,0,0.2)";
                     ctx.beginPath();
-                    ctx.ellipse(obj.x + obj.width/2, obj.y + obj.height, 12, 5, 0, 0, Math.PI * 2);
+                    ctx.ellipse(px + pw / 2, obj.y + ph + 2, (pw * 0.6) * shadowScale, (5) * shadowScale, 0, 0, Math.PI * 2);
                     ctx.fill();
-                    // Player Body
-                    ctx.fillStyle = obj.color;
-                    ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
-                    // Eyes
-                    ctx.fillStyle = "white";
-                    ctx.fillRect(obj.x + 4, obj.y + 6, 4, 4);
-                    ctx.fillRect(obj.x + 16, obj.y + 6, 4, 4);
+
+                    // --- 3. THE BACKPACK (Depth Detail) ---
+                    ctx.fillStyle = "#5d4037"; // Leather brown
+                    ctx.beginPath();
+                    ctx.roundRect(px - 4, py + 8, pw + 8, ph * 0.5, 4);
+                    ctx.fill();
+                    // Backpack Straps
+                    ctx.strokeStyle = "#3e2723";
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(px + 2, py + 8, pw - 4, ph * 0.5);
+
+                    // --- 4. BODY (Gradient & Lighting) ---
+                    let bodyGrad = ctx.createLinearGradient(px, py, px + pw, py);
+                    bodyGrad.addColorStop(0, "#c0392b"); // Shadow side
+                    bodyGrad.addColorStop(0.5, obj.color); // Base
+                    bodyGrad.addColorStop(1, "#ff6b6b"); // Rim light
+                    
+                    ctx.fillStyle = bodyGrad;
+                    ctx.beginPath();
+                    ctx.roundRect(px, py, pw, ph, [8, 8, 4, 4]); // Rounded top
+                    ctx.fill();
+
+                    // --- 5. THE FACE (Eyes & Blinking) ---
+                    // Pupils look in the direction of movement
+                    let lookX = 0;
+                    let lookY = 0;
+                    if (keys.ArrowLeft || keys.a) lookX = -2;
+                    if (keys.ArrowRight || keys.d) lookX = 2;
+                    if (keys.ArrowUp || keys.w) lookY = -1;
+                    if (keys.ArrowDown || keys.s) lookY = 1;
+
+                    // Procedural Blink Logic
+                    const isBlinking = Math.sin(time * 0.005) > 0.98;
+                    
+                    if (!isBlinking) {
+                        ctx.fillStyle = "white"; // Sclera
+                        ctx.fillRect(px + 4, py + 8, 6, 6);
+                        ctx.fillRect(px + 14, py + 8, 6, 6);
+
+                        ctx.fillStyle = "#2c3e50"; // Pupils
+                        ctx.fillRect(px + 6 + lookX, py + 10 + lookY, 3, 3);
+                        ctx.fillRect(px + 16 + lookX, py + 10 + lookY, 3, 3);
+                    } else {
+                        ctx.strokeStyle = "rgba(0,0,0,0.3)"; // Closed Eye Slits
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(px + 4, py + 11); ctx.lineTo(px + 10, py + 11);
+                        ctx.moveTo(px + 14, py + 11); ctx.lineTo(px + 20, py + 11);
+                        ctx.stroke();
+                    }
+
+                    // --- 6. CLOTHING DETAILS (The Scarf) ---
+                    ctx.fillStyle = "#f1c40f"; // Yellow scarf
+                    ctx.beginPath();
+                    ctx.roundRect(px - 1, py + 18, pw + 2, 6, 2);
+                    ctx.fill();
+                    
+                    // Animated Scarf Tail (Wiggles when moving)
+                    if (isMoving) {
+                        const tailWiggle = Math.sin(time * 0.2) * 5;
+                        ctx.beginPath();
+                        ctx.moveTo(px + pw - 4, py + 22);
+                        ctx.quadraticCurveTo(px + pw + 10, py + 22 + tailWiggle, px + pw + 5, py + 32 + tailWiggle);
+                        ctx.lineWidth = 4;
+                        ctx.strokeStyle = "#f1c40f";
+                        ctx.stroke();
+                    }
+
+                    // --- 7. FEET (Walking Animation) ---
+                    const footOffset = Math.sin(time * 0.15) * 6;
+                    ctx.fillStyle = "#2c3e50"; // Boot color
+                    
+                    if (isMoving) {
+                        // Left Foot
+                        ctx.fillRect(px + 2, py + ph - 2 + (footOffset > 0 ? -footOffset/2 : 0), 8, 4);
+                        // Right Foot
+                        ctx.fillRect(px + pw - 10, py + ph - 2 + (footOffset < 0 ? footOffset/2 : 0), 8, 4);
+                    } else {
+                        ctx.fillRect(px + 2, py + ph - 2, 8, 4);
+                        ctx.fillRect(px + pw - 10, py + ph - 2, 8, 4);
+                    }
+
+                    ctx.restore();
                 }
-            });
-        }
 
         function gameLoop() {
             update();
