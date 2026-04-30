@@ -1,630 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🍋 LEMON DRIVER</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Boogaloo&family=Fredoka+One&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invincible: Viltrum Orbit</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #05050a;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-  :root {
-    --lemon: #FFE135;
-    --lemon-dark: #D4A017;
-    --lemon-light: #FFF176;
-    --road: #2C2C2C;
-    --grass: #4CAF50;
-    --sky-top: #1a0a3e;
-    --sky-bot: #c0392b;
-    --white: #FFFDE7;
-    --red: #E74C3C;
-  }
+        /* Starry Background */
+        .stars {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            box-shadow: 
+                20vw 10vh #fff, 40vw 30vh #fff, 60vw 15vh #fff, 80vw 45vh #fff,
+                10vw 70vh #fff, 30vw 85vh #fff, 55vw 60vh #fff, 90vw 90vh #fff,
+                15vw 25vh #fff, 75vw 75vh #fff, 35vw 40vh #fff, 65vw 5vh #fff;
+            animation: twinkle 5s infinite;
+        }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; }
+        /* Viltrum Planet */
+        .viltrum {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at 30% 30%, #e0e0e0, #8a8a8a 40%, #4a4a4a 70%, #1a1a1a);
+            border-radius: 50%;
+            box-shadow: -20px -20px 50px rgba(255, 255, 255, 0.1) inset, 
+                        0 0 40px rgba(100, 100, 150, 0.3);
+            overflow: hidden;
+        }
 
-  body {
-    background: #000;
-    overflow: hidden;
-    font-family: 'Fredoka One', cursive;
-    width: 100vw; height: 100vh;
-  }
+        /* Ring around Viltrum */
+        .ring {
+            position: absolute;
+            width: 500px;
+            height: 100px;
+            border: 8px solid rgba(200, 200, 200, 0.4);
+            border-radius: 50%;
+            transform: rotateX(75deg) rotateY(-10deg);
+            z-index: 1;
+        }
 
-  canvas { display: block; width: 100vw; height: 100vh; }
+        /* Simple Omni-Man Sprite */
+        .omni-man {
+            position: absolute;
+            width: 40px;
+            height: 80px;
+            z-index: 10;
+            animation: float 6s ease-in-out infinite;
+            text-align: center;
+        }
 
-  #ui {
-    position: fixed; top: 0; left: 0; width: 100%; pointer-events: none;
-    display: flex; justify-content: space-between; align-items: flex-start;
-    padding: 20px 24px;
-  }
+        /* Visual representation of Omni-Man */
+        .cape {
+            position: absolute;
+            top: 10px;
+            left: -5px;
+            width: 50px;
+            height: 60px;
+            background: #d32f2f;
+            border-radius: 5px;
+            transform: skewY(10deg);
+        }
 
-  #score-box {
-    background: rgba(0,0,0,0.5);
-    border: 3px solid var(--lemon);
-    border-radius: 16px;
-    padding: 10px 20px;
-    color: var(--lemon);
-    font-size: 28px;
-    text-shadow: 0 0 10px var(--lemon);
-    letter-spacing: 1px;
-  }
+        .suit {
+            position: absolute;
+            width: 30px;
+            height: 50px;
+            background: #ffffff;
+            border-radius: 10px;
+            border-left: 5px solid #d32f2f;
+            border-right: 5px solid #d32f2f;
+            left: 5px;
+            top: 10px;
+        }
 
-  #score-box span { font-size: 14px; display: block; color: var(--lemon-light); margin-bottom: -4px; }
+        .head {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ffdbac;
+            border-radius: 50%;
+            top: -10px;
+            left: 10px;
+        }
 
-  #lives {
-    font-size: 30px;
-    text-shadow: 0 0 8px rgba(255,0,0,0.7);
-  }
+        .mustache {
+            position: absolute;
+            width: 10px;
+            height: 3px;
+            background: #333;
+            bottom: 5px;
+            left: 5px;
+        }
 
-  /* Controls */
-  #controls {
-    position: fixed; bottom: 0; left: 0; width: 100%;
-    display: flex; justify-content: space-between;
-    padding: 20px 30px 36px;
-    pointer-events: none;
-  }
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translate(150px, -50px) rotate(5deg); }
+            50% { transform: translate(170px, -80px) rotate(-5deg); }
+        }
 
-  .ctrl-btn {
-    width: 90px; height: 90px;
-    background: rgba(255,225,53,0.2);
-    border: 3px solid rgba(255,225,53,0.6);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 36px;
-    pointer-events: all;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-    backdrop-filter: blur(4px);
-    transition: background 0.1s;
-    active: background rgba(255,225,53,0.5);
-  }
-
-  .ctrl-btn:active { background: rgba(255,225,53,0.45); }
-
-  #btn-left { margin-right: 10px; }
-  #btn-right { margin-left: 10px; }
-
-  .btn-row { display: flex; gap: 12px; }
-
-  /* Screens */
-  .screen {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.82);
-    backdrop-filter: blur(8px);
-    z-index: 100;
-    text-align: center;
-    padding: 40px;
-  }
-
-  .screen.hidden { display: none; }
-
-  .screen h1 {
-    font-family: 'Boogaloo', cursive;
-    font-size: clamp(56px, 14vw, 96px);
-    color: var(--lemon);
-    text-shadow: 0 0 30px rgba(255,225,53,0.7), 4px 4px 0 var(--lemon-dark);
-    line-height: 1;
-    margin-bottom: 8px;
-  }
-
-  .screen .sub {
-    font-size: clamp(16px, 4vw, 22px);
-    color: var(--lemon-light);
-    margin-bottom: 32px;
-    max-width: 380px;
-    line-height: 1.4;
-  }
-
-  .big-btn {
-    background: var(--lemon);
-    color: #1a1a00;
-    border: none; outline: none;
-    font-family: 'Fredoka One', cursive;
-    font-size: 26px;
-    padding: 16px 48px;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 6px 0 var(--lemon-dark), 0 0 40px rgba(255,225,53,0.4);
-    transition: transform 0.1s, box-shadow 0.1s;
-    pointer-events: all;
-  }
-
-  .big-btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 var(--lemon-dark), 0 0 20px rgba(255,225,53,0.3);
-  }
-
-  #end-score { font-size: clamp(20px, 5vw, 32px); color: #fff; margin-bottom: 6px; }
-  #best-score { font-size: clamp(14px, 3.5vw, 20px); color: var(--lemon-light); margin-bottom: 28px; }
-
-  .emoji-big { font-size: 72px; margin-bottom: 12px; }
-
-  /* Boom animation */
-  #boom {
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 120px;
-    pointer-events: none;
-    z-index: 50;
-    opacity: 0;
-    transition: opacity 0.1s;
-  }
-  #boom.show { opacity: 1; }
-</style>
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.3; }
+        }
+    </style>
 </head>
 <body>
 
-<canvas id="c"></canvas>
+    <div class="stars"></div>
+    
+    <div class="ring"></div>
+    
+    <div class="viltrum">
+        <!-- Texture/Surface highlights -->
+        <div style="position:absolute; width:100%; height:100%; opacity:0.2; background: repeating-linear-gradient(45deg, transparent, transparent 20px, #000 20px, #000 40px);"></div>
+    </div>
 
-<!-- HUD -->
-<div id="ui">
-  <div id="score-box">
-    <span>DISTANCE</span>
-    <span id="dist">0m</span>
-  </div>
-  <div id="lives">❤️</div>
-</div>
+    <div class="omni-man">
+        <div class="cape"></div>
+        <div class="suit"></div>
+        <div class="head">
+            <div class="mustache"></div>
+        </div>
+    </div>
 
-<!-- Touch Controls -->
-<div id="controls">
-  <div class="btn-row">
-    <div class="ctrl-btn" id="btn-left">◀</div>
-  </div>
-  <div class="btn-row">
-    <div class="ctrl-btn" id="btn-right">▶</div>
-  </div>
-</div>
-
-<!-- BOOM -->
-<div id="boom">💥</div>
-
-<!-- Start Screen -->
-<div class="screen" id="start-screen">
-  <div class="emoji-big">🍋</div>
-  <h1>LEMON<br>DRIVER</h1>
-  <p class="sub">Drive your lemon car as far as you can — but watch out for lemon landmines! 💣</p>
-  <button class="big-btn" id="start-btn">START DRIVING</button>
-</div>
-
-<!-- Game Over Screen -->
-<div class="screen hidden" id="end-screen">
-  <div class="emoji-big">💥🍋💥</div>
-  <h1>KABOOM!</h1>
-  <p id="end-score">You drove 0m</p>
-  <p id="best-score">Best: 0m</p>
-  <button class="big-btn" id="restart-btn">TRY AGAIN</button>
-</div>
-
-<script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-
-// ── Resize ──────────────────────────────────────────────────────────────────
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener('resize', resize);
-
-// ── Config ───────────────────────────────────────────────────────────────────
-const CFG = {
-  roadW: 0.55,        // road width as fraction of canvas
-  horizonY: 0.42,     // horizon Y as fraction of canvas height
-  camDepth: 0.84,
-  segLen: 200,
-  drawDist: 300,
-  carY: 0.78,
-  speed0: 180,        // base speed (world units/s)
-  accel: 14,          // speed increase per second
-  maxSpeed: 780,
-  steerSpeed: 2.8,
-  stripeEvery: 4,     // road stripe every N segments
-  mineEvery: [28, 52], // random mine every N..M segments
-  laneW: 0.28,        // lateral play (fraction of road half-width)
-  grassColors: ['#4CAF50','#45a049'],
-  skyColors: ['#1a0a3e','#6b1f1f','#c0392b','#e67e22','#f39c12'],
-};
-
-// ── State ────────────────────────────────────────────────────────────────────
-let state = 'menu'; // menu | play | dead
-let pos = 0;        // world Z position
-let playerX = 0;    // -1..1 lateral
-let speed = 0;
-let segments = [];
-let distance = 0;
-let best = 0;
-let keys = { left: false, right: false };
-let lastTime = null;
-let shakeTimer = 0;
-
-// ── Segment generation ───────────────────────────────────────────────────────
-function createSegment(index) {
-  const seg = {
-    index,
-    world: { z: index * CFG.segLen },
-    mine: false,
-    mineX: 0,
-    curve: 0,
-  };
-  return seg;
-}
-
-function ensureSegments() {
-  const needed = Math.floor(pos / CFG.segLen) + CFG.drawDist + 10;
-  while (segments.length < needed) {
-    const i = segments.length;
-    const seg = createSegment(i);
-    // gentle curves
-    if (i > 10) {
-      const prev = segments[i-1];
-      seg.curve = prev.curve + (Math.random() - 0.5) * 0.003;
-      seg.curve = Math.max(-0.008, Math.min(0.008, seg.curve));
-    }
-    // mines
-    if (i > 15 && nextMineIn <= 0) {
-      seg.mine = true;
-      seg.mineX = (Math.random() * 2 - 1) * 0.7;
-      nextMineIn = CFG.mineEvery[0] + Math.floor(Math.random() * (CFG.mineEvery[1] - CFG.mineEvery[0]));
-      // gradually more frequent
-      const minSpacing = Math.max(12, CFG.mineEvery[0] - Math.floor(distance / 300));
-      nextMineIn = Math.max(nextMineIn, minSpacing);
-    } else {
-      nextMineIn--;
-    }
-    segments.push(seg);
-  }
-}
-
-let nextMineIn = 30;
-
-function resetGame() {
-  pos = 0;
-  playerX = 0;
-  speed = CFG.speed0;
-  distance = 0;
-  segments = [];
-  nextMineIn = 30;
-  keys.left = keys.right = false;
-  for (let i = 0; i < 500; i++) segments.push(createSegment(i));
-  // seed mines after segment 20
-  ensureSegments();
-  shakeTimer = 0;
-  lastTime = null;
-}
-
-// ── Pseudo-3D road renderer ──────────────────────────────────────────────────
-function project(worldZ, worldX, cameraZ, W, H) {
-  const scale = CFG.camDepth / (worldZ - cameraZ);
-  const screenX = (1 + scale * worldX) * W / 2;
-  const screenY = (1 - scale * 0.5) * H * CFG.horizonY + (1 - scale) * H * 0.15;
-  const screenW = scale * W * CFG.roadW / 2;
-  return { x: screenX, y: screenY, w: screenW, scale };
-}
-
-function drawScene(dt) {
-  const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0, 0, W, H);
-
-  // Sky gradient
-  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * CFG.horizonY);
-  skyGrad.addColorStop(0, '#0d0020');
-  skyGrad.addColorStop(0.5, '#5c0f2a');
-  skyGrad.addColorStop(1, '#d4500a');
-  ctx.fillStyle = skyGrad;
-  ctx.fillRect(0, 0, W, H * CFG.horizonY + 4);
-
-  // Stars
-  ctx.fillStyle = 'rgba(255,255,200,0.8)';
-  for (let s = 0; s < 60; s++) {
-    const sx = ((s * 173 + pos * 0.003) % W + W) % W;
-    const sy = ((s * 97) % (H * CFG.horizonY * 0.85));
-    ctx.fillRect(sx, sy, s % 3 === 0 ? 2 : 1, s % 3 === 0 ? 2 : 1);
-  }
-
-  // Ground
-  const gGrad = ctx.createLinearGradient(0, H * CFG.horizonY, 0, H);
-  gGrad.addColorStop(0, '#1b5e20');
-  gGrad.addColorStop(1, '#0a2e0c');
-  ctx.fillStyle = gGrad;
-  ctx.fillRect(0, H * CFG.horizonY, W, H);
-
-  const startSeg = Math.floor(pos / CFG.segLen);
-  const segFrac = (pos % CFG.segLen) / CFG.segLen;
-
-  // Collect projected segments
-  const proj = [];
-  let camX = playerX;
-  let curveAccum = 0;
-
-  for (let n = 0; n < CFG.drawDist; n++) {
-    const idx = startSeg + n;
-    if (idx >= segments.length) break;
-    const seg = segments[idx];
-    const wz = (n - segFrac) * CFG.segLen;
-    const p = project(wz, 0, 0, W, H);
-    p.seg = seg;
-    p.camX = camX;
-    proj.push(p);
-    curveAccum += seg.curve;
-    camX += seg.curve * 0.5;
-  }
-
-  // Draw from far to near
-  for (let n = proj.length - 1; n >= 1; n--) {
-    const p1 = proj[n];
-    const p2 = proj[n - 1];
-    if (p1.y >= p2.y) continue;
-
-    const even = Math.floor((startSeg + n) / 2) % 2 === 0;
-    const stripe = (startSeg + n) % CFG.stripeEvery === 0;
-
-    // Grass bands
-    const col1 = even ? '#2d7a31' : '#3a9940';
-    ctx.fillStyle = col1;
-    ctx.fillRect(0, p1.y, W, p2.y - p1.y + 1);
-
-    // Road
-    const roadCol = even ? '#333' : '#3a3a3a';
-    ctx.fillStyle = roadCol;
-    ctx.beginPath();
-    ctx.moveTo(p1.x - p1.w, p1.y);
-    ctx.lineTo(p1.x + p1.w, p1.y);
-    ctx.lineTo(p2.x + p2.w, p2.y);
-    ctx.lineTo(p2.x - p2.w, p2.y);
-    ctx.fill();
-
-    // Road edge lines (white)
-    ctx.fillStyle = '#fff';
-    const ew = Math.max(1, p1.w * 0.04);
-    ctx.fillRect(p1.x - p1.w, p1.y, ew, p2.y - p1.y + 1);
-    ctx.fillRect(p1.x + p1.w - ew, p1.y, ew, p2.y - p1.y + 1);
-
-    // Center dashes
-    if (stripe) {
-      ctx.fillStyle = '#FFE135';
-      const dw = Math.max(1, p1.w * 0.06);
-      ctx.fillRect(p1.x - dw / 2, p1.y, dw, p2.y - p1.y + 1);
-    }
-
-    // Mine
-    if (p1.seg.mine) {
-      const mx = p1.x + p1.seg.mineX * p1.w;
-      const msize = p1.scale * W * 0.09;
-      if (msize > 4) {
-        // shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.ellipse(mx, p1.y + msize * 0.1, msize * 0.6, msize * 0.15, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // mine body
-        ctx.font = `${msize}px serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('💣', mx, p1.y - msize * 0.3);
-        // lemon label
-        if (msize > 18) {
-          ctx.font = `bold ${msize * 0.3}px 'Fredoka One', cursive`;
-          ctx.fillStyle = '#FFE135';
-          ctx.strokeStyle = '#000';
-          ctx.lineWidth = 3;
-          ctx.strokeText('🍋', mx, p1.y - msize * 1.1);
-          ctx.fillText('🍋', mx, p1.y - msize * 1.1);
-        }
-      }
-    }
-  }
-
-  // ── Car ──────────────────────────────────────────────────────────────────
-  const carH = H * 0.22;
-  const carW = carH * 1.55;
-  const carCX = W / 2 + playerX * W * CFG.roadW * 0.38;
-  const carCY = H * CFG.carY;
-
-  // Lean angle
-  const lean = (keys.right ? 1 : keys.left ? -1 : 0) * 0.06;
-
-  ctx.save();
-  ctx.translate(carCX, carCY);
-  ctx.rotate(lean);
-
-  // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.ellipse(0, carH * 0.45, carW * 0.45, carH * 0.09, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Body
-  const bodyGrad = ctx.createLinearGradient(-carW/2, -carH/2, carW/2, carH/2);
-  bodyGrad.addColorStop(0, '#FFF176');
-  bodyGrad.addColorStop(0.4, '#FFE135');
-  bodyGrad.addColorStop(1, '#c8a800');
-  ctx.fillStyle = bodyGrad;
-  roundRect(ctx, -carW/2, -carH * 0.38, carW, carH * 0.55, carH * 0.12);
-  ctx.fill();
-
-  // Cabin
-  const cabGrad = ctx.createLinearGradient(0, -carH/2, 0, 0);
-  cabGrad.addColorStop(0, '#FFF9C4');
-  cabGrad.addColorStop(1, '#FFE135');
-  ctx.fillStyle = cabGrad;
-  roundRect(ctx, -carW * 0.3, -carH * 0.42, carW * 0.6, carH * 0.3, carH * 0.09);
-  ctx.fill();
-
-  // Windows
-  ctx.fillStyle = 'rgba(100,200,255,0.7)';
-  roundRect(ctx, -carW * 0.25, -carH * 0.39, carW * 0.22, carH * 0.2, carH * 0.04);
-  ctx.fill();
-  roundRect(ctx, carW * 0.03, -carH * 0.39, carW * 0.22, carH * 0.2, carH * 0.04);
-  ctx.fill();
-
-  // Wheels
-  const wr = carH * 0.16;
-  [[- carW * 0.36, carH * 0.18], [carW * 0.36, carH * 0.18],
-   [-carW * 0.36, -carH * 0.07], [carW * 0.36, -carH * 0.07]].forEach(([wx, wy]) => {
-    ctx.fillStyle = '#222';
-    ctx.beginPath(); ctx.arc(wx, wy, wr, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#555';
-    ctx.beginPath(); ctx.arc(wx, wy, wr * 0.55, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#888';
-    ctx.beginPath(); ctx.arc(wx, wy, wr * 0.2, 0, Math.PI * 2); ctx.fill();
-  });
-
-  // Lemon emoji on hood
-  ctx.font = `${carH * 0.28}px serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🍋', 0, carH * 0.01);
-
-  // Headlights
-  ctx.fillStyle = '#FFF9C4';
-  ctx.shadowColor = '#FFE135';
-  ctx.shadowBlur = 15;
-  ctx.fillRect(-carW/2 + carW*0.04, -carH*0.04, carW*0.12, carH*0.07);
-  ctx.fillRect(carW/2 - carW*0.16, -carH*0.04, carW*0.12, carH*0.07);
-  ctx.shadowBlur = 0;
-
-  ctx.restore();
-
-  // Speedometer
-  const spd = Math.round(speed * 0.036); // fake km/h
-  ctx.font = `bold ${H * 0.032}px 'Fredoka One', cursive`;
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.textAlign = 'right';
-  ctx.fillText(`${spd} km/h`, W - 22, H - 22);
-  ctx.fillStyle = '#FFE135';
-  ctx.fillText(`${spd} km/h`, W - 24, H - 24);
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r);
-  ctx.closePath();
-}
-
-// ── Collision ────────────────────────────────────────────────────────────────
-function checkMines() {
-  const startSeg = Math.floor(pos / CFG.segLen);
-  for (let n = 0; n < 3; n++) {
-    const idx = startSeg + n;
-    if (idx >= segments.length) continue;
-    const seg = segments[idx];
-    if (!seg.mine) continue;
-    const dx = Math.abs(playerX - seg.mineX);
-    if (dx < 0.28) {
-      explode();
-      return;
-    }
-  }
-}
-
-function explode() {
-  state = 'dead';
-  const boom = document.getElementById('boom');
-  boom.classList.add('show');
-  // rumble
-  shakeTimer = 0.6;
-  setTimeout(() => {
-    boom.classList.remove('show');
-    if (distance > best) best = distance;
-    document.getElementById('end-score').textContent = `You drove ${distance}m`;
-    document.getElementById('best-score').textContent = `Best: ${best}m`;
-    document.getElementById('end-screen').classList.remove('hidden');
-  }, 900);
-}
-
-// ── Update ───────────────────────────────────────────────────────────────────
-function update(dt) {
-  if (state !== 'play') return;
-
-  speed = Math.min(CFG.maxSpeed, speed + CFG.accel * dt);
-
-  // Steer
-  if (keys.left)  playerX -= CFG.steerSpeed * dt;
-  if (keys.right) playerX += CFG.steerSpeed * dt;
-
-  // Road curve pull
-  const seg = segments[Math.floor(pos / CFG.segLen)];
-  if (seg) playerX += seg.curve * 0.12;
-
-  // Clamp
-  playerX = Math.max(-0.92, Math.min(0.92, playerX));
-
-  pos += speed * dt;
-  distance = Math.floor(pos / 10);
-  ensureSegments();
-  checkMines();
-
-  document.getElementById('dist').textContent = `${distance}m`;
-}
-
-// ── Loop ─────────────────────────────────────────────────────────────────────
-function loop(ts) {
-  requestAnimationFrame(loop);
-  if (!lastTime) { lastTime = ts; return; }
-  const dt = Math.min((ts - lastTime) / 1000, 0.05);
-  lastTime = ts;
-
-  update(dt);
-
-  if (shakeTimer > 0) {
-    shakeTimer -= dt;
-    ctx.save();
-    ctx.translate(
-      (Math.random() - 0.5) * 18,
-      (Math.random() - 0.5) * 18
-    );
-  }
-
-  if (state === 'play' || state === 'dead') drawScene(dt);
-
-  if (shakeTimer > 0) ctx.restore();
-}
-requestAnimationFrame(loop);
-
-// ── UI controls ──────────────────────────────────────────────────────────────
-document.getElementById('start-btn').addEventListener('click', () => {
-  resetGame();
-  state = 'play';
-  document.getElementById('start-screen').classList.add('hidden');
-  lastTime = null;
-});
-
-document.getElementById('restart-btn').addEventListener('click', () => {
-  resetGame();
-  state = 'play';
-  document.getElementById('end-screen').classList.add('hidden');
-  lastTime = null;
-});
-
-// Touch controls
-function addBtn(id, key) {
-  const el = document.getElementById(id);
-  el.addEventListener('touchstart', e => { e.preventDefault(); keys[key] = true; }, { passive: false });
-  el.addEventListener('touchend',   e => { e.preventDefault(); keys[key] = false; }, { passive: false });
-  el.addEventListener('mousedown',  () => keys[key] = true);
-  el.addEventListener('mouseup',    () => keys[key] = false);
-  el.addEventListener('mouseleave', () => keys[key] = false);
-}
-addBtn('btn-left', 'left');
-addBtn('btn-right', 'right');
-
-// Keyboard fallback
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowLeft'  || e.key === 'a') keys.left = true;
-  if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
-});
-document.addEventListener('keyup', e => {
-  if (e.key === 'ArrowLeft'  || e.key === 'a') keys.left = false;
-  if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
-});
-</script>
 </body>
 </html>
