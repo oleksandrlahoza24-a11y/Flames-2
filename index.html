@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Roll!</title>
-<script src="assets.js"></script>
-<script src="graphics.js"></script>
-<script src="worldgen.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -49,14 +46,276 @@
 <canvas id="c"></canvas>
 <div id="controls">
   <div class="btn-group">
-    <div class="btn" id="btn-left">◀</div>
-    <div class="btn" id="btn-right">▶</div>
+    <div class="btn" id="btn-left">&#9664;</div>
+    <div class="btn" id="btn-right">&#9654;</div>
   </div>
   <div class="btn-group">
-    <div class="btn" id="btn-jump">▲</div>
+    <div class="btn" id="btn-jump">&#9650;</div>
   </div>
 </div>
 <script>
+const ASSETS = {
+  colors: {
+    background:   "#1a1a2e",
+    ground:       "#16213e",
+    player:       "#e94560",
+    playerShadow: "#a0213f",
+    playerShine:  "#ff7096",
+    buttonBg:     "#0f3460",
+    buttonBorder: "#e94560",
+    buttonText:   "#ffffff",
+    trail:        "rgba(233, 69, 96, 0.3)",
+    groundLine:   "#0f3460",
+    skyTop:       "#0d0d1a",
+    skyBottom:    "#1a1a2e",
+  },
+  player: { radius: 28, mass: 1.2 },
+  physics: { gravity: 0.6, friction: 0.85, moveForce: 0.7, jumpForce: 13, maxSpeed: 8 },
+  world: { groundHeight: 80 },
+  trail: { maxLength: 18, radius: 10 },
+  floor: {
+    grassColor:      "#2d5a27",
+    grassHighlight:  "#3d7a35",
+    grassShadow:     "#1a3a16",
+    dirtColor:       "#4a3728",
+    reflectionAlpha: 0.18,
+    reflectionColor: "#5588ff",
+    bladeCount:      160,
+    bladeHeight:     14,
+    bladeSpread:     6,
+  },
+  trees: [
+    {
+      id: "oak", trunkColor: "#5c3d1e", trunkWidth: 18, trunkHeight: 60,
+      canopyColor: "#2d6e2d", canopyDark: "#1e4e1e", canopyLight: "#4aaa4a",
+      canopyRadiusX: 36, canopyRadiusY: 44, shadowAlpha: 0.22,
+      minScale: 0.85, maxScale: 1.25, density: 0.0012,
+    },
+    {
+      id: "pine", trunkColor: "#4a2e10", trunkWidth: 12, trunkHeight: 40,
+      canopyColor: "#1a5c2a", canopyDark: "#0f3a1a", canopyLight: "#2e8a44",
+      canopyRadiusX: 22, canopyRadiusY: 60, shadowAlpha: 0.18,
+      minScale: 0.9, maxScale: 1.4, density: 0.0008,
+    },
+  ],
+  bushes: [
+    {
+      id: "round", color: "#3a7a30", colorDark: "#255020", colorLight: "#56aa48",
+      radiusX: 28, radiusY: 20, shadowAlpha: 0.15, minScale: 0.7, maxScale: 1.2, density: 0.002,
+    },
+    {
+      id: "flower", color: "#3a7a30", colorDark: "#255020", colorLight: "#56aa48",
+      radiusX: 18, radiusY: 14, flowerColor: "#e8c84a", flowerCount: 5,
+      shadowAlpha: 0.12, minScale: 0.6, maxScale: 1.0, density: 0.0015,
+    },
+  ],
+};
+
+function seededRng(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+const Graphics = (() => {
+  function drawSky(ctx, W, H, groundY) {
+    const grad = ctx.createLinearGradient(0, 0, 0, groundY);
+    grad.addColorStop(0, ASSETS.colors.skyTop);
+    grad.addColorStop(1, ASSETS.colors.skyBottom);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, groundY);
+  }
+
+  function drawFloor(ctx, W, H, groundY) {
+    const F = ASSETS.floor;
+    const dirtGrad = ctx.createLinearGradient(0, groundY, 0, H);
+    dirtGrad.addColorStop(0, F.grassShadow);
+    dirtGrad.addColorStop(0.15, F.dirtColor);
+    dirtGrad.addColorStop(1, "#2a1f14");
+    ctx.fillStyle = dirtGrad;
+    ctx.fillRect(0, groundY, W, H - groundY);
+
+    const grassGrad = ctx.createLinearGradient(0, groundY - 8, 0, groundY + 12);
+    grassGrad.addColorStop(0, F.grassHighlight);
+    grassGrad.addColorStop(0.5, F.grassColor);
+    grassGrad.addColorStop(1, F.grassShadow);
+    ctx.fillStyle = grassGrad;
+    ctx.fillRect(0, groundY - 4, W, 16);
+
+    ctx.save();
+    ctx.globalAlpha = F.reflectionAlpha;
+    const reflLinear = ctx.createLinearGradient(0, groundY, 0, groundY + 38);
+    reflLinear.addColorStop(0, F.reflectionColor);
+    reflLinear.addColorStop(1, "transparent");
+    ctx.fillStyle = reflLinear;
+    ctx.fillRect(0, groundY, W, 38);
+    ctx.restore();
+  }
+
+  function drawGrassBlades(ctx, W, groundY, cameraX) {
+    const F = ASSETS.floor;
+    const CHUNK = 600;
+    const startChunk = Math.floor((cameraX - W * 0.1) / CHUNK);
+    const endChunk   = Math.ceil((cameraX + W * 1.1) / CHUNK);
+
+    for (let c = startChunk; c <= endChunk; c++) {
+      const rng = seededRng(c * 99991 + 777);
+      for (let i = 0; i < F.bladeCount; i++) {
+        const wx   = c * CHUNK + rng() * CHUNK;
+        const sx   = wx - cameraX;
+        const lean  = (rng() - 0.5) * F.bladeSpread;
+        const h     = F.bladeHeight * (0.6 + rng() * 0.8);
+        const bright = rng() > 0.5;
+        ctx.beginPath();
+        ctx.moveTo(sx, groundY);
+        ctx.quadraticCurveTo(sx + lean, groundY - h * 0.6, sx + lean * 1.4, groundY - h);
+        ctx.strokeStyle = bright ? F.grassHighlight : F.grassColor;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawTree(ctx, groundY, tree, sx, scale) {
+    const tw = tree.trunkWidth  * scale;
+    const th = tree.trunkHeight * scale;
+    const rx = tree.canopyRadiusX * scale;
+    const ry = tree.canopyRadiusY * scale;
+    const ty = groundY - th;
+
+    ctx.save();
+    ctx.globalAlpha = tree.shadowAlpha;
+    ctx.beginPath();
+    ctx.ellipse(sx, groundY - 2, rx * 0.8, 10 * scale, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#000";
+    ctx.fill();
+    ctx.restore();
+
+    const trunkGrad = ctx.createLinearGradient(sx - tw / 2, 0, sx + tw / 2, 0);
+    trunkGrad.addColorStop(0, "#3a2510");
+    trunkGrad.addColorStop(0.4, tree.trunkColor);
+    trunkGrad.addColorStop(1, "#2a1a08");
+    ctx.fillStyle = trunkGrad;
+    ctx.fillRect(sx - tw / 2, ty, tw, th + 4);
+
+    const canopyGrad = ctx.createRadialGradient(sx - rx * 0.2, ty - ry * 0.3, ry * 0.1, sx, ty, ry);
+    canopyGrad.addColorStop(0, tree.canopyLight);
+    canopyGrad.addColorStop(0.5, tree.canopyColor);
+    canopyGrad.addColorStop(1, tree.canopyDark);
+    ctx.beginPath();
+    ctx.ellipse(sx, ty, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = canopyGrad;
+    ctx.fill();
+
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    ctx.beginPath();
+    ctx.ellipse(sx - rx * 0.15, ty - ry * 0.1, rx * 0.5, ry * 0.4, -0.3, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBush(ctx, groundY, bush, sx, scale) {
+    const rx = bush.radiusX * scale;
+    const ry = bush.radiusY * scale;
+    const by = groundY - ry * 0.6;
+
+    ctx.save();
+    ctx.globalAlpha = bush.shadowAlpha;
+    ctx.beginPath();
+    ctx.ellipse(sx, groundY - 2, rx * 0.9, 7 * scale, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#000";
+    ctx.fill();
+    ctx.restore();
+
+    const bushGrad = ctx.createRadialGradient(sx - rx * 0.2, by - ry * 0.25, 2, sx, by, rx);
+    bushGrad.addColorStop(0, bush.colorLight);
+    bushGrad.addColorStop(0.5, bush.color);
+    bushGrad.addColorStop(1, bush.colorDark);
+    ctx.beginPath();
+    ctx.ellipse(sx, by, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = bushGrad;
+    ctx.fill();
+
+    if (bush.flowerColor && bush.flowerCount) {
+      for (let i = 0; i < bush.flowerCount; i++) {
+        const fx = sx + (i / bush.flowerCount - 0.5) * rx * 1.4;
+        const fy = by - ry * 0.3 + Math.sin(i * 1.7) * ry * 0.3;
+        ctx.beginPath();
+        ctx.arc(fx, fy, 4 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = bush.flowerColor;
+        ctx.fill();
+      }
+    }
+  }
+
+  return { drawSky, drawFloor, drawGrassBlades, drawTree, drawBush };
+})();
+
+const WorldGen = (() => {
+  const CHUNK_SIZE = 1200;
+  const chunks = new Map();
+
+  function getChunkObjects(chunkIndex) {
+    if (chunks.has(chunkIndex)) return chunks.get(chunkIndex);
+    const objects = [];
+    const startX  = chunkIndex * CHUNK_SIZE;
+
+    for (const tree of ASSETS.trees) {
+      const count = Math.floor(CHUNK_SIZE * tree.density * 1000);
+      const rng   = seededRng(chunkIndex * 73856093 + ASSETS.trees.indexOf(tree) * 19349663 + 1);
+      for (let i = 0; i < count; i++) {
+        const x     = startX + rng() * CHUNK_SIZE;
+        const scale = tree.minScale + rng() * (tree.maxScale - tree.minScale);
+        objects.push({ kind: "tree", type: tree, x, scale, z: scale });
+      }
+    }
+
+    for (const bush of ASSETS.bushes) {
+      const count = Math.floor(CHUNK_SIZE * bush.density * 1000);
+      const rng   = seededRng(chunkIndex * 83492791 + ASSETS.bushes.indexOf(bush) * 49979687 + 2);
+      for (let i = 0; i < count; i++) {
+        const x     = startX + rng() * CHUNK_SIZE;
+        const scale = bush.minScale + rng() * (bush.maxScale - bush.minScale);
+        objects.push({ kind: "bush", type: bush, x, scale, z: scale * 0.5 });
+      }
+    }
+
+    objects.sort((a, b) => a.z - b.z);
+    chunks.set(chunkIndex, objects);
+    return objects;
+  }
+
+  function draw(ctx, W, groundY, cameraX) {
+    const startChunk = Math.floor((cameraX - 200) / CHUNK_SIZE);
+    const endChunk   = Math.ceil((cameraX + W + 200) / CHUNK_SIZE);
+
+    const visible = [];
+    for (let c = startChunk; c <= endChunk; c++) {
+      for (const obj of getChunkObjects(c)) {
+        const sx = obj.x - cameraX;
+        if (sx >= -200 && sx <= W + 200) {
+          visible.push({ ...obj, sx });
+        }
+      }
+    }
+    visible.sort((a, b) => a.z - b.z);
+
+    for (const obj of visible) {
+      if (obj.kind === "tree") {
+        Graphics.drawTree(ctx, groundY, obj.type, obj.sx, obj.scale);
+      } else if (obj.kind === "bush") {
+        Graphics.drawBush(ctx, groundY, obj.type, obj.sx, obj.scale);
+      }
+    }
+  }
+
+  return { draw };
+})();
+
 const canvas = document.getElementById("c");
 const ctx    = canvas.getContext("2d");
 
@@ -66,26 +325,20 @@ function resize() {
   W = canvas.width  = window.innerWidth;
   H = canvas.height = window.innerHeight;
   groundY = H - ASSETS.world.groundHeight;
-  WorldGen.generate(W, groundY);
 }
 
 resize();
 window.addEventListener("resize", resize);
 
 const p = {
-  x:        300,
-  y:        200,
-  vx:       0,
-  vy:       0,
-  r:        ASSETS.player.radius,
-  angle:    0,
-  onGround: false,
+  x: 300, y: 200, vx: 0, vy: 0,
+  r: ASSETS.player.radius, angle: 0, onGround: false,
 };
 
-const trail   = [];
-const keys    = { left: false, right: false, jump: false };
-let jumpUsed  = false;
-let cameraX   = 0;
+const trail  = [];
+const keys   = { left: false, right: false, jump: false };
+let jumpUsed = false;
+let cameraX  = 0;
 
 function bindBtn(id, action) {
   const el = document.getElementById(id);
@@ -93,10 +346,22 @@ function bindBtn(id, action) {
   el.addEventListener("touchend",   e => { e.preventDefault(); keys[action] = false; }, { passive: false });
   el.addEventListener("mousedown",  () => keys[action] = true);
   el.addEventListener("mouseup",    () => keys[action] = false);
+  el.addEventListener("mouseleave", () => keys[action] = false);
 }
 bindBtn("btn-left",  "left");
 bindBtn("btn-right", "right");
 bindBtn("btn-jump",  "jump");
+
+window.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft"  || e.key === "a") keys.left  = true;
+  if (e.key === "ArrowRight" || e.key === "d") keys.right = true;
+  if (e.key === " " || e.key === "ArrowUp" || e.key === "w") keys.jump = true;
+});
+window.addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft"  || e.key === "a") keys.left  = false;
+  if (e.key === "ArrowRight" || e.key === "d") keys.right = false;
+  if (e.key === " " || e.key === "ArrowUp" || e.key === "w") keys.jump = false;
+});
 
 function update() {
   const A = ASSETS.physics;
@@ -126,7 +391,6 @@ function update() {
   }
 
   p.angle += p.vx * 0.06;
-
   cameraX = p.x - W / 2;
 
   trail.push({ x: p.x, y: p.y });
@@ -186,7 +450,7 @@ function loop() {
   Graphics.drawSky(ctx, W, H, groundY);
   WorldGen.draw(ctx, W, groundY, cameraX);
   Graphics.drawFloor(ctx, W, H, groundY);
-  Graphics.drawGrassBlades(ctx, W, groundY, 1);
+  Graphics.drawGrassBlades(ctx, W, groundY, cameraX);
 
   drawTrail();
   drawPlayer();
