@@ -3,67 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lemon Squeezer: Landmine Run</title>
+    <title>Lemon Drift: Professional Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fdfd96; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; overflow: hidden; background: #222; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         canvas { display: block; }
         
         #ui {
             position: absolute;
-            top: 20px;
+            top: env(safe-area-inset-top, 20px);
             width: 100%;
-            text-align: center;
-            color: #555;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-sizing: border-box;
+            color: white;
             pointer-events: none;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
         }
 
-        #score-board { font-size: 2rem; text-shadow: 2px 2px #fff; }
+        .stat-box {
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
 
         #overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
+            background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; color: white; text-align: center;
         }
 
         .btn {
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            background: #ffe135;
-            border: 4px solid #333;
-            border-radius: 50px;
+            padding: 20px 60px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #fdfd96;
+            color: #333;
+            border: none;
+            border-radius: 40px;
             cursor: pointer;
-            box-shadow: 0 5px 0 #333;
-            transition: 0.1s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            text-transform: uppercase;
+            letter-spacing: 2px;
             pointer-events: auto;
         }
 
-        .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #333; }
-
-        h1 { color: #8a8a00; margin-bottom: 10px; font-size: 3rem; text-align: center; }
-        p { margin-bottom: 30px; font-weight: bold; color: #444; }
+        h1 { font-size: 4rem; margin: 0; color: #fff; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        p { font-size: 1.1rem; opacity: 0.8; margin-bottom: 40px; }
     </style>
 </head>
 <body>
 
     <div id="ui">
-        <div id="score-board">Distance: 0m</div>
+        <div class="stat-box">DIST: <span id="dist-val">0</span>m</div>
+        <div class="stat-box">SPEED: <span id="speed-val">0</span>km/h</div>
     </div>
 
     <div id="overlay">
-        <h1 id="status-title">LEMON LANDMINE</h1>
-        <p id="status-sub">Tap left/right to steer your sour ride.</p>
-        <button class="btn" onclick="startGame()">START DRIVING</button>
+        <h1 id="status-title">LEMON DRIFT</h1>
+        <p id="status-sub">Hold sides of the screen to switch lanes.</p>
+        <button class="btn" onclick="startGame()">Start Engine</button>
     </div>
 
-    <!-- Three.js Library -->
     <script type="importmap">
         {
             "imports": {
@@ -75,90 +79,94 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // --- Game Variables ---
         let scene, camera, renderer, car, clock;
-        let road, landmines = [];
-        let score = 0;
-        let speed = 0.5;
-        let isGameRunning = false;
-        let steering = 0; // -1 for left, 1 for right, 0 for straight
+        let road, landmines = [], decor = [];
+        let score = 0, speed = 0.4, isGameRunning = false;
+        let targetX = 0, currentX = 0;
 
-        const ROAD_WIDTH = 10;
-        const MINE_SPAWN_DIST = 40;
+        const LANES = [-3.5, 0, 3.5];
+        const ROAD_WIDTH = 12;
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB); // Sky Blue
-            scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
+            scene.background = new THREE.Color(0x334455);
+            scene.fog = new THREE.Fog(0x334455, 30, 90);
 
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 5, 10);
-            camera.lookAt(0, 0, -5);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 4, 8);
+            camera.lookAt(0, 1, -5);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
             document.body.appendChild(renderer.domElement);
 
-            // Lighting
-            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            const ambient = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambient);
-            const sun = new THREE.DirectionalLight(0xffffff, 1);
-            sun.position.set(5, 10, 5);
+            
+            const sun = new THREE.DirectionalLight(0xffccaa, 1.5);
+            sun.position.set(10, 20, 10);
+            sun.castShadow = true;
             scene.add(sun);
 
             createCar();
-            createRoad();
+            createEnvironment();
             
             clock = new THREE.Clock();
 
-            // iPad Controls
-            window.addEventListener('touchstart', (e) => {
+            // iPad Pro optimized controls
+            const handleInput = (e) => {
                 if (!isGameRunning) return;
-                const touchX = e.touches[0].clientX;
-                steering = touchX < window.innerWidth / 2 ? -1 : 1;
-            });
+                const x = e.touches ? e.touches[0].clientX : e.clientX;
+                if (x < window.innerWidth / 3) targetX = LANES[0];
+                else if (x > (window.innerWidth / 3) * 2) targetX = LANES[2];
+                else targetX = LANES[1];
+            };
 
-            window.addEventListener('touchend', () => {
-                steering = 0;
-            });
-
-            // Fallback for Desktop testing
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft') steering = -1;
-                if (e.key === 'ArrowRight') steering = 1;
-            });
-            window.addEventListener('keyup', () => steering = 0);
-
+            window.addEventListener('touchstart', handleInput);
+            window.addEventListener('mousedown', handleInput);
+            
             animate();
         }
 
         function createCar() {
             const carGroup = new THREE.Group();
 
-            // The Lemon Body
-            const bodyGeom = new THREE.BoxGeometry(1.5, 1, 3);
-            const bodyMat = new THREE.MeshPhongMaterial({ color: 0xfff44f });
+            // Lemon Body (Squashed Sphere)
+            const bodyGeom = new THREE.SphereGeometry(1, 32, 32);
+            bodyGeom.scale(1.2, 0.8, 1.8);
+            const bodyMat = new THREE.MeshPhongMaterial({ color: 0xffdb00, shininess: 100 });
             const body = new THREE.Mesh(bodyGeom, bodyMat);
             body.position.y = 0.8;
+            body.castShadow = true;
             carGroup.add(body);
 
-            // The Windows (Windshield)
-            const glassGeom = new THREE.BoxGeometry(1.3, 0.6, 1);
-            const glassMat = new THREE.MeshPhongMaterial({ color: 0x88ccff });
-            const windshield = new THREE.Mesh(glassGeom, glassMat);
-            windshield.position.set(0, 1.4, 0.2);
-            carGroup.add(windshield);
+            // The Stem
+            const stemGeom = new THREE.CylinderGeometry(0.1, 0.1, 0.5);
+            const stemMat = new THREE.MeshPhongMaterial({ color: 0x228B22 });
+            const stem = new THREE.Mesh(stemGeom, stemMat);
+            stem.position.set(0, 1.6, -1.2);
+            stem.rotation.x = 0.5;
+            carGroup.add(stem);
 
-            // Wheels
-            const wheelGeom = new THREE.CylinderGeometry(0.4, 0.4, 0.4, 16);
-            const wheelMat = new THREE.MeshPhongMaterial({ color: 0x333333 });
-            const wheelPositions = [[-0.8, 0.4, 1], [0.8, 0.4, 1], [-0.8, 0.4, -1], [0.8, 0.4, -1]];
+            // Windows
+            const winGeom = new THREE.SphereGeometry(0.8, 16, 16);
+            winGeom.scale(1, 0.5, 0.8);
+            const winMat = new THREE.MeshPhongMaterial({ color: 0x222222, transparent: true, opacity: 0.7 });
+            const win = new THREE.Mesh(winGeom, winMat);
+            win.position.set(0, 1.2, 0.2);
+            carGroup.add(win);
+
+            // Wheels (Black Donuts)
+            const wheelGeom = new THREE.TorusGeometry(0.3, 0.15, 12, 24);
+            const wheelMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
+            const wheelPos = [[-0.9, 0.4, 0.8], [0.9, 0.4, 0.8], [-0.9, 0.4, -0.8], [0.9, 0.4, -0.8]];
             
-            wheelPositions.forEach(pos => {
+            wheelPos.forEach(pos => {
                 const wheel = new THREE.Mesh(wheelGeom, wheelMat);
-                wheel.rotation.z = Math.PI / 2;
                 wheel.position.set(...pos);
+                wheel.rotation.y = Math.PI / 2;
                 carGroup.add(wheel);
             });
 
@@ -166,109 +174,113 @@
             scene.add(car);
         }
 
-        function createRoad() {
-            const roadGeom = new THREE.PlaneGeometry(ROAD_WIDTH, 1000);
-            const roadMat = new THREE.MeshPhongMaterial({ color: 0x555555 });
+        function createEnvironment() {
+            // Main Asphalt
+            const roadGeom = new THREE.PlaneGeometry(ROAD_WIDTH, 2000);
+            const roadMat = new THREE.MeshPhongMaterial({ color: 0x1a1a1a });
             road = new THREE.Mesh(roadGeom, roadMat);
             road.rotation.x = -Math.PI / 2;
-            road.position.z = -450;
+            road.receiveShadow = true;
             scene.add(road);
 
-            // Add some grass
-            const grassGeom = new THREE.PlaneGeometry(100, 1000);
-            const grassMat = new THREE.MeshPhongMaterial({ color: 0x7cfc00 });
-            const grass = new THREE.Mesh(grassGeom, grassMat);
-            grass.rotation.x = -Math.PI / 2;
-            grass.position.y = -0.05;
-            grass.position.z = -450;
-            scene.add(grass);
+            // Road Lines
+            for(let i = 0; i < 100; i++) {
+                const lineGeom = new THREE.PlaneGeometry(0.2, 3);
+                const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const line = new THREE.Mesh(lineGeom, lineMat);
+                line.rotation.x = -Math.PI / 2;
+                line.position.set(-1.75, 0.01, -i * 15);
+                scene.add(line);
+                const line2 = line.clone();
+                line2.position.x = 1.75;
+                scene.add(line2);
+            }
         }
 
-        function spawnLandmine() {
-            const mineGeom = new THREE.SphereGeometry(0.6, 8, 8);
-            const mineMat = new THREE.MeshPhongMaterial({ color: 0xFFFF00, emissive: 0x888800 });
-            const mine = new THREE.Mesh(mineGeom, mineMat);
+        function spawnMine() {
+            const mineGroup = new THREE.Group();
+            const geom = new THREE.SphereGeometry(0.5, 12, 12);
+            const mat = new THREE.MeshPhongMaterial({ color: 0xcc0000, emissive: 0x440000 });
+            const mine = new THREE.Mesh(geom, mat);
+            mineGroup.add(mine);
             
-            mine.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
-            mine.position.y = 0.3;
-            mine.position.z = car.position.z - MINE_SPAWN_DIST - (Math.random() * 20);
+            // Spike details
+            const spikeGeom = new THREE.BoxGeometry(0.2, 1.2, 0.2);
+            for(let i=0; i<3; i++) {
+                const spike = new THREE.Mesh(spikeGeom, mat);
+                spike.rotation.set(Math.random(), Math.random(), Math.random());
+                mineGroup.add(spike);
+            }
+
+            mineGroup.position.x = LANES[Math.floor(Math.random() * 3)];
+            mineGroup.position.y = 0.5;
+            mineGroup.position.z = car.position.z - 60;
             
-            scene.add(mine);
-            landmines.push(mine);
-        }
-
-        function checkCollision(obj1, obj2) {
-            const dist = obj1.position.distanceTo(obj2.position);
-            return dist < 1.2;
-        }
-
-        function gameOver() {
-            isGameRunning = false;
-            document.getElementById('overlay').style.display = 'flex';
-            document.getElementById('status-title').innerText = "SOUR LUCK!";
-            document.getElementById('status-sub').innerText = `You drove ${Math.floor(score)} meters before exploding.`;
-            document.querySelector('.btn').innerText = "TRY AGAIN";
+            scene.add(mineGroup);
+            landmines.push(mineGroup);
         }
 
         function animate() {
             requestAnimationFrame(animate);
 
             if (isGameRunning) {
-                // Forward movement
-                speed += 0.0001; // Accelerate over time
+                speed += 0.00015;
                 car.position.z -= speed;
-                camera.position.z -= speed;
-                
-                // Steering
-                car.position.x += steering * 0.15;
-                car.rotation.y = THREE.MathUtils.lerp(car.rotation.y, -steering * 0.2, 0.1);
-                
-                // Keep on road
-                if (car.position.x > ROAD_WIDTH/2 - 0.7) car.position.x = ROAD_WIDTH/2 - 0.7;
-                if (car.position.x < -ROAD_WIDTH/2 + 0.7) car.position.x = -ROAD_WIDTH/2 + 0.7;
+                camera.position.z = car.position.z + 8;
+                camera.position.x = car.position.x * 0.5;
 
-                // Spawning landmines
-                if (landmines.length < 10) {
-                    spawnLandmine();
+                // Physics-style lerping for lanes
+                currentX += (targetX - currentX) * 0.12;
+                car.position.x = currentX;
+                
+                // Visual tilt
+                car.rotation.z = (currentX - targetX) * 0.1;
+                car.rotation.y = (targetX - currentX) * 0.05;
+
+                // Spawning logic (Less crowded = easier)
+                if (Math.random() < 0.03 && landmines.length < 6) {
+                    spawnMine();
                 }
 
-                // Collision and Cleanup
+                // Collision
                 landmines.forEach((mine, index) => {
-                    if (checkCollision(car, mine)) {
-                        gameOver();
+                    const dist = car.position.distanceTo(mine.position);
+                    if (dist < 1.6) {
+                        endGame();
                     }
-                    // Remove passed mines
-                    if (mine.position.z > car.position.z + 5) {
+                    if (mine.position.z > car.position.z + 10) {
                         scene.remove(mine);
                         landmines.splice(index, 1);
                     }
                 });
 
-                score += speed * 0.5;
-                document.getElementById('score-board').innerText = `Distance: ${Math.floor(score)}m`;
+                score += speed;
+                document.getElementById('dist-val').innerText = Math.floor(score);
+                document.getElementById('speed-val').innerText = Math.floor(speed * 100);
             }
 
             renderer.render(scene, camera);
         }
 
+        function endGame() {
+            isGameRunning = false;
+            document.getElementById('overlay').style.display = 'flex';
+            document.getElementById('status-title').innerText = "WASTED";
+            document.getElementById('status-sub').innerText = `You squeezed through ${Math.floor(score)} meters.`;
+            document.querySelector('.btn').innerText = "Restart";
+        }
+
         window.startGame = function() {
-            // Reset variables
-            score = 0;
-            speed = 0.5;
+            score = 0; speed = 0.4;
+            currentX = 0; targetX = 0;
             car.position.set(0, 0, 0);
-            camera.position.set(0, 5, 10);
-            
-            // Clear existing mines
             landmines.forEach(m => scene.remove(m));
             landmines = [];
-
             document.getElementById('overlay').style.display = 'none';
             isGameRunning = true;
         }
 
         init();
-
-        // Handle Resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
