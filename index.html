@@ -3,199 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hot Fuse: The Dating Sim</title>
+    <title>Sultry Shrapnel</title>
     <style>
         :root {
-            --neon-pink: #ff00ff;
-            --neon-blue: #00ffff;
-            --danger: #ff3333;
+            --passion-red: #ff0040;
+            --electric-purple: #9d00ff;
+            --gold: #ffd700;
         }
 
         body {
-            background-color: #0a0a0a;
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #050505;
+            color: #eee;
+            font-family: 'Georgia', serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
         }
 
-        #game-window {
-            width: 400px;
-            background: #1a1a1a;
-            border: 3px solid var(--neon-blue);
+        #game-frame {
+            width: 420px;
+            background: linear-gradient(145deg, #1a0a0a, #000);
+            border: 2px solid var(--passion-red);
             border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 0 20px var(--neon-blue);
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(255, 0, 64, 0.4);
+            position: relative;
         }
 
-        .stats {
-            display: flex;
-            justify-content: space-between;
+        .heartbeat {
+            animation: beat 0.8s infinite;
+        }
+
+        @keyframes beat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #character-visual {
+            font-size: 90px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin: 20px 0;
+            display: block;
+        }
+
+        .timer-glow {
+            font-family: 'Courier New', monospace;
+            font-size: 2rem;
+            color: var(--passion-red);
+            text-shadow: 0 0 15px var(--passion-red);
             margin-bottom: 20px;
-            font-family: monospace;
         }
 
-        #timer { font-size: 1.5rem; color: var(--danger); }
-
-        #character-sprite {
-            font-size: 80px;
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 10px 0;
-            transition: transform 0.2s;
+        .dialogue-text {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            min-height: 100px;
+            color: #ffb3bf;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 2px #000;
         }
 
-        .dialogue {
-            background: #000;
-            padding: 15px;
-            border-radius: 10px;
-            min-height: 60px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--neon-pink);
-        }
-
-        .btn {
+        .choice-btn {
+            display: block;
             width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            background: transparent;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            cursor: pointer;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid var(--passion-red);
+            color: white;
             border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
         }
 
-        .btn:hover { background: rgba(0, 255, 255, 0.1); }
+        .choice-btn:hover {
+            background: var(--passion-red);
+            color: black;
+            font-weight: bold;
+        }
 
         .hidden { display: none; }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 0, 0, 0.2);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
     </style>
 </head>
 <body>
 
-<div id="game-window">
-    <!-- Character Select -->
-    <div id="selector">
-        <h3>Choose Your Date</h3>
-        <button class="btn" onclick="startGame('emanuel')">Emanuel (The Sensitive Soul)</button>
-        <button class="btn" onclick="startGame('bot')">B-0-T (The Cold Tsundere)</button>
-        <button class="btn" onclick="startGame('sparky')">Sparky (The Wild Child)</button>
+<div id="game-frame" class="heartbeat">
+    <div id="tension-overlay" class="overlay"></div>
+    
+    <div id="selection-screen">
+        <h2 style="color: var(--passion-red); text-align: center;">Pick Your Poison</h2>
+        <button class="choice-btn" onclick="start('emanuel')">EMANUEL: The Heavy Breather</button>
+        <button class="choice-btn" onclick="start('vax')">VAX: The Sharp-Tongued Mine</button>
     </div>
 
-    <!-- Main Game -->
-    <div id="game-ui" class="hidden">
-        <div class="stats">
-            <span id="char-name">NAME</span>
-            <span id="timer">30.00</span>
-        </div>
-        <div id="character-sprite">💣</div>
-        <div id="dialogue-box" class="dialogue">...</div>
-        <div id="choice-container"></div>
+    <div id="stage" class="hidden">
+        <div class="timer-glow" id="timer">00:30.00</div>
+        <div id="character-visual">💣</div>
+        <div id="dialogue" class="dialogue-text">...</div>
+        <div id="options"></div>
     </div>
 </div>
 
 <script>
-    const data = {
+    const roster = {
         emanuel: {
-            name: "Emanuel",
-            sprite: "💎💣",
-            startText: "I... I hope you don't mind that I'm ticking. It's just my heart.",
-            scenes: [
-                { text: "Do you like the way my casing glitters in this light?", 
-                  choices: [
-                    { t: "It's breathtaking.", s: -10, next: 1 },
-                    { t: "Focus on the wires, Emanuel.", s: 15, next: 1 }
-                  ]
+            visual: "🔮💣",
+            dialogue: [
+                {
+                    text: "Emanuel’s casing is warm to the touch. 'Do you always handle delicate things with such... confidence?'",
+                    options: [
+                        { t: "Only when they're as beautiful as you.", s: -10 },
+                        { t: "I want to see what happens when you're pushed.", s: 15 },
+                        { t: "[Slowly stroke the fuse]", s: -20 }
+                    ]
+                },
+                {
+                    text: "He lets out a low, metallic hum. 'My internal temperature is rising. If you keep this up, I won't be able to hold back.'",
+                    options: [
+                        { t: "Then let it go. I'm not afraid.", s: 20 },
+                        { t: "Let me cool you down.", s: -15 },
+                        { t: "I like it when you're on the edge.", s: -5 }
+                    ]
                 }
             ]
         },
-        bot: {
-            name: "B-0-T",
-            sprite: "🤖🧨",
-            startText: "Don't touch my keypad unless you know what you're doing, human.",
-            scenes: [
-                { text: "My logic circuits are overheating. State your purpose.", 
-                  choices: [
-                    { t: "I'm here to hack your heart.", s: -10, next: 1 },
-                    { t: "Just disarm already.", s: 20, next: 1 }
-                  ]
-                }
-            ]
-        },
-        sparky: {
-            name: "Sparky",
-            sprite: "⚡🧨",
-            startText: "Wanna see something really bright?! I'm ready to blow!",
-            scenes: [
-                { text: "Let's make this night go out with a bang!", 
-                  choices: [
-                    { t: "Let's keep it a slow burn.", s: -15, next: 1 },
-                    { t: "I love a man with a short fuse.", s: 10, next: 1 }
-                  ]
+        vax: {
+            visual: "⚙️🧨",
+            dialogue: [
+                {
+                    text: "Vax bristles as you lean in. 'You're playing with fire, sweetheart. One wrong move and we're both history.'",
+                    options: [
+                        { t: "History is boring. Let's make a scene.", s: 10 },
+                        { t: "I've always liked the thrill of the chase.", s: -10 },
+                        { t: "Whisper: Then tell me exactly where to touch.", s: -25 }
+                    ]
                 }
             ]
         }
     };
 
-    let activeChar = null;
+    let active = null;
+    let sceneIdx = 0;
     let timeLeft = 30.00;
-    let timerInterval;
+    let timer;
 
-    function startGame(key) {
-        activeChar = data[key];
-        document.getElementById('selector').classList.add('hidden');
-        document.getElementById('game-ui').classList.remove('hidden');
-        document.getElementById('char-name').textContent = activeChar.name;
-        document.getElementById('character-sprite').textContent = activeChar.sprite;
-        document.getElementById('dialogue-box').textContent = activeChar.startText;
+    function start(key) {
+        active = roster[key];
+        document.getElementById('selection-screen').classList.add('hidden');
+        document.getElementById('stage').classList.remove('hidden');
+        document.getElementById('character-visual').textContent = active.visual;
+        render();
         
-        renderChoices(0);
-        startTimer();
-    }
-
-    function renderChoices(sceneIdx) {
-        const container = document.getElementById('choice-container');
-        container.innerHTML = '';
-        const scene = activeChar.scenes[sceneIdx] || { choices: [{t: "Ask for a second date", s: -100, win: true}] };
-
-        scene.choices.forEach(c => {
-            const b = document.createElement('button');
-            b.className = 'btn';
-            b.textContent = c.t;
-            b.onclick = () => {
-                timeLeft -= c.s; // Negative stress adds time!
-                if(c.win) { end(true); }
-                else { 
-                    document.getElementById('dialogue-box').textContent = "That... that felt interesting.";
-                    renderChoices(sceneIdx + 1); 
-                }
-            };
-            container.appendChild(b);
-        });
-    }
-
-    function startTimer() {
-        timerInterval = setInterval(() => {
+        timer = setInterval(() => {
             timeLeft -= 0.01;
             document.getElementById('timer').textContent = timeLeft.toFixed(2);
-            if(timeLeft <= 0) end(false);
+            if(timeLeft <= 0) endGame(false);
         }, 10);
     }
 
-    function end(win) {
-        clearInterval(timerInterval);
+    function render() {
+        const scene = active.dialogue[sceneIdx];
+        if(!scene) {
+            endGame(true);
+            return;
+        }
+
+        document.getElementById('dialogue').textContent = scene.text;
+        const optCont = document.getElementById('options');
+        optCont.innerHTML = '';
+
+        scene.options.forEach(o => {
+            const b = document.createElement('button');
+            b.className = 'choice-btn';
+            b.textContent = o.t;
+            b.onclick = () => {
+                timeLeft -= o.s; // Negative stress adds time
+                if(o.s > 10) document.getElementById('tension-overlay').style.opacity = "1";
+                else document.getElementById('tension-overlay').style.opacity = "0";
+                sceneIdx++;
+                render();
+            };
+            optCont.appendChild(b);
+        });
+    }
+
+    function endGame(win) {
+        clearInterval(timer);
+        const diag = document.getElementById('dialogue');
+        const opts = document.getElementById('options');
+        opts.innerHTML = '';
+
         if(win) {
-            document.getElementById('dialogue-box').textContent = "Safe! You really know how to handle a fuse.";
-            document.getElementById('character-sprite').textContent = "💖";
+            diag.textContent = "The ticking stops, replaced by a satisfied purr. 'You've disarmed me... in more ways than one.'";
+            document.getElementById('character-visual').textContent = "🌹";
         } else {
-            document.getElementById('dialogue-box').textContent = "BOOM! Too much pressure!";
-            document.body.style.background = "red";
+            diag.textContent = "The tension snaps. 'I told you... I couldn't... wait!' BOOM.";
+            document.body.style.background = "#400";
         }
     }
 </script>
+
 </body>
 </html>
