@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Roll!</title>
 <script src="assets.js"></script>
+<script src="graphics.js"></script>
+<script src="worldgen.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -14,16 +16,10 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
     touch-action: none;
     user-select: none;
   }
-  canvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-  }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
   #controls {
     position: absolute;
     bottom: 32px;
@@ -36,16 +32,13 @@
   }
   .btn-group { display: flex; gap: 16px; }
   .btn {
-    width: 80px;
-    height: 80px;
+    width: 80px; height: 80px;
     border-radius: 50%;
     background: #0f3460;
     border: 3px solid #e94560;
     color: #fff;
     font-size: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     transition: transform 0.08s, background 0.08s;
@@ -66,28 +59,31 @@
   </div>
 </div>
 <script>
-const canvas = document.getElementById("c");
-const ctx    = canvas.getContext("2d");
+const canvas  = document.getElementById("c");
+const ctx     = canvas.getContext("2d");
 
 let W, H, groundY;
 function resize() {
   W = canvas.width  = window.innerWidth;
   H = canvas.height = window.innerHeight;
   groundY = H - ASSETS.world.groundHeight;
+  WorldGen.generate(W, groundY);
+  Graphics.drawGrassBlades(offCanvas.getContext("2d"), W * 3, offCanvas.height - ASSETS.world.groundHeight, 1);
 }
-resize();
+
+const offCanvas = document.createElement("canvas");
+
 window.addEventListener("resize", resize);
 
 const p = {
-  x:  200,
-  y:  300,
-  vx: 0,
-  vy: 0,
-  r:  ASSETS.player.radius,
+  x: 200, y: 300,
+  vx: 0, vy: 0,
+  r: ASSETS.player.radius,
   angle: 0,
   onGround: false,
 };
 
+let cameraX = 0;
 const trail = [];
 const keys  = { left: false, right: false, jump: false };
 let jumpUsed = false;
@@ -96,8 +92,8 @@ function bindBtn(id, action) {
   const el = document.getElementById(id);
   el.addEventListener("touchstart", e => { e.preventDefault(); keys[action] = true;  }, { passive: false });
   el.addEventListener("touchend",   e => { e.preventDefault(); keys[action] = false; }, { passive: false });
-  el.addEventListener("mousedown",  ()  => { keys[action] = true;  });
-  el.addEventListener("mouseup",    ()  => { keys[action] = false; });
+  el.addEventListener("mousedown",  () => { keys[action] = true;  });
+  el.addEventListener("mouseup",    () => { keys[action] = false; });
 }
 bindBtn("btn-left",  "left");
 bindBtn("btn-right", "right");
@@ -105,53 +101,28 @@ bindBtn("btn-jump",  "jump");
 
 function update() {
   const A = ASSETS.physics;
-
   if (keys.left)  p.vx -= A.moveForce;
   if (keys.right) p.vx += A.moveForce;
-
-  if (keys.jump && p.onGround && !jumpUsed) {
-    p.vy = -A.jumpForce;
-    jumpUsed = true;
-  }
+  if (keys.jump && p.onGround && !jumpUsed) { p.vy = -A.jumpForce; jumpUsed = true; }
   if (!keys.jump) jumpUsed = false;
 
   p.vy += A.gravity;
   if (!keys.left && !keys.right) p.vx *= A.friction;
   p.vx = Math.max(-A.maxSpeed, Math.min(A.maxSpeed, p.vx));
-
   p.x += p.vx;
   p.y += p.vy;
 
-  if (p.y + p.r >= groundY) {
-    p.y = groundY - p.r;
-    p.vy = 0;
-    p.onGround = true;
-  } else {
-    p.onGround = false;
-  }
+  if (p.y + p.r >= groundY) { p.y = groundY - p.r; p.vy = 0; p.onGround = true; }
+  else p.onGround = false;
 
-  if (p.x - p.r < 0)  { p.x = p.r;  p.vx = Math.abs(p.vx) * 0.4; }
+  if (p.x - p.r < 0)  { p.x = p.r;     p.vx =  Math.abs(p.vx) * 0.4; }
   if (p.x + p.r > W)  { p.x = W - p.r; p.vx = -Math.abs(p.vx) * 0.4; }
 
+  cameraX = p.x - W / 2;
   p.angle += p.vx * 0.06;
 
   trail.push({ x: p.x, y: p.y });
   if (trail.length > ASSETS.trail.maxLength) trail.shift();
-}
-
-function drawGround() {
-  const C = ASSETS.colors;
-  ctx.fillStyle = C.ground;
-  ctx.fillRect(0, groundY, W, H - groundY);
-
-  ctx.strokeStyle = C.groundLine;
-  ctx.lineWidth   = 2;
-  ctx.setLineDash([24, 16]);
-  ctx.beginPath();
-  ctx.moveTo(0, groundY);
-  ctx.lineTo(W, groundY);
-  ctx.stroke();
-  ctx.setLineDash([]);
 }
 
 function drawTrail() {
@@ -192,7 +163,6 @@ function drawPlayer() {
   ctx.lineWidth = 3;
   ctx.lineCap = "round";
   ctx.stroke();
-
   ctx.restore();
 }
 
@@ -200,18 +170,17 @@ function loop() {
   update();
   ctx.clearRect(0, 0, W, H);
 
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, ASSETS.colors.background);
-  bg.addColorStop(1, "#0d0d1a");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
+  Graphics.drawSky(ctx, W, H, groundY);
+  Graphics.drawFloor(ctx, W, H, groundY);
+  Graphics.drawGrassBlades(ctx, W, groundY, 1);
+  WorldGen.draw(ctx, W, groundY, cameraX);
 
-  drawGround();
   drawTrail();
   drawPlayer();
-
   requestAnimationFrame(loop);
 }
+
+resize();
 loop();
 </script>
 </body>
