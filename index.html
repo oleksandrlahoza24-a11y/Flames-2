@@ -2,138 +2,278 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Grumpy Grove | Shop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lemon Squeezer: Landmine Run</title>
     <style>
-        :root {
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
-            --accent-color: #5a67d8;
-            --text-main: #2d3748;
-            --text-muted: #718096;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .product-card {
-            background: var(--card-bg);
-            width: 350px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .image-container {
-            background: #e2e8f0;
-            height: 250px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            font-size: 5rem;
-        }
-
-        .badge {
+        body { margin: 0; overflow: hidden; background: #fdfd96; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        canvas { display: block; }
+        
+        #ui {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #e53e3e;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .content {
-            padding: 25px;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: var(--text-main);
-        }
-
-        .price {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: var(--accent-color);
-            margin: 10px 0;
-        }
-
-        .description {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-
-        .buy-button {
+            top: 20px;
             width: 100%;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .buy-button:hover {
-            background-color: #434190;
-        }
-
-        .warning {
-            font-size: 0.7rem;
             text-align: center;
-            margin-top: 15px;
-            color: #a0aec0;
+            color: #555;
+            pointer-events: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
+
+        #score-board { font-size: 2rem; text-shadow: 2px 2px #fff; }
+
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .btn {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            background: #ffe135;
+            border: 4px solid #333;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #333;
+            transition: 0.1s;
+            pointer-events: auto;
+        }
+
+        .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #333; }
+
+        h1 { color: #8a8a00; margin-bottom: 10px; font-size: 3rem; text-align: center; }
+        p { margin-bottom: 30px; font-weight: bold; color: #444; }
     </style>
 </head>
 <body>
 
-    <div class="product-card">
-        <div class="image-container">
-            <!-- Visual representation using Emoji -->
-            🌲🔪
-            <div class="badge">Limited Edition</div>
-        </div>
-
-        <div class="content">
-            <h1>The Melancholy Oak</h1>
-            <div class="price">$45.00</div>
-            
-            <p class="description">
-                This handcrafted, sitting tree features a slumped posture, a permanent frown, and a tiny, stainless steel knife. Perfect for desks that need a touch of existential dread.
-            </p>
-
-            <button class="buy-button" onclick="alert('Added to cart! Be careful, it\'s sharp.')">
-                Adopt This Tree
-            </button>
-
-            <p class="warning">
-                * Handle with care. Tree does not enjoy hugs.
-            </p>
-        </div>
+    <div id="ui">
+        <div id="score-board">Distance: 0m</div>
     </div>
 
+    <div id="overlay">
+        <h1 id="status-title">LEMON LANDMINE</h1>
+        <p id="status-sub">Tap left/right to steer your sour ride.</p>
+        <button class="btn" onclick="startGame()">START DRIVING</button>
+    </div>
+
+    <!-- Three.js Library -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- Game Variables ---
+        let scene, camera, renderer, car, clock;
+        let road, landmines = [];
+        let score = 0;
+        let speed = 0.5;
+        let isGameRunning = false;
+        let steering = 0; // -1 for left, 1 for right, 0 for straight
+
+        const ROAD_WIDTH = 10;
+        const MINE_SPAWN_DIST = 40;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); // Sky Blue
+            scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 5, 10);
+            camera.lookAt(0, 0, -5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambient);
+            const sun = new THREE.DirectionalLight(0xffffff, 1);
+            sun.position.set(5, 10, 5);
+            scene.add(sun);
+
+            createCar();
+            createRoad();
+            
+            clock = new THREE.Clock();
+
+            // iPad Controls
+            window.addEventListener('touchstart', (e) => {
+                if (!isGameRunning) return;
+                const touchX = e.touches[0].clientX;
+                steering = touchX < window.innerWidth / 2 ? -1 : 1;
+            });
+
+            window.addEventListener('touchend', () => {
+                steering = 0;
+            });
+
+            // Fallback for Desktop testing
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') steering = -1;
+                if (e.key === 'ArrowRight') steering = 1;
+            });
+            window.addEventListener('keyup', () => steering = 0);
+
+            animate();
+        }
+
+        function createCar() {
+            const carGroup = new THREE.Group();
+
+            // The Lemon Body
+            const bodyGeom = new THREE.BoxGeometry(1.5, 1, 3);
+            const bodyMat = new THREE.MeshPhongMaterial({ color: 0xfff44f });
+            const body = new THREE.Mesh(bodyGeom, bodyMat);
+            body.position.y = 0.8;
+            carGroup.add(body);
+
+            // The Windows (Windshield)
+            const glassGeom = new THREE.BoxGeometry(1.3, 0.6, 1);
+            const glassMat = new THREE.MeshPhongMaterial({ color: 0x88ccff });
+            const windshield = new THREE.Mesh(glassGeom, glassMat);
+            windshield.position.set(0, 1.4, 0.2);
+            carGroup.add(windshield);
+
+            // Wheels
+            const wheelGeom = new THREE.CylinderGeometry(0.4, 0.4, 0.4, 16);
+            const wheelMat = new THREE.MeshPhongMaterial({ color: 0x333333 });
+            const wheelPositions = [[-0.8, 0.4, 1], [0.8, 0.4, 1], [-0.8, 0.4, -1], [0.8, 0.4, -1]];
+            
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeom, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(...pos);
+                carGroup.add(wheel);
+            });
+
+            car = carGroup;
+            scene.add(car);
+        }
+
+        function createRoad() {
+            const roadGeom = new THREE.PlaneGeometry(ROAD_WIDTH, 1000);
+            const roadMat = new THREE.MeshPhongMaterial({ color: 0x555555 });
+            road = new THREE.Mesh(roadGeom, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.z = -450;
+            scene.add(road);
+
+            // Add some grass
+            const grassGeom = new THREE.PlaneGeometry(100, 1000);
+            const grassMat = new THREE.MeshPhongMaterial({ color: 0x7cfc00 });
+            const grass = new THREE.Mesh(grassGeom, grassMat);
+            grass.rotation.x = -Math.PI / 2;
+            grass.position.y = -0.05;
+            grass.position.z = -450;
+            scene.add(grass);
+        }
+
+        function spawnLandmine() {
+            const mineGeom = new THREE.SphereGeometry(0.6, 8, 8);
+            const mineMat = new THREE.MeshPhongMaterial({ color: 0xFFFF00, emissive: 0x888800 });
+            const mine = new THREE.Mesh(mineGeom, mineMat);
+            
+            mine.position.x = (Math.random() - 0.5) * (ROAD_WIDTH - 2);
+            mine.position.y = 0.3;
+            mine.position.z = car.position.z - MINE_SPAWN_DIST - (Math.random() * 20);
+            
+            scene.add(mine);
+            landmines.push(mine);
+        }
+
+        function checkCollision(obj1, obj2) {
+            const dist = obj1.position.distanceTo(obj2.position);
+            return dist < 1.2;
+        }
+
+        function gameOver() {
+            isGameRunning = false;
+            document.getElementById('overlay').style.display = 'flex';
+            document.getElementById('status-title').innerText = "SOUR LUCK!";
+            document.getElementById('status-sub').innerText = `You drove ${Math.floor(score)} meters before exploding.`;
+            document.querySelector('.btn').innerText = "TRY AGAIN";
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isGameRunning) {
+                // Forward movement
+                speed += 0.0001; // Accelerate over time
+                car.position.z -= speed;
+                camera.position.z -= speed;
+                
+                // Steering
+                car.position.x += steering * 0.15;
+                car.rotation.y = THREE.MathUtils.lerp(car.rotation.y, -steering * 0.2, 0.1);
+                
+                // Keep on road
+                if (car.position.x > ROAD_WIDTH/2 - 0.7) car.position.x = ROAD_WIDTH/2 - 0.7;
+                if (car.position.x < -ROAD_WIDTH/2 + 0.7) car.position.x = -ROAD_WIDTH/2 + 0.7;
+
+                // Spawning landmines
+                if (landmines.length < 10) {
+                    spawnLandmine();
+                }
+
+                // Collision and Cleanup
+                landmines.forEach((mine, index) => {
+                    if (checkCollision(car, mine)) {
+                        gameOver();
+                    }
+                    // Remove passed mines
+                    if (mine.position.z > car.position.z + 5) {
+                        scene.remove(mine);
+                        landmines.splice(index, 1);
+                    }
+                });
+
+                score += speed * 0.5;
+                document.getElementById('score-board').innerText = `Distance: ${Math.floor(score)}m`;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.startGame = function() {
+            // Reset variables
+            score = 0;
+            speed = 0.5;
+            car.position.set(0, 0, 0);
+            camera.position.set(0, 5, 10);
+            
+            // Clear existing mines
+            landmines.forEach(m => scene.remove(m));
+            landmines = [];
+
+            document.getElementById('overlay').style.display = 'none';
+            isGameRunning = true;
+        }
+
+        init();
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
