@@ -1,140 +1,443 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invincible: Viltrum Orbit</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #05050a;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        /* Starry Background */
-        .stars {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: white;
-            box-shadow: 
-                20vw 10vh #fff, 40vw 30vh #fff, 60vw 15vh #fff, 80vw 45vh #fff,
-                10vw 70vh #fff, 30vw 85vh #fff, 55vw 60vh #fff, 90vw 90vh #fff,
-                15vw 25vh #fff, 75vw 75vh #fff, 35vw 40vh #fff, 65vw 5vh #fff;
-            animation: twinkle 5s infinite;
-        }
-
-        /* Viltrum Planet */
-        .viltrum {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle at 30% 30%, #e0e0e0, #8a8a8a 40%, #4a4a4a 70%, #1a1a1a);
-            border-radius: 50%;
-            box-shadow: -20px -20px 50px rgba(255, 255, 255, 0.1) inset, 
-                        0 0 40px rgba(100, 100, 150, 0.3);
-            overflow: hidden;
-        }
-
-        /* Ring around Viltrum */
-        .ring {
-            position: absolute;
-            width: 500px;
-            height: 100px;
-            border: 8px solid rgba(200, 200, 200, 0.4);
-            border-radius: 50%;
-            transform: rotateX(75deg) rotateY(-10deg);
-            z-index: 1;
-        }
-
-        /* Simple Omni-Man Sprite */
-        .omni-man {
-            position: absolute;
-            width: 40px;
-            height: 80px;
-            z-index: 10;
-            animation: float 6s ease-in-out infinite;
-            text-align: center;
-        }
-
-        /* Visual representation of Omni-Man */
-        .cape {
-            position: absolute;
-            top: 10px;
-            left: -5px;
-            width: 50px;
-            height: 60px;
-            background: #d32f2f;
-            border-radius: 5px;
-            transform: skewY(10deg);
-        }
-
-        .suit {
-            position: absolute;
-            width: 30px;
-            height: 50px;
-            background: #ffffff;
-            border-radius: 10px;
-            border-left: 5px solid #d32f2f;
-            border-right: 5px solid #d32f2f;
-            left: 5px;
-            top: 10px;
-        }
-
-        .head {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #ffdbac;
-            border-radius: 50%;
-            top: -10px;
-            left: 10px;
-        }
-
-        .mustache {
-            position: absolute;
-            width: 10px;
-            height: 3px;
-            background: #333;
-            bottom: 5px;
-            left: 5px;
-        }
-
-        /* Animations */
-        @keyframes float {
-            0%, 100% { transform: translate(150px, -50px) rotate(5deg); }
-            50% { transform: translate(170px, -80px) rotate(-5deg); }
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 0.3; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Game</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; touch-action: none; }
+canvas { display: block; margin: auto; }
+</style>
 </head>
 <body>
+<canvas id="c"></canvas>
+<script>
 
-    <div class="stars"></div>
-    
-    <div class="ring"></div>
-    
-    <div class="viltrum">
-        <!-- Texture/Surface highlights -->
-        <div style="position:absolute; width:100%; height:100%; opacity:0.2; background: repeating-linear-gradient(45deg, transparent, transparent 20px, #000 20px, #000 40px);"></div>
-    </div>
+// ============================================================
+//  CONFIG
+// ============================================================
+const CONFIG = {
+  tileSize:    32,
+  gravity:     0.55,
+  jumpForce:  -13,
+  moveSpeed:   4.5,
+  sprintMult:  1.6,
+  cameraEase:  0.1,
+  bgLayers: [
+    { src: "assets/bg/bg_sky.png",   speed: 0.1 },
+    { src: "assets/bg/bg_hills.png", speed: 0.3 },
+  ],
+  sprites: {
+    idle:  { src: "assets/sprites/player_idle.png",  frames: 4, fps: 6,  w: 32, h: 48 },
+    run:   { src: "assets/sprites/player_run.png",   frames: 6, fps: 12, w: 32, h: 48 },
+    jump:  { src: "assets/sprites/player_jump.png",  frames: 1, fps: 1,  w: 32, h: 48 },
+    fall:  { src: "assets/sprites/player_fall.png",  frames: 1, fps: 1,  w: 32, h: 48 },
+  },
+  tiles: {
+    G: "assets/tiles/tile_ground_top.png",
+    D: "assets/tiles/tile_ground_mid.png",
+    P: "assets/tiles/tile_platform.png",
+  },
+  ui: {
+    dpad: { src: "assets/ui/ui_dpad.png",      w: 160, h: 160 },
+    jump: { src: "assets/ui/ui_jump_btn.png",  w:  96, h:  96 },
+  },
+};
 
-    <div class="omni-man">
-        <div class="cape"></div>
-        <div class="suit"></div>
-        <div class="head">
-            <div class="mustache"></div>
-        </div>
-    </div>
+// ============================================================
+//  ROOM 1  — tile map
+//  T = tileSize. Solid tiles: G, D, P. Empty: .
+// ============================================================
+const ROOM1 = {
+  spawnX: 2,
+  spawnY: 5,
+  map: [
+    ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+    ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+    ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+    ". . . . . . . . . . . P P P . . . . . . . . . P P P . . . . . . . . . . . . . .",
+    ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+    ". . . . . . . . P P P . . . . . . . . . P P P . . . . . . . . . . . . . . . . .",
+    ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+    ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+    "G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G G",
+    "D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D",
+    "D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D D",
+  ],
+};
 
+// ============================================================
+//  ENGINE BOOT
+// ============================================================
+const canvas = document.getElementById("c");
+const ctx    = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+let W, H, scale;
+function resize() {
+  const sw = window.innerWidth, sh = window.innerHeight;
+  scale  = Math.min(sw / 512, sh / 288);
+  W = 512; H = 288;
+  canvas.width  = W;
+  canvas.height = H;
+  canvas.style.width  = W * scale + "px";
+  canvas.style.height = H * scale + "px";
+}
+resize();
+window.addEventListener("resize", resize);
+
+// ============================================================
+//  ASSET LOADER
+// ============================================================
+const ASSETS = {};
+function loadImage(key, src) {
+  return new Promise(res => {
+    const img = new Image();
+    img.src = src;
+    img.onload  = () => { ASSETS[key] = img; res(); };
+    img.onerror = () => { ASSETS[key] = null;  res(); };
+  });
+}
+
+async function loadAll() {
+  const jobs = [];
+  for (const [k, v] of Object.entries(CONFIG.sprites))
+    jobs.push(loadImage("spr_" + k, v.src));
+  for (const [k, v] of Object.entries(CONFIG.tiles))
+    jobs.push(loadImage("tile_" + k, v));
+  for (let i = 0; i < CONFIG.bgLayers.length; i++)
+    jobs.push(loadImage("bg_" + i, CONFIG.bgLayers[i].src));
+  jobs.push(loadImage("ui_dpad", CONFIG.ui.dpad.src));
+  jobs.push(loadImage("ui_jump", CONFIG.ui.jump.src));
+  await Promise.all(jobs);
+}
+
+// ============================================================
+//  INPUT
+// ============================================================
+const Keys = { left: false, right: false, jump: false, sprint: false };
+
+window.addEventListener("keydown", e => {
+  if (e.code === "ArrowLeft"  || e.code === "KeyA")  Keys.left   = true;
+  if (e.code === "ArrowRight" || e.code === "KeyD")  Keys.right  = true;
+  if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") Keys.jump = true;
+  if (e.code === "ShiftLeft")  Keys.sprint = true;
+});
+window.addEventListener("keyup", e => {
+  if (e.code === "ArrowLeft"  || e.code === "KeyA")  Keys.left   = false;
+  if (e.code === "ArrowRight" || e.code === "KeyD")  Keys.right  = false;
+  if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") Keys.jump = false;
+  if (e.code === "ShiftLeft")  Keys.sprint = false;
+});
+
+// Touch zones
+const Touch = { leftDown: false, rightDown: false, jumpDown: false, jumpConsumed: false };
+function setupTouch() {
+  const dpadX  = 20,  dpadY  = H - 180;
+  const jumpX  = W - 116, jumpY = H - 116;
+
+  function getZone(tx, ty) {
+    const dx = tx - (dpadX + 80), dy = ty - (dpadY + 80);
+    if (Math.hypot(dx, dy) < 80) {
+      const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+      if (ang > -135 && ang < -45) return "up";
+      if (ang >= -45  && ang < 45)  return "right";
+      if (ang >= 45   && ang < 135) return "down";
+      return "left";
+    }
+    const jdx = tx - (jumpX + 48), jdy = ty - (jumpY + 48);
+    if (Math.hypot(jdx, jdy) < 48) return "jump";
+    return null;
+  }
+
+  function applyTouches(evt) {
+    Touch.leftDown = false; Touch.rightDown = false; Touch.jumpDown = false;
+    for (const t of evt.touches) {
+      const rx = t.clientX / scale, ry = t.clientY / scale;
+      const z  = getZone(rx, ry);
+      if (z === "left")  Touch.leftDown  = true;
+      if (z === "right") Touch.rightDown = true;
+      if (z === "jump")  Touch.jumpDown  = true;
+    }
+    if (!Touch.jumpDown) Touch.jumpConsumed = false;
+    Keys.left  = Touch.leftDown;
+    Keys.right = Touch.rightDown;
+  }
+
+  canvas.addEventListener("touchstart",  e => { e.preventDefault(); applyTouches(e); }, { passive: false });
+  canvas.addEventListener("touchmove",   e => { e.preventDefault(); applyTouches(e); }, { passive: false });
+  canvas.addEventListener("touchend",    e => { e.preventDefault(); applyTouches(e); }, { passive: false });
+  canvas.addEventListener("touchcancel", e => { e.preventDefault(); applyTouches(e); }, { passive: false });
+}
+
+// ============================================================
+//  MAP PARSER
+// ============================================================
+function parseMap(room) {
+  const rows = room.map.map(r => r.split(" "));
+  const solids = [];
+  for (let row = 0; row < rows.length; row++) {
+    for (let col = 0; col < rows[row].length; col++) {
+      const t = rows[row][col];
+      if (t !== ".") {
+        solids.push({
+          x: col * CONFIG.tileSize,
+          y: row * CONFIG.tileSize,
+          w: CONFIG.tileSize,
+          h: CONFIG.tileSize,
+          type: t,
+          oneway: t === "P",
+        });
+      }
+    }
+  }
+  const mapW = rows[0].length * CONFIG.tileSize;
+  const mapH = rows.length    * CONFIG.tileSize;
+  return { solids, mapW, mapH };
+}
+
+// ============================================================
+//  PLAYER
+// ============================================================
+function makePlayer(room) {
+  return {
+    x: room.spawnX * CONFIG.tileSize,
+    y: room.spawnY * CONFIG.tileSize,
+    w: 28, h: 44,
+    vx: 0, vy: 0,
+    grounded: false,
+    facingRight: true,
+    anim: "idle",
+    frame: 0,
+    frameTimer: 0,
+    jumpBuffer: 0,
+    coyote: 0,
+  };
+}
+
+function updatePlayer(p, tiles, dt) {
+  const spd   = CONFIG.moveSpeed * (Keys.sprint ? CONFIG.sprintMult : 1);
+  const T      = CONFIG.tileSize;
+
+  if (Keys.right) { p.vx = spd; p.facingRight = true; }
+  else if (Keys.left) { p.vx = -spd; p.facingRight = false; }
+  else p.vx *= 0.7;
+
+  p.vy += CONFIG.gravity;
+
+  if (p.grounded) p.coyote = 6;
+  else if (p.coyote > 0) p.coyote--;
+
+  if (p.jumpBuffer > 0) p.jumpBuffer--;
+
+  if (Keys.jump) {
+    if (!p._jumpHeld) p.jumpBuffer = 8;
+    p._jumpHeld = true;
+  } else {
+    p._jumpHeld = false;
+  }
+
+  if (p.jumpBuffer > 0 && p.coyote > 0) {
+    p.vy = CONFIG.jumpForce;
+    p.grounded = false;
+    p.coyote = 0;
+    p.jumpBuffer = 0;
+  }
+
+  if (!Keys.jump && p.vy < -4) p.vy = -4;
+
+  p.x += p.vx;
+  resolveAxisX(p, tiles);
+  p.grounded = false;
+  p.y += p.vy;
+  resolveAxisY(p, tiles);
+
+  p.x = Math.max(0, p.x);
+
+  const prevAnim = p.anim;
+  if (!p.grounded) p.anim = p.vy < 0 ? "jump" : "fall";
+  else if (Math.abs(p.vx) > 0.5) p.anim = "run";
+  else p.anim = "idle";
+
+  if (p.anim !== prevAnim) { p.frame = 0; p.frameTimer = 0; }
+  const cfg = CONFIG.sprites[p.anim];
+  p.frameTimer += dt;
+  const frameDur = 1000 / cfg.fps;
+  while (p.frameTimer >= frameDur) { p.frame = (p.frame + 1) % cfg.frames; p.frameTimer -= frameDur; }
+}
+
+function resolveAxisX(p, tiles) {
+  for (const t of tiles) {
+    if (t.oneway) continue;
+    if (overlap(p, t)) {
+      if (p.vx > 0) p.x = t.x - p.w;
+      else if (p.vx < 0) p.x = t.x + t.w;
+      p.vx = 0;
+    }
+  }
+}
+
+function resolveAxisY(p, tiles) {
+  for (const t of tiles) {
+    if (overlap(p, t)) {
+      if (t.oneway) {
+        if (p.vy > 0 && p.y + p.h - p.vy <= t.y + 4) {
+          p.y = t.y - p.h;
+          p.vy = 0;
+          p.grounded = true;
+        }
+      } else {
+        if (p.vy > 0) { p.y = t.y - p.h; p.vy = 0; p.grounded = true; }
+        else if (p.vy < 0) { p.y = t.y + t.h; p.vy = 0; }
+      }
+    }
+  }
+}
+
+function overlap(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x &&
+         a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+// ============================================================
+//  CAMERA
+// ============================================================
+function makeCamera() { return { x: 0, y: 0 }; }
+function updateCamera(cam, player, mapW, mapH) {
+  const tx = player.x + player.w / 2 - W / 2;
+  const ty = player.y + player.h / 2 - H / 2;
+  cam.x += (tx - cam.x) * CONFIG.cameraEase;
+  cam.y += (ty - cam.y) * CONFIG.cameraEase;
+  cam.x = Math.max(0, Math.min(cam.x, mapW - W));
+  cam.y = Math.max(0, Math.min(cam.y, mapH - H));
+}
+
+// ============================================================
+//  FALLBACK DRAW (when textures are missing)
+// ============================================================
+function drawFallbackTile(t, ox, oy) {
+  const colors = { G: "#5a8a3c", D: "#8b5e3c", P: "#7c5cbf" };
+  ctx.fillStyle = colors[t.type] || "#888";
+  ctx.fillRect(t.x - ox, t.y - oy, t.w, t.h);
+  ctx.strokeStyle = "rgba(0,0,0,0.3)";
+  ctx.strokeRect(t.x - ox + 0.5, t.y - oy + 0.5, t.w - 1, t.h - 1);
+}
+
+function drawFallbackPlayer(p, cam) {
+  ctx.save();
+  const px = p.x - cam.x, py = p.y - cam.y;
+  ctx.translate(px + p.w / 2, py + p.h / 2);
+  if (!p.facingRight) ctx.scale(-1, 1);
+  ctx.fillStyle = "#e8a24c";
+  ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(4, -p.h / 2 + 6, 6, 6);
+  ctx.fillRect(-p.w / 2 + 2 + 8, -p.h / 2 + 6, 6, 6);
+  ctx.restore();
+}
+
+// ============================================================
+//  RENDER
+// ============================================================
+function drawBg(cam) {
+  for (let i = 0; i < CONFIG.bgLayers.length; i++) {
+    const img = ASSETS["bg_" + i];
+    const spd = CONFIG.bgLayers[i].speed;
+    const ox  = (cam.x * spd) % W;
+    if (img) {
+      ctx.drawImage(img, -ox, 0, W, H);
+      ctx.drawImage(img, W - ox, 0, W, H);
+    } else {
+      const shades = ["#87ceeb", "#b0d8a4"];
+      ctx.fillStyle = shades[i] || "#aaa";
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+}
+
+function drawTiles(tiles, cam) {
+  for (const t of tiles) {
+    const img = ASSETS["tile_" + t.type];
+    if (img) ctx.drawImage(img, t.x - cam.x, t.y - cam.y, t.w, t.h);
+    else drawFallbackTile(t, cam.x, cam.y);
+  }
+}
+
+function drawPlayer(p, cam) {
+  const img = ASSETS["spr_" + p.anim];
+  const cfg = CONFIG.sprites[p.anim];
+  if (img) {
+    const sx = p.frame * cfg.w;
+    ctx.save();
+    const px = p.x - cam.x, py = p.y - cam.y;
+    ctx.translate(px + p.w / 2, py + p.h / 2);
+    if (!p.facingRight) ctx.scale(-1, 1);
+    ctx.drawImage(img, sx, 0, cfg.w, cfg.h, -cfg.w / 2, -cfg.h / 2, cfg.w, cfg.h);
+    ctx.restore();
+  } else {
+    drawFallbackPlayer(p, cam);
+  }
+}
+
+function drawUI() {
+  const dpad = ASSETS["ui_dpad"];
+  const jump = ASSETS["ui_jump"];
+  const d    = CONFIG.ui.dpad, j = CONFIG.ui.jump;
+  if (dpad) ctx.drawImage(dpad, 20, H - 20 - d.h, d.w, d.h);
+  else {
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.beginPath();
+    ctx.arc(20 + d.w / 2, H - 20 - d.h / 2, 70, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (jump) ctx.drawImage(jump, W - 20 - j.w, H - 20 - j.h, j.w, j.h);
+  else {
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.beginPath();
+    ctx.arc(W - 20 - j.w / 2, H - 20 - j.h / 2, 40, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ============================================================
+//  MAIN LOOP
+// ============================================================
+let last = 0;
+let player, camera, tiles, mapW, mapH;
+
+function init() {
+  const map = parseMap(ROOM1);
+  tiles  = map.solids;
+  mapW   = map.mapW;
+  mapH   = map.mapH;
+  player = makePlayer(ROOM1);
+  camera = makeCamera();
+}
+
+function loop(ts) {
+  const dt = Math.min(ts - last, 50);
+  last = ts;
+
+  updatePlayer(player, tiles, dt);
+  updateCamera(camera, player, mapW, mapH);
+
+  ctx.clearRect(0, 0, W, H);
+  drawBg(camera);
+  drawTiles(tiles, camera);
+  drawPlayer(player, camera);
+  drawUI();
+
+  requestAnimationFrame(loop);
+}
+
+(async () => {
+  await loadAll();
+  setupTouch();
+  init();
+  requestAnimationFrame(t => { last = t; loop(t); });
+})();
+
+</script>
 </body>
 </html>
