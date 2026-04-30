@@ -2,221 +2,161 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sultry Shrapnel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sorrow Wood 3D</title>
     <style>
-        :root {
-            --passion-red: #ff0040;
-            --electric-purple: #9d00ff;
-            --gold: #ffd700;
+        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Segoe UI', sans-serif; }
+        #ui {
+            position: absolute; top: 20px; left: 20px; color: #ff4444;
+            font-size: 24px; text-shadow: 2px 2px #000; pointer-events: none;
         }
-
-        body {
-            background-color: #050505;
-            color: #eee;
-            font-family: 'Georgia', serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
+        #msg {
+            position: absolute; bottom: 100px; width: 100%; text-align: center;
+            color: #888; font-style: italic; font-size: 18px;
         }
-
-        #game-frame {
-            width: 420px;
-            background: linear-gradient(145deg, #1a0a0a, #000);
-            border: 2px solid var(--passion-red);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 0 40px rgba(255, 0, 64, 0.4);
-            position: relative;
-        }
-
-        .heartbeat {
-            animation: beat 0.8s infinite;
-        }
-
-        @keyframes beat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        #character-visual {
-            font-size: 90px;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-            margin: 20px 0;
-            display: block;
-        }
-
-        .timer-glow {
-            font-family: 'Courier New', monospace;
-            font-size: 2rem;
-            color: var(--passion-red);
-            text-shadow: 0 0 15px var(--passion-red);
-            margin-bottom: 20px;
-        }
-
-        .dialogue-text {
-            font-size: 1.1rem;
-            line-height: 1.5;
-            min-height: 100px;
-            color: #ffb3bf;
-            margin-bottom: 25px;
-            text-shadow: 1px 1px 2px #000;
-        }
-
-        .choice-btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            background: rgba(255, 0, 64, 0.1);
-            border: 1px solid var(--passion-red);
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 0.95rem;
-            letter-spacing: 1px;
-        }
-
-        .choice-btn:hover {
-            background: var(--passion-red);
-            color: black;
-            font-weight: bold;
-        }
-
-        .hidden { display: none; }
-
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 0, 0, 0.2);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
+        canvas { touch-action: none; }
     </style>
 </head>
 <body>
+    <div id="ui">TREES DEFEATED: <span id="score">0</span></div>
+    <div id="msg">Tap the sad trees to release their sorrow...</div>
 
-<div id="game-frame" class="heartbeat">
-    <div id="tension-overlay" class="overlay"></div>
-    
-    <div id="selection-screen">
-        <h2 style="color: var(--passion-red); text-align: center;">Pick Your Poison</h2>
-        <button class="choice-btn" onclick="start('emanuel')">EMANUEL: The Heavy Breather</button>
-        <button class="choice-btn" onclick="start('vax')">VAX: The Sharp-Tongued Mine</button>
-    </div>
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
 
-    <div id="stage" class="hidden">
-        <div class="timer-glow" id="timer">00:30.00</div>
-        <div id="character-visual">💣</div>
-        <div id="dialogue" class="dialogue-text">...</div>
-        <div id="options"></div>
-    </div>
-</div>
+    <script type="module">
+        import * as THREE from 'three';
 
-<script>
-    const roster = {
-        emanuel: {
-            visual: "🔮💣",
-            dialogue: [
-                {
-                    text: "Emanuel’s casing is warm to the touch. 'Do you always handle delicate things with such... confidence?'",
-                    options: [
-                        { t: "Only when they're as beautiful as you.", s: -10 },
-                        { t: "I want to see what happens when you're pushed.", s: 15 },
-                        { t: "[Slowly stroke the fuse]", s: -20 }
-                    ]
-                },
-                {
-                    text: "He lets out a low, metallic hum. 'My internal temperature is rising. If you keep this up, I won't be able to hold back.'",
-                    options: [
-                        { t: "Then let it go. I'm not afraid.", s: 20 },
-                        { t: "Let me cool you down.", s: -15 },
-                        { t: "I like it when you're on the edge.", s: -5 }
-                    ]
-                }
-            ]
-        },
-        vax: {
-            visual: "⚙️🧨",
-            dialogue: [
-                {
-                    text: "Vax bristles as you lean in. 'You're playing with fire, sweetheart. One wrong move and we're both history.'",
-                    options: [
-                        { t: "History is boring. Let's make a scene.", s: 10 },
-                        { t: "I've always liked the thrill of the chase.", s: -10 },
-                        { t: "Whisper: Then tell me exactly where to touch.", s: -25 }
-                    ]
-                }
-            ]
-        }
-    };
+        // --- Setup ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0f);
+        scene.fog = new THREE.FogExp2(0x0a0a0f, 0.15);
 
-    let active = null;
-    let sceneIdx = 0;
-    let timeLeft = 30.00;
-    let timer;
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 2, 5);
 
-    function start(key) {
-        active = roster[key];
-        document.getElementById('selection-screen').classList.add('hidden');
-        document.getElementById('stage').classList.remove('hidden');
-        document.getElementById('character-visual').textContent = active.visual;
-        render();
-        
-        timer = setInterval(() => {
-            timeLeft -= 0.01;
-            document.getElementById('timer').textContent = timeLeft.toFixed(2);
-            if(timeLeft <= 0) endGame(false);
-        }, 10);
-    }
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
 
-    function render() {
-        const scene = active.dialogue[sceneIdx];
-        if(!scene) {
-            endGame(true);
-            return;
+        // --- Lighting ---
+        const ambient = new THREE.AmbientLight(0x404040, 2);
+        scene.add(ambient);
+        const moonlight = new THREE.DirectionalLight(0x4444ff, 1);
+        moonlight.position.set(5, 10, 5);
+        scene.add(moonlight);
+
+        // --- Ground ---
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(100, 100),
+            new THREE.MeshStandardMaterial({ color: 0x111111 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        scene.add(ground);
+
+        // --- Game Logic ---
+        let score = 0;
+        const trees = [];
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function createTree() {
+            const group = new THREE.Group();
+            
+            // Trunk
+            const trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.2, 0.3, 1.5),
+                new THREE.MeshStandardMaterial({ color: 0x221100 })
+            );
+            trunk.position.y = 0.75;
+            group.add(trunk);
+
+            // Foliage (The "Sad" part - droopy)
+            const foliage = new THREE.Mesh(
+                new THREE.ConeGeometry(0.8, 2, 8),
+                new THREE.MeshStandardMaterial({ color: 0x113311 })
+            );
+            foliage.position.y = 2;
+            foliage.rotation.z = Math.random() * 0.2 - 0.1; // Slight droop
+            group.add(foliage);
+
+            // Eyes (Sad dots)
+            const eyeGeo = new THREE.SphereGeometry(0.05);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x44aaff });
+            const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+            eyeL.position.set(-0.15, 2, 0.7);
+            const eyeR = eyeL.clone();
+            eyeR.position.x = 0.15;
+            group.add(eyeL, eyeR);
+
+            group.position.set(Math.random() * 10 - 5, 0, Math.random() * -10 - 2);
+            scene.add(group);
+            trees.push(group);
         }
 
-        document.getElementById('dialogue').textContent = scene.text;
-        const optCont = document.getElementById('options');
-        optCont.innerHTML = '';
+        // Spawn initial trees
+        for(let i = 0; i < 8; i++) createTree();
 
-        scene.options.forEach(o => {
-            const b = document.createElement('button');
-            b.className = 'choice-btn';
-            b.textContent = o.t;
-            b.onclick = () => {
-                timeLeft -= o.s; // Negative stress adds time
-                if(o.s > 10) document.getElementById('tension-overlay').style.opacity = "1";
-                else document.getElementById('tension-overlay').style.opacity = "0";
-                sceneIdx++;
-                render();
-            };
-            optCont.appendChild(b);
+        // --- Input Handling ---
+        function onAction(event) {
+            // Handle both touch and mouse
+            const x = event.touches ? event.touches[0].clientX : event.clientX;
+            const y = event.touches ? event.touches[0].clientY : event.clientY;
+            
+            mouse.x = (x / window.innerWidth) * 2 - 1;
+            mouse.y = -(y / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+
+            for (let obj of intersects) {
+                let root = obj.object.parent;
+                if (trees.includes(root)) {
+                    score++;
+                    document.getElementById('score').innerText = score;
+                    
+                    // Epic "Death" animation
+                    root.userData.dying = true;
+                    setTimeout(() => {
+                        scene.remove(root);
+                        trees.splice(trees.indexOf(root), 1);
+                        createTree(); // Respawn
+                    }, 200);
+                    break;
+                }
+            }
+        }
+
+        window.addEventListener('touchstart', onAction);
+        window.addEventListener('mousedown', onAction);
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            trees.forEach(tree => {
+                if (tree.userData.dying) {
+                    tree.scale.multiplyScalar(0.8);
+                    tree.rotation.y += 0.5;
+                } else {
+                    // Gentle sad swaying
+                    tree.rotation.z = Math.sin(Date.now() * 0.002) * 0.05;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
-    }
-
-    function endGame(win) {
-        clearInterval(timer);
-        const diag = document.getElementById('dialogue');
-        const opts = document.getElementById('options');
-        opts.innerHTML = '';
-
-        if(win) {
-            diag.textContent = "The ticking stops, replaced by a satisfied purr. 'You've disarmed me... in more ways than one.'";
-            document.getElementById('character-visual').textContent = "🌹";
-        } else {
-            diag.textContent = "The tension snaps. 'I told you... I couldn't... wait!' BOOM.";
-            document.body.style.background = "#400";
-        }
-    }
-</script>
-
+    </script>
 </body>
 </html>
