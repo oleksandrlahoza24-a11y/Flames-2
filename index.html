@@ -3,84 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shadow Bridge</title>
+    <title>Shadow Bridge: Wilds</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #e0e0e0; /* Clean light background for black silhouette */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-        }
-        canvas {
-            display: block;
-        }
-        /* UI Elements */
-        #ui {
-            position: absolute;
-            top: 40px;
-            width: 100%;
-            text-align: center;
-            pointer-events: none;
-            user-select: none;
-            z-index: 10;
-        }
-        #score {
-            font-size: 80px;
-            font-weight: 900;
-            color: rgba(0, 0, 0, 0.2);
-        }
-        #instructions {
-            font-size: 18px;
-            color: #333;
-            margin-top: 10px;
-            opacity: 0.8;
-        }
-        #game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            display: none;
-            z-index: 20;
-        }
-        button {
-            padding: 15px 40px;
-            font-size: 20px;
-            background: #000;
-            color: #fff;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #d1d1d1; }
+        #ui { position: absolute; top: 40px; width: 100%; text-align: center; pointer-events: none; z-index: 10; font-family: sans-serif; }
+        #score { font-size: 80px; font-weight: 900; color: rgba(0, 0, 0, 0.1); }
+        #game-over { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; display: none; z-index: 20; font-family: sans-serif; }
+        button { padding: 15px 40px; font-size: 20px; background: #000; color: #fff; border: none; border-radius: 30px; }
+        canvas { display: block; touch-action: none; }
     </style>
 </head>
 <body>
-
-    <div id="game-container">
-        <div id="ui">
-            <div id="score">0</div>
-            <div id="instructions">Hold to grow bridge, release to drop</div>
-        </div>
-
-        <div id="game-over">
-            <h1 style="font-size: 48px;">FALLEN</h1>
-            <button onclick="resetGame()">Try Again</button>
-        </div>
-
-        <canvas id="gameCanvas"></canvas>
+    <div id="ui">
+        <div id="score">0</div>
     </div>
+    <div id="game-over">
+        <h1 style="font-size: 48px;">LOST IN SHADOW</h1>
+        <button onclick="resetGame()">Try Again</button>
+    </div>
+    <canvas id="gameCanvas"></canvas>
 
-    <!-- Asset and Logic Script -->
+    <!-- Load scripts in order -->
+    <script src="terrainDetails.js"></script>
+    <script src="graphics.js"></script>
     <script src="terrain.js"></script>
 </body>
 </html>
