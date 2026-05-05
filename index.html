@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lumina Bridge</title>
+    <title>Shadow Bridge: iPad Edition</title>
     <style>
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -13,7 +13,7 @@
         #ui { 
             position: absolute; top: 5%; width: 100%; 
             text-align: center; pointer-events: none; z-index: 10; 
-            font-family: -apple-system, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         #score { font-size: 100px; font-weight: 900; color: rgba(0, 0, 0, 0.1); }
         #game-over { 
@@ -24,6 +24,7 @@
         button { 
             padding: 20px 50px; font-size: 25px; background: #000; 
             color: #fff; border: none; border-radius: 40px; font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         canvas { display: block; }
     </style>
@@ -43,62 +44,111 @@
 
     <script>
         /** 
-         * ASSETS & DETAILS SCRIPT 
-         * Logic for non-colliding silhouettes (Trees/Bushes)
+         * LEAF PARTICLE SYSTEM
          */
-const Details = {
-    list: [],
-    generate(x, w) {
-        const count = Math.floor(Math.random() * 2) + 1;
-        for (let i = 0; i < count; i++) {
-            this.list.push({
-                x: x + (Math.random() * w),
-                // Added "lean" and "seed" for unique organic shapes per instance
-                type: Math.random() > 0.5 ? 'tree' : 'bush',
-                size: 20 + Math.random() * 40,
-                lean: (Math.random() - 0.5) * 4,
-                seed: Math.random() * 100 
-            });
-        }
-    },
-    draw(ctx, groundY) {
-        ctx.fillStyle = "#000";
-        this.list.forEach(item => {
-            ctx.save();
-            ctx.translate(item.x, groundY);
-            
-            if (item.type === 'tree') {
-                // Realistic Trunk
-                ctx.fillRect(-2, -item.size * 0.4, 4, item.size * 0.4);
-                
-                // Jagged Pine Layers
-                for (let i = 0; i < 3; i++) {
-                    const yOffset = -item.size * (0.3 + i * 0.25);
-                    const width = item.size * (0.6 - i * 0.15);
-                    const height = item.size * 0.5;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(item.lean, yOffset - height); // Tip
-                    ctx.lineTo(-width, yOffset); // Bottom Left
-                    ctx.lineTo(width, yOffset);  // Bottom Right
-                    ctx.fill();
+        const Particles = {
+            list: [],
+            spawn(x, y) {
+                this.list.push({
+                    x: x + (Math.random() - 0.5) * 40,
+                    y: y - Math.random() * 50,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: 0.5 + Math.random() * 1,
+                    sway: Math.random() * Math.PI * 2,
+                    size: 2 + Math.random() * 3,
+                    rotation: Math.random() * Math.PI
+                });
+            },
+            update() {
+                for (let i = this.list.length - 1; i >= 0; i--) {
+                    let p = this.list[i];
+                    p.y += p.vy;
+                    p.sway += 0.05;
+                    p.x += Math.sin(p.sway) * 0.5;
+                    p.rotation += 0.02;
+                    if (p.y > window.innerHeight) this.list.splice(i, 1);
                 }
-            } else {
-                // Detailed "Cluster" Bush
-                for (let i = 0; i < 5; i++) {
-                    const radius = (item.size / 3) * (0.6 + Math.sin(item.seed + i) * 0.4);
-                    const ox = Math.cos(i * 2) * (item.size / 4);
-                    const oy = -Math.abs(Math.sin(i * 2) * (item.size / 5));
-                    
-                    ctx.beginPath();
-                    ctx.arc(ox, oy, radius, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+            },
+            draw(ctx, viewOffset) {
+                ctx.fillStyle = "rgba(0,0,0,0.6)";
+                this.list.forEach(p => {
+                    ctx.save();
+                    ctx.translate(p.x - viewOffset, p.y);
+                    ctx.rotate(p.rotation);
+                    ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 1.5);
+                    ctx.restore();
+                });
             }
-            ctx.restore();
-        });
-    }
-};
+        };
+
+        /** 
+         * ASSETS & DETAILS SCRIPT 
+         */
+        const Details = {
+            list: [],
+            generate(x, w) {
+                const count = Math.floor(Math.random() * 2) + 1;
+                for (let i = 0; i < count; i++) {
+                    const type = Math.random() > 0.4 ? 'tree' : 'bush';
+                    this.list.push({
+                        x: x + (Math.random() * w),
+                        type: type,
+                        size: type === 'tree' ? 40 + Math.random() * 40 : 15 + Math.random() * 15,
+                        seed: Math.random() * 100 // for variety in shape
+                    });
+                }
+            },
+            drawTree(ctx, x, y, size) {
+                ctx.save();
+                ctx.translate(x, y);
+                // Trunk
+                ctx.beginPath();
+                ctx.moveTo(-2, 0);
+                ctx.quadraticCurveTo(-2, -size/2, -1, -size);
+                ctx.lineTo(1, -size);
+                ctx.quadraticCurveTo(2, -size/2, 2, 0);
+                ctx.fill();
+
+                // Detailed Foliage (Jagged Cloud Shape)
+                ctx.beginPath();
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const r = (size * 0.6) + (Math.sin(i * 1.5) * 5);
+                    const lx = Math.cos(angle) * r;
+                    const ly = Math.sin(angle) * r - size;
+                    if (i === 0) ctx.moveTo(lx, ly);
+                    else ctx.lineTo(lx, ly);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+                
+                // Chance to spawn leaf from this tree
+                if (Math.random() < 0.02) Particles.spawn(x, y - size);
+            },
+            drawBush(ctx, x, y, size) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const bx = Math.cos(i) * (size * 0.5);
+                    const by = Math.sin(i) * (size * 0.3);
+                    ctx.arc(bx, by - 5, size/2, 0, Math.PI * 2);
+                }
+                ctx.fill();
+                ctx.restore();
+            },
+            draw(ctx, groundY, viewOffset) {
+                ctx.fillStyle = "#000";
+                this.list.forEach(item => {
+                    if (item.type === 'tree') {
+                        this.drawTree(ctx, item.x, groundY, item.size);
+                    } else {
+                        this.drawBush(ctx, item.x, groundY, item.size);
+                    }
+                });
+            }
+        };
 
         /** 
          * MAIN GAME LOGIC 
@@ -109,7 +159,7 @@ const Details = {
         const gameOverEl = document.getElementById('game-over');
 
         let platforms = [];
-        let player = { x: 0, y: 0, targetX: 0, isMoving: false };
+        let player = { x: 0, y: 0, targetX: 0, isMoving: false, rotation: 0 };
         let bridge = { length: 0, angle: 0, isActive: false, isDropping: false };
         let score = 0;
         let gameActive = true;
@@ -121,17 +171,22 @@ const Details = {
             window.addEventListener('resize', resize);
             resize();
             
-            window.addEventListener('touchstart', (e) => {
+            const handleStart = (e) => {
                 if (!gameActive || player.isMoving || bridge.isDropping) return;
                 bridge.isActive = true;
-            });
-
-            window.addEventListener('touchend', () => {
+            };
+            const handleEnd = () => {
                 if (bridge.isActive) {
                     bridge.isActive = false;
                     bridge.isDropping = true;
                 }
-            });
+            };
+
+            window.addEventListener('touchstart', handleStart);
+            window.addEventListener('touchend', handleEnd);
+            // Mouse support for testing
+            window.addEventListener('mousedown', handleStart);
+            window.addEventListener('mouseup', handleEnd);
 
             resetGame();
             requestAnimationFrame(gameLoop);
@@ -140,7 +195,7 @@ const Details = {
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            groundY = canvas.height * 0.7; // Place ground at 70% height
+            groundY = canvas.height * 0.7;
         }
 
         function resetGame() {
@@ -151,8 +206,8 @@ const Details = {
             viewOffset = 0;
             targetViewOffset = 0;
             Details.list = [];
+            Particles.list = [];
 
-            // Initial Platforms
             platforms = [
                 { x: 50, w: 120 },
                 { x: 350, w: 100 }
@@ -170,11 +225,11 @@ const Details = {
         function update() {
             if (!gameActive) return;
 
-            // Camera movement
             viewOffset += (targetViewOffset - viewOffset) * 0.1;
+            Particles.update();
 
             if (bridge.isActive) {
-                bridge.length += 6; // Growth speed
+                bridge.length += 6;
             }
 
             if (bridge.isDropping) {
@@ -192,12 +247,10 @@ const Details = {
                     player.x = player.targetX;
                     player.isMoving = false;
                     
-                    // Progress to next
                     score++;
                     scoreEl.innerText = score;
                     platforms.shift();
                     
-                    // Generate new platform
                     const last = platforms[platforms.length-1];
                     const nextX = last.x + last.w + 60 + Math.random() * 200;
                     const nextW = 50 + Math.random() * 100;
@@ -228,13 +281,16 @@ const Details = {
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
+            // Draw Particles (Leaves)
+            Particles.draw(ctx, viewOffset);
+
             ctx.save();
             ctx.translate(-viewOffset, 0);
 
             // Draw Background Assets
-            Details.draw(ctx, groundY);
+            Details.draw(ctx, groundY, viewOffset);
 
-            // Draw Curvy Terrain (Solid Black)
+            // Draw Curvy Terrain
             ctx.fillStyle = "#000";
             ctx.beginPath();
             ctx.moveTo(platforms[0].x - 500, canvas.height);
@@ -246,7 +302,6 @@ const Details = {
                 const next = platforms[i+1];
                 if (next) {
                     const midX = (p.x + p.w + next.x) / 2;
-                    // Creates the organic curves between platforms
                     ctx.bezierCurveTo(p.x + p.w + 30, groundY, midX, groundY + 120, next.x, groundY);
                 }
             });
@@ -259,11 +314,12 @@ const Details = {
                 ctx.save();
                 ctx.translate(platforms[0].x + platforms[0].w, groundY);
                 ctx.rotate(bridge.angle * Math.PI / 180);
+                // Detail on bridge: slight rounded end
                 ctx.fillRect(-3, -bridge.length, 6, bridge.length);
                 ctx.restore();
             }
 
-            // Draw Player
+            // Draw Player (Small Silhouette)
             ctx.fillRect(player.x, player.y, 20, 20);
 
             ctx.restore();
@@ -275,7 +331,6 @@ const Details = {
             requestAnimationFrame(gameLoop);
         }
 
-        // Boot game
         init();
     </script>
 </body>
