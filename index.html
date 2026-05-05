@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shadow Bridge: iPad Edition</title>
+    <title>Shadow Bridge: Wilds</title>
     <style>
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background-color: #d1d1d1; 
+            overflow: hidden; background-color: #e6e6e6; 
             user-select: none; -webkit-user-select: none; touch-action: none;
         }
         #ui { 
@@ -43,150 +43,108 @@
     <canvas id="gameCanvas"></canvas>
 
     <script>
-        /** 
-         * LEAF PARTICLE SYSTEM
+        /**
+         * ASSET DRAWING LIBRARY
+         * Complex silhouettes based on the provided reference image
          */
-        const Particles = {
-            list: [],
-            spawn(x, y) {
-                this.list.push({
-                    x: x + (Math.random() - 0.5) * 40,
-                    y: y - Math.random() * 50,
-                    vx: (Math.random() - 0.5) * 1,
-                    vy: 0.5 + Math.random() * 1,
-                    sway: Math.random() * Math.PI * 2,
-                    size: 2 + Math.random() * 3,
-                    rotation: Math.random() * Math.PI
-                });
-            },
-            update() {
-                for (let i = this.list.length - 1; i >= 0; i--) {
-                    let p = this.list[i];
-                    p.y += p.vy;
-                    p.sway += 0.05;
-                    p.x += Math.sin(p.sway) * 0.5;
-                    p.rotation += 0.02;
-                    if (p.y > window.innerHeight) this.list.splice(i, 1);
-                }
-            },
-            draw(ctx, viewOffset) {
-                ctx.fillStyle = "rgba(0,0,0,0.6)";
-                this.list.forEach(p => {
-                    ctx.save();
-                    ctx.translate(p.x - viewOffset, p.y);
-                    ctx.rotate(p.rotation);
-                    ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 1.5);
-                    ctx.restore();
-                });
-            }
-        };
-
-        /** 
-         * ASSETS & DETAILS SCRIPT 
-         */
-        const Details = {
-            list: [],
-            generate(x, w) {
-                const count = Math.floor(Math.random() * 2) + 1;
-                for (let i = 0; i < count; i++) {
-                    const type = Math.random() > 0.4 ? 'tree' : 'bush';
-                    this.list.push({
-                        x: x + (Math.random() * w),
-                        type: type,
-                        size: type === 'tree' ? 40 + Math.random() * 40 : 15 + Math.random() * 15,
-                        seed: Math.random() * 100 // for variety in shape
-                    });
-                }
-            },
-            drawTree(ctx, x, y, size) {
-                ctx.save();
-                ctx.translate(x, y);
-                // Trunk
-                ctx.beginPath();
-                ctx.moveTo(-2, 0);
-                ctx.quadraticCurveTo(-2, -size/2, -1, -size);
-                ctx.lineTo(1, -size);
-                ctx.quadraticCurveTo(2, -size/2, 2, 0);
-                ctx.fill();
-
-                // Detailed Foliage (Jagged Cloud Shape)
-                ctx.beginPath();
-                for (let i = 0; i < 8; i++) {
-                    const angle = (i / 8) * Math.PI * 2;
-                    const r = (size * 0.6) + (Math.sin(i * 1.5) * 5);
-                    const lx = Math.cos(angle) * r;
-                    const ly = Math.sin(angle) * r - size;
-                    if (i === 0) ctx.moveTo(lx, ly);
-                    else ctx.lineTo(lx, ly);
-                }
-                ctx.closePath();
-                ctx.fill();
-                ctx.restore();
-                
-                // Chance to spawn leaf from this tree
-                if (Math.random() < 0.02) Particles.spawn(x, y - size);
-            },
-            drawBush(ctx, x, y, size) {
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.beginPath();
+        const Assets = {
+            drawPine(ctx, s) {
+                ctx.fillRect(-2, -s, 4, s); // trunk
                 for (let i = 0; i < 6; i++) {
-                    const bx = Math.cos(i) * (size * 0.5);
-                    const by = Math.sin(i) * (size * 0.3);
-                    ctx.arc(bx, by - 5, size/2, 0, Math.PI * 2);
+                    let y = -s + (i * (s / 5.5));
+                    let w = (i + 1) * (s / 5);
+                    ctx.beginPath();
+                    ctx.moveTo(0, y - 12);
+                    ctx.lineTo(-w, y + 12);
+                    ctx.lineTo(w, y + 12);
+                    ctx.fill();
                 }
-                ctx.fill();
-                ctx.restore();
             },
-            draw(ctx, groundY, viewOffset) {
-                ctx.fillStyle = "#000";
-                this.list.forEach(item => {
-                    if (item.type === 'tree') {
-                        this.drawTree(ctx, item.x, groundY, item.size);
-                    } else {
-                        this.drawBush(ctx, item.x, groundY, item.size);
-                    }
-                });
+            drawOak(ctx, s) {
+                // Thick trunk with slight taper
+                ctx.beginPath();
+                ctx.moveTo(-4, 0);
+                ctx.lineTo(-2, -s * 0.4);
+                ctx.lineTo(2, -s * 0.4);
+                ctx.lineTo(4, 0);
+                ctx.fill();
+                // Spreading foliage blobs
+                for (let i = 0; i < 7; i++) {
+                    ctx.beginPath();
+                    let rx = (i - 3) * (s * 0.25);
+                    let ry = -s * 0.7 + (Math.sin(i) * 10);
+                    ctx.arc(rx, ry, s * 0.35, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            },
+            drawPalm(ctx, s) {
+                // Curved trunk using stroke
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.quadraticCurveTo(-15, -s/2, 0, -s);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = "black";
+                ctx.stroke();
+                // Fronds (feathery leaves)
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 10; i++) {
+                    ctx.save();
+                    ctx.translate(0, -s);
+                    ctx.rotate((i * 36) * Math.PI / 180);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(s/2, -s * 0.2, s, s * 0.1);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            },
+            drawBush(ctx, s) {
+                for (let i = 0; i < 15; i++) {
+                    let ang = (i / 15) * Math.PI * 2;
+                    let dist = Math.random() * (s/2);
+                    ctx.beginPath();
+                    ctx.arc(Math.cos(ang) * dist, -5 + Math.sin(ang) * (dist * 0.5), s/2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         };
 
-        /** 
-         * MAIN GAME LOGIC 
+        /**
+         * GAME STATE & SYSTEMS
          */
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const gameOverEl = document.getElementById('game-over');
 
-        let platforms = [];
-        let player = { x: 0, y: 0, targetX: 0, isMoving: false, rotation: 0 };
-        let bridge = { length: 0, angle: 0, isActive: false, isDropping: false };
-        let score = 0;
-        let gameActive = true;
-        let viewOffset = 0;
-        let targetViewOffset = 0;
-        let groundY = 0;
+        let state = {
+            platforms: [],
+            details: [],
+            particles: [],
+            player: { x: 0, y: 0, targetX: 0, moving: false },
+            bridge: { length: 0, angle: 0, active: false, dropping: false },
+            viewOffset: 0,
+            targetViewOffset: 0,
+            score: 0,
+            gameActive: true,
+            groundY: 0
+        };
 
         function init() {
             window.addEventListener('resize', resize);
             resize();
-            
-            const handleStart = (e) => {
-                if (!gameActive || player.isMoving || bridge.isDropping) return;
-                bridge.isActive = true;
-            };
-            const handleEnd = () => {
-                if (bridge.isActive) {
-                    bridge.isActive = false;
-                    bridge.isDropping = true;
-                }
-            };
 
-            window.addEventListener('touchstart', handleStart);
-            window.addEventListener('touchend', handleEnd);
-            // Mouse support for testing
-            window.addEventListener('mousedown', handleStart);
-            window.addEventListener('mouseup', handleEnd);
+            // iPad Touch Events
+            window.addEventListener('touchstart', (e) => {
+                if (!state.gameActive || state.player.moving || state.bridge.dropping) return;
+                state.bridge.active = true;
+            });
+            window.addEventListener('touchend', () => {
+                if (state.bridge.active) {
+                    state.bridge.active = false;
+                    state.bridge.dropping = true;
+                }
+            });
 
             resetGame();
             requestAnimationFrame(gameLoop);
@@ -195,84 +153,117 @@
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            groundY = canvas.height * 0.7;
+            state.groundY = canvas.height * 0.75;
         }
 
         function resetGame() {
-            score = 0;
-            scoreEl.innerText = score;
-            gameActive = true;
+            state.score = 0;
+            scoreEl.innerText = "0";
+            state.gameActive = true;
             gameOverEl.style.display = 'none';
-            viewOffset = 0;
-            targetViewOffset = 0;
-            Details.list = [];
-            Particles.list = [];
+            state.viewOffset = 0;
+            state.targetViewOffset = 0;
+            state.details = [];
+            state.particles = [];
 
-            platforms = [
-                { x: 50, w: 120 },
-                { x: 350, w: 100 }
+            state.platforms = [
+                { x: 50, w: 150 },
+                { x: 450, w: 120 }
             ];
 
-            Details.generate(50, 120);
-            Details.generate(350, 100);
+            addDetails(50, 150);
+            addDetails(450, 120);
 
-            player.x = platforms[0].x + platforms[0].w - 30;
-            player.y = groundY - 20;
-            player.isMoving = false;
-            bridge = { length: 0, angle: 0, isActive: false, isDropping: false };
+            state.player.x = state.platforms[0].x + state.platforms[0].w - 35;
+            state.player.y = state.groundY - 20;
+            state.player.moving = false;
+            state.bridge = { length: 0, angle: 0, active: false, dropping: false };
+        }
+
+        function addDetails(x, w) {
+            const types = ['pine', 'oak', 'palm', 'bush'];
+            const count = Math.floor(Math.random() * 2) + 1;
+            for (let i = 0; i < count; i++) {
+                state.details.push({
+                    x: x + (Math.random() * w),
+                    type: types[Math.floor(Math.random() * types.length)],
+                    size: 50 + Math.random() * 40,
+                    flip: Math.random() > 0.5
+                });
+            }
+        }
+
+        function spawnLeaf(x, y) {
+            state.particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 1,
+                vy: 0.4 + Math.random() * 0.8,
+                r: Math.random() * Math.PI,
+                vr: (Math.random() - 0.5) * 0.1
+            });
         }
 
         function update() {
-            if (!gameActive) return;
+            if (!state.gameActive) return;
 
-            viewOffset += (targetViewOffset - viewOffset) * 0.1;
-            Particles.update();
+            // Camera follow
+            state.viewOffset += (state.targetViewOffset - state.viewOffset) * 0.1;
 
-            if (bridge.isActive) {
-                bridge.length += 6;
+            // Bridge logic
+            if (state.bridge.active) {
+                state.bridge.length += 7;
             }
-
-            if (bridge.isDropping) {
-                bridge.angle += 10;
-                if (bridge.angle >= 90) {
-                    bridge.angle = 90;
-                    bridge.isDropping = false;
+            if (state.bridge.dropping) {
+                state.bridge.angle += 12;
+                if (state.bridge.angle >= 90) {
+                    state.bridge.angle = 90;
+                    state.bridge.dropping = false;
                     checkLanding();
                 }
             }
 
-            if (player.isMoving) {
-                player.x += 7;
-                if (player.x >= player.targetX) {
-                    player.x = player.targetX;
-                    player.isMoving = false;
+            // Player logic
+            if (state.player.moving) {
+                state.player.x += 8;
+                if (state.player.x >= state.player.targetX) {
+                    state.player.x = state.player.targetX;
+                    state.player.moving = false;
+                    state.score++;
+                    scoreEl.innerText = state.score;
                     
-                    score++;
-                    scoreEl.innerText = score;
-                    platforms.shift();
-                    
-                    const last = platforms[platforms.length-1];
-                    const nextX = last.x + last.w + 60 + Math.random() * 200;
-                    const nextW = 50 + Math.random() * 100;
-                    platforms.push({ x: nextX, w: nextW });
-                    Details.generate(nextX, nextW);
+                    state.platforms.shift();
+                    const last = state.platforms[state.platforms.length - 1];
+                    const nextX = last.x + last.w + 80 + Math.random() * 220;
+                    const nextW = 60 + Math.random() * 100;
+                    state.platforms.push({ x: nextX, w: nextW });
+                    addDetails(nextX, nextW);
 
-                    targetViewOffset = platforms[0].x - 50;
-                    bridge = { length: 0, angle: 0, isActive: false, isDropping: false };
+                    state.targetViewOffset = state.platforms[0].x - 50;
+                    state.bridge = { length: 0, angle: 0, active: false, dropping: false };
                 }
+            }
+
+            // Particle logic
+            for (let i = state.particles.length - 1; i >= 0; i--) {
+                let p = state.particles[i];
+                p.y += p.vy;
+                p.x += p.vx + Math.sin(p.y * 0.04) * 0.5;
+                p.r += p.vr;
+                if (p.y > canvas.height) state.particles.splice(i, 1);
             }
         }
 
         function checkLanding() {
-            const bridgeEnd = platforms[0].x + platforms[0].w + bridge.length;
-            const next = platforms[1];
+            const bridgeEnd = state.platforms[0].x + state.platforms[0].w + state.bridge.length;
+            const next = state.platforms[1];
 
             if (bridgeEnd >= next.x && bridgeEnd <= next.x + next.w) {
-                player.targetX = next.x + next.w - 30;
-                player.isMoving = true;
+                state.player.targetX = next.x + next.w - 35;
+                state.player.moving = true;
             } else {
                 setTimeout(() => {
-                    gameActive = false;
+                    state.gameActive = false;
                     gameOverEl.style.display = 'block';
                 }, 400);
             }
@@ -280,47 +271,66 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw Particles (Leaves)
-            Particles.draw(ctx, viewOffset);
 
-            ctx.save();
-            ctx.translate(-viewOffset, 0);
-
-            // Draw Background Assets
-            Details.draw(ctx, groundY, viewOffset);
-
-            // Draw Curvy Terrain
-            ctx.fillStyle = "#000";
-            ctx.beginPath();
-            ctx.moveTo(platforms[0].x - 500, canvas.height);
-            
-            platforms.forEach((p, i) => {
-                ctx.lineTo(p.x, groundY);
-                ctx.lineTo(p.x + p.w, groundY);
-                
-                const next = platforms[i+1];
-                if (next) {
-                    const midX = (p.x + p.w + next.x) / 2;
-                    ctx.bezierCurveTo(p.x + p.w + 30, groundY, midX, groundY + 120, next.x, groundY);
-                }
+            // Draw Particles
+            ctx.fillStyle = "rgba(0,0,0,0.4)";
+            state.particles.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x - state.viewOffset, p.y);
+                ctx.rotate(p.r);
+                ctx.fillRect(-2, -1, 4, 2);
+                ctx.restore();
             });
 
-            ctx.lineTo(platforms[platforms.length-1].x + 1000, canvas.height);
+            ctx.save();
+            ctx.translate(-state.viewOffset, 0);
+
+            // Draw Silhouette Details
+            ctx.fillStyle = "black";
+            state.details.forEach(item => {
+                ctx.save();
+                ctx.translate(item.x, state.groundY);
+                if (item.flip) ctx.scale(-1, 1);
+                
+                switch(item.type) {
+                    case 'pine': Assets.drawPine(ctx, item.size); break;
+                    case 'oak': Assets.drawOak(ctx, item.size); break;
+                    case 'palm': Assets.drawPalm(ctx, item.size); break;
+                    case 'bush': Assets.drawBush(ctx, item.size); break;
+                }
+                ctx.restore();
+
+                // Chance to spawn leaf from this tree
+                if (Math.random() < 0.005) spawnLeaf(item.x, state.groundY - item.size);
+            });
+
+            // Draw Curvy Terrain
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.moveTo(state.platforms[0].x - 500, canvas.height);
+            state.platforms.forEach((p, i) => {
+                ctx.lineTo(p.x, state.groundY);
+                ctx.lineTo(p.x + p.w, state.groundY);
+                const next = state.platforms[i + 1];
+                if (next) {
+                    const midX = (p.x + p.w + next.x) / 2;
+                    ctx.bezierCurveTo(p.x + p.w + 50, state.groundY, midX, state.groundY + 120, next.x, state.groundY);
+                }
+            });
+            ctx.lineTo(state.platforms[state.platforms.length - 1].x + 800, canvas.height);
             ctx.fill();
 
             // Draw Bridge
-            if (bridge.length > 0) {
+            if (state.bridge.length > 0) {
                 ctx.save();
-                ctx.translate(platforms[0].x + platforms[0].w, groundY);
-                ctx.rotate(bridge.angle * Math.PI / 180);
-                // Detail on bridge: slight rounded end
-                ctx.fillRect(-3, -bridge.length, 6, bridge.length);
+                ctx.translate(state.platforms[0].x + state.platforms[0].w, state.groundY);
+                ctx.rotate(state.bridge.angle * Math.PI / 180);
+                ctx.fillRect(-3, -state.bridge.length, 6, state.bridge.length);
                 ctx.restore();
             }
 
-            // Draw Player (Small Silhouette)
-            ctx.fillRect(player.x, player.y, 20, 20);
+            // Draw Player
+            ctx.fillRect(state.player.x, state.player.y, 22, 22);
 
             ctx.restore();
         }
