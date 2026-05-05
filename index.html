@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shadow Bridge: iPad Edition</title>
+    <style>
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background-color: #d1d1d1; 
+            user-select: none; -webkit-user-select: none; touch-action: none;
+        }
+        #ui { 
+            position: absolute; top: 5%; width: 100%; 
+            text-align: center; pointer-events: none; z-index: 10; 
+            font-family: -apple-system, sans-serif; 
+        }
+        #score { font-size: 100px; font-weight: 900; color: rgba(0, 0, 0, 0.1); }
+        #game-over { 
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); text-align: center; 
+            display: none; z-index: 20; font-family: sans-serif; 
+        }
+        button { 
+            padding: 20px 50px; font-size: 25px; background: #000; 
+            color: #fff; border: none; border-radius: 40px; font-weight: bold;
+        }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div id="score">0</div>
+    </div>
+
+    <div id="game-over">
+        <h1 style="font-size: 50px; color: #000; margin-bottom: 20px;">FALLEN</h1>
+        <button onclick="resetGame()">TRY AGAIN</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        /** 
+         * ASSETS & DETAILS SCRIPT 
+         * Logic for non-colliding silhouettes (Trees/Bushes)
+         */
+        const Details = {
+            list: [],
+            generate(x, w) {
+                const count = Math.floor(Math.random() * 2) + 1;
+                for (let i = 0; i < count; i++) {
+                    this.list.push({
+                        x: x + (Math.random() * w),
+                        type: Math.random() > 0.5 ? 'tree' : 'bush',
+                        size: 20 + Math.random() * 40
+                    });
+                }
+            },
+            draw(ctx, groundY) {
+                ctx.fillStyle = "#000";
+                this.list.forEach(item => {
+                    if (item.type === 'tree') {
+                        ctx.fillRect(item.x - 2, groundY - item.size, 4, item.size);
+                        ctx.beginPath();
+                        ctx.moveTo(item.x, groundY - item.size * 1.5);
+                        ctx.lineTo(item.x - item.size/2, groundY - item.size/3);
+                        ctx.lineTo(item.x + item.size/2, groundY - item.size/3);
+                        ctx.fill();
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(item.x, groundY, item.size/2, Math.PI, 0);
+                        ctx.fill();
+                    }
+                });
+            }
+        };
+
+        /** 
+         * MAIN GAME LOGIC 
+         */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const gameOverEl = document.getElementById('game-over');
+
+        let platforms = [];
+        let player = { x: 0, y: 0, targetX: 0, isMoving: false };
+        let bridge = { length: 0, angle: 0, isActive: false, isDropping: false };
+        let score = 0;
+        let gameActive = true;
+        let viewOffset = 0;
+        let targetViewOffset = 0;
+        let groundY = 0;
+
+        function init() {
+            window.addEventListener('resize', resize);
+            resize();
+            
+            window.addEventListener('touchstart', (e) => {
+                if (!gameActive || player.isMoving || bridge.isDropping) return;
+                bridge.isActive = true;
+            });
+
+            window.addEventListener('touchend', () => {
+                if (bridge.isActive) {
+                    bridge.isActive = false;
+                    bridge.isDropping = true;
+                }
+            });
+
+            resetGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            groundY = canvas.height * 0.7; // Place ground at 70% height
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreEl.innerText = score;
+            gameActive = true;
+            gameOverEl.style.display = 'none';
+            viewOffset = 0;
+            targetViewOffset = 0;
+            Details.list = [];
+
+            // Initial Platforms
+            platforms = [
+                { x: 50, w: 120 },
+                { x: 350, w: 100 }
+            ];
+
+            Details.generate(50, 120);
+            Details.generate(350, 100);
+
+            player.x = platforms[0].x + platforms[0].w - 30;
+            player.y = groundY - 20;
+            player.isMoving = false;
+            bridge = { length: 0, angle: 0, isActive: false, isDropping: false };
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            // Camera movement
+            viewOffset += (targetViewOffset - viewOffset) * 0.1;
+
+            if (bridge.isActive) {
+                bridge.length += 6; // Growth speed
+            }
+
+            if (bridge.isDropping) {
+                bridge.angle += 10;
+                if (bridge.angle >= 90) {
+                    bridge.angle = 90;
+                    bridge.isDropping = false;
+                    checkLanding();
+                }
+            }
+
+            if (player.isMoving) {
+                player.x += 7;
+                if (player.x >= player.targetX) {
+                    player.x = player.targetX;
+                    player.isMoving = false;
+                    
+                    // Progress to next
+                    score++;
+                    scoreEl.innerText = score;
+                    platforms.shift();
+                    
+                    // Generate new platform
+                    const last = platforms[platforms.length-1];
+                    const nextX = last.x + last.w + 60 + Math.random() * 200;
+                    const nextW = 50 + Math.random() * 100;
+                    platforms.push({ x: nextX, w: nextW });
+                    Details.generate(nextX, nextW);
+
+                    targetViewOffset = platforms[0].x - 50;
+                    bridge = { length: 0, angle: 0, isActive: false, isDropping: false };
+                }
+            }
+        }
+
+        function checkLanding() {
+            const bridgeEnd = platforms[0].x + platforms[0].w + bridge.length;
+            const next = platforms[1];
+
+            if (bridgeEnd >= next.x && bridgeEnd <= next.x + next.w) {
+                player.targetX = next.x + next.w - 30;
+                player.isMoving = true;
+            } else {
+                setTimeout(() => {
+                    gameActive = false;
+                    gameOverEl.style.display = 'block';
+                }, 400);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(-viewOffset, 0);
+
+            // Draw Background Assets
+            Details.draw(ctx, groundY);
+
+            // Draw Curvy Terrain (Solid Black)
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.moveTo(platforms[0].x - 500, canvas.height);
+            
+            platforms.forEach((p, i) => {
+                ctx.lineTo(p.x, groundY);
+                ctx.lineTo(p.x + p.w, groundY);
+                
+                const next = platforms[i+1];
+                if (next) {
+                    const midX = (p.x + p.w + next.x) / 2;
+                    // Creates the organic curves between platforms
+                    ctx.bezierCurveTo(p.x + p.w + 30, groundY, midX, groundY + 120, next.x, groundY);
+                }
+            });
+
+            ctx.lineTo(platforms[platforms.length-1].x + 1000, canvas.height);
+            ctx.fill();
+
+            // Draw Bridge
+            if (bridge.length > 0) {
+                ctx.save();
+                ctx.translate(platforms[0].x + platforms[0].w, groundY);
+                ctx.rotate(bridge.angle * Math.PI / 180);
+                ctx.fillRect(-3, -bridge.length, 6, bridge.length);
+                ctx.restore();
+            }
+
+            // Draw Player
+            ctx.fillRect(player.x, player.y, 20, 20);
+
+            ctx.restore();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Boot game
+        init();
+    </script>
+</body>
+</html>
