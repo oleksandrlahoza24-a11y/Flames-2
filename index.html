@@ -3,429 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Pixel World - Enhanced</title>
+    <title>Shadow Bridge</title>
     <style>
-        body {
-            margin: 0; padding: 0;
-            background-color: #7ec850;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            font-family: sans-serif;
-            touch-action: none;
-            user-select: none;
+            background-color: #e0e0e0; /* Clean light background for black silhouette */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        canvas { display: block; image-rendering: pixelated; }
-        
-        /* 🎮 ENHANCED D-PAD */
-        #dpad {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: grid;
-            grid-template-columns: repeat(3, 60px);
-            grid-template-rows: repeat(2, 60px);
-            gap: 10px;
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+        }
+        /* UI Elements */
+        #ui {
+            position: absolute;
+            top: 40px;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            user-select: none;
             z-index: 10;
         }
-        .dbtn {
-            background-color: rgba(0, 0, 0, 0.4);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            font-size: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
+        #score {
+            font-size: 80px;
+            font-weight: 900;
+            color: rgba(0, 0, 0, 0.2);
         }
-        .dbtn:active { background-color: rgba(255, 255, 255, 0.4); color: #000; }
-        #btn-up { grid-column: 2; grid-row: 1; }
-        #btn-left { grid-column: 1; grid-row: 2; }
-        #btn-down { grid-column: 2; grid-row: 2; }
-        #btn-right { grid-column: 3; grid-row: 2; }
+        #instructions {
+            font-size: 18px;
+            color: #333;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none;
+            z-index: 20;
+        }
+        button {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
 
-    <canvas id="gameCanvas"></canvas>
+    <div id="game-container">
+        <div id="ui">
+            <div id="score">0</div>
+            <div id="instructions">Hold to grow bridge, release to drop</div>
+        </div>
 
-    <div id="dpad">
-        <div class="dbtn" id="btn-up">▲</div>
-        <div class="dbtn" id="btn-left">◀</div>
-        <div class="dbtn" id="btn-down">▼</div>
-        <div class="dbtn" id="btn-right">▶</div>
+        <div id="game-over">
+            <h1 style="font-size: 48px;">FALLEN</h1>
+            <button onclick="resetGame()">Try Again</button>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
     </div>
 
-    <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        const player = {
-            x: window.innerWidth / 2,
-            y: window.innerHeight / 2,
-            width: 24,
-            height: 32,
-            color: "#e74c3c",
-            speed: 4
-        };
-
-        // ==========================================
-        // 🌲 YOUR ASSETS (KEPT EXACTLY AS REQUESTED)
-        // ==========================================
-        const worldAssets = {
-            trees: [
-                { x: 100, y: 150, size: 40, color: '#27ae60', trunk: '#8e44ad' },
-                { x: 600, y: 100, size: 50, color: '#2ecc71', trunk: '#8e44ad' },
-                { x: 450, y: 400, size: 35, color: '#27ae60', trunk: '#8e44ad' },
-                { x: 700, y: 500, size: 60, color: '#229954', trunk: '#8e44ad' },
-                { x: 200, y: 600, size: 45, color: '#2ecc71', trunk: '#8e44ad' }
-            ],
-            bushes: [
-                { x: 200, y: 400, size: 20, color: '#2ecc71' },
-                { x: 230, y: 410, size: 25, color: '#27ae60' },
-                { x: 180, y: 420, size: 15, color: '#2ecc71' },
-                { x: 500, y: 200, size: 22, color: '#27ae60' }
-            ],
-            rocks: [
-                { x: 300, y: 100, width: 25, height: 15, color: '#7f8c8d' },
-                { x: 320, y: 110, width: 15, height: 10, color: '#95a5a6' },
-                { x: 100, y: 500, width: 30, height: 20, color: '#7f8c8d' }
-            ],
-            waterPonds: [
-                { x: 50, y: 50, width: 150, height: 80, color: '#3498db' },
-                { x: 550, y: 300, width: 200, height: 120, color: '#2980b9' }
-            ]
-        };
-
-        // ==========================================
-        // ⌨️ INPUT HANDLING
-        // ==========================================
-        const keys = {};
-        window.addEventListener("keydown", (e) => keys[e.key] = true);
-        window.addEventListener("keyup", (e) => keys[e.key] = false);
-
-        function bindDpad(id, key) {
-            const btn = document.getElementById(id);
-            btn.addEventListener("touchstart", (e) => { e.preventDefault(); keys[key] = true; });
-            btn.addEventListener("touchend", (e) => { e.preventDefault(); keys[key] = false; });
-            btn.addEventListener("mousedown", () => keys[key] = true);
-            btn.addEventListener("mouseup", () => keys[key] = false);
-        }
-        bindDpad("btn-up", "ArrowUp"); bindDpad("btn-down", "ArrowDown");
-        bindDpad("btn-left", "ArrowLeft"); bindDpad("btn-right", "ArrowRight");
-
-        // ==========================================
-        // ⚙️ PHYSICS & COLLISION
-        // ==========================================
-        function checkCollision(nx, ny) {
-            // Screen Borders
-            if (nx < 0 || nx + player.width > canvas.width || ny < 0 || ny + player.height > canvas.height) return true;
-
-            // Rock Collision
-            for (let r of worldAssets.rocks) {
-                if (nx < r.x + r.width && nx + player.width > r.x && ny < r.y + r.height && ny + player.height > r.y) return true;
-            }
-
-            // Tree Trunk Collision (Trunk is only a small area at the bottom of the tree)
-            for (let t of worldAssets.trees) {
-                const trunkX = t.x - 5;
-                const trunkY = t.y;
-                if (nx < trunkX + 10 && nx + player.width > trunkX && ny < trunkY + 10 && ny + player.height > trunkY) return true;
-            }
-            return false;
-        }
-
-        function update() {
-            let nextX = player.x;
-            let nextY = player.y;
-
-            if (keys.ArrowUp || keys.w) nextY -= player.speed;
-            if (keys.ArrowDown || keys.s) nextY += player.speed;
-            if (keys.ArrowLeft || keys.a) nextX -= player.speed;
-            if (keys.ArrowRight || keys.d) nextX += player.speed;
-
-            if (!checkCollision(nextX, player.y)) player.x = nextX;
-            if (!checkCollision(player.x, nextY)) player.y = nextY;
-        }
-
-        // ==========================================
-        // 🎨 DRAWING (WITH Y-SORTING)
-        // ==========================================
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. Always Draw Ponds first (they are ground level)
-            worldAssets.waterPonds.forEach(p => {
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.roundRect(p.x, p.y, p.width, p.height, 20);
-                ctx.fill();
-            });
-
-            // 2. Collect all "standing" objects and the player for Y-Sorting
-            let renderList = [];
-
-            worldAssets.rocks.forEach(r => renderList.push({ ...r, type: 'rock', sortY: r.y + r.height }));
-            worldAssets.bushes.forEach(b => renderList.push({ ...b, type: 'bush', sortY: b.y }));
-            worldAssets.trees.forEach(t => renderList.push({ ...t, type: 'tree', sortY: t.y + 10 })); // Sort by trunk base
-            renderList.push({ ...player, type: 'player', sortY: player.y + player.height });
-
-            // Sort by Y position so items lower on screen are drawn on top
-            renderList.sort((a, b) => a.sortY - b.sortY);
-
-            // 3. Draw sorted items
-            renderList.forEach(obj => {
-                if (obj.type === 'rock') {
-                    ctx.fillStyle = obj.color;
-                    ctx.beginPath();
-                    ctx.roundRect(obj.x, obj.y, obj.width, obj.height, 5);
-                    ctx.fill();
-                } 
-                else if (obj.type === 'bush') {
-                    ctx.fillStyle = obj.color;
-                    ctx.beginPath();
-                    ctx.arc(obj.x, obj.y, obj.size, 0, Math.PI * 2);
-                    ctx.fill();
-                } 
-                else if (obj.type === 'tree') {
-                    const cx = obj.x;
-                    const cy = obj.y;
-                    const s = obj.size;
-                    const seed = Math.floor(obj.x); // Used to keep randomness consistent
-
-                    // --- 1. PROXIMITY SHADOW (GROUND AO) ---
-                    let groundGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, s * 1.5);
-                    groundGrad.addColorStop(0, 'rgba(0,0,0,0.3)');
-                    groundGrad.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = groundGrad;
-                    ctx.save();
-                    ctx.scale(1, 0.4); // Flatten the circle into an ellipse
-                    ctx.beginPath();
-                    ctx.arc(cx, cy / 0.4 + 5, s * 1.2, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-
-                    // --- 2. THE TRUNK (Tapered with Root Flair) ---
-                    const trunkWidth = s * 0.25;
-                    const trunkHeight = s * 0.8;
-                    
-                    // Trunk Gradient (Bark Lighting)
-                    let trunkGrad = ctx.createLinearGradient(cx - trunkWidth, cy, cx + trunkWidth, cy);
-                    trunkGrad.addColorStop(0, '#3e2723'); // Deep shadow
-                    trunkGrad.addColorStop(0.4, obj.trunk); // Local color
-                    trunkGrad.addColorStop(1, '#a1887f'); // Rim light
-
-                    ctx.fillStyle = trunkGrad;
-                    ctx.beginPath();
-                    ctx.moveTo(cx - trunkWidth * 1.5, cy + trunkHeight); // Left root
-                    ctx.quadraticCurveTo(cx - trunkWidth, cy + trunkHeight * 0.8, cx - trunkWidth, cy); // Left side
-                    ctx.lineTo(cx + trunkWidth, cy); // Top
-                    ctx.quadraticCurveTo(cx + trunkWidth, cy + trunkHeight * 0.8, cx + trunkWidth * 1.5, cy + trunkHeight); // Right side
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Procedural Bark Grain
-                    ctx.strokeStyle = "rgba(0,0,0,0.15)";
-                    ctx.lineWidth = 1;
-                    for (let i = 0; i < 5; i++) {
-                        let lineX = cx - trunkWidth + (i * (trunkWidth * 0.5));
-                        ctx.beginPath();
-                        ctx.setLineDash([2, 4]); // Dotted bark feel
-                        ctx.moveTo(lineX, cy + (seed % 10));
-                        ctx.lineTo(lineX, cy + trunkHeight - (seed % 5));
-                        ctx.stroke();
-                    }
-                    ctx.setLineDash([]); // Reset dash
-
-                    // --- 3. THE CANOPY (Volumetric Clumping) ---
-                    // We draw the canopy in three passes: Deep Shadow, Mid-Tone, and Highlight
-                    
-                    const drawClump = (offsetX, offsetY, radius, color) => {
-                        ctx.fillStyle = color;
-                        ctx.beginPath();
-                        ctx.arc(cx + offsetX, cy - (trunkHeight * 0.2) + offsetY, radius, 0, Math.PI * 2);
-                        ctx.fill();
-                    };
-
-                    // Pass A: Deep Internal Shadows (The "Core")
-                    const shadowColor = "#1b5e20"; // Hardcoded dark green for depth
-                    [[0,-10, 1.1], [15, 5, 0.8], [-15, 5, 0.8]].forEach(set => {
-                        drawClump(set[0], set[1], s * set[2], shadowColor);
-                    });
-
-                    // Pass B: Main Foliage (Asymmetric Blobs)
-                    // We use the seed to jitter the clumps so every tree is shaped differently
-                    const jitterX = (seed % 10) - 5;
-                    const jitterY = (seed % 6);
-                    const clumps = [
-                        {x: 0, y: -s * 0.5, r: s},        // Top
-                        {x: -s * 0.5 + jitterX, y: 0, r: s * 0.8}, // Left
-                        {x: s * 0.5 - jitterX, y: jitterY, r: s * 0.8},  // Right
-                        {x: 0, y: s * 0.2, r: s * 0.6}    // Bottom hang
-                    ];
-                    
-                    clumps.forEach(c => drawClump(c.x, c.y, c.r, obj.color));
-
-                    // Pass C: Light Catchment (Subsurface Scattering Effect)
-                    ctx.globalCompositeOperation = "lighter"; // Blend mode for highlights
-                    clumps.forEach(c => {
-                        let leafGrad = ctx.createRadialGradient(
-                            cx + c.x - c.r * 0.3, cy - (trunkHeight * 0.2) + c.y - c.r * 0.3, 0,
-                            cx + c.x, cy - (trunkHeight * 0.2) + c.y, c.r
-                        );
-                        leafGrad.addColorStop(0, 'rgba(255,255,255,0.2)');
-                        leafGrad.addColorStop(1, 'rgba(0,0,0,0)');
-                        drawClump(c.x, c.y, c.r, leafGrad);
-                    });
-                    ctx.globalCompositeOperation = "source-over";
-
-                    // --- 4. THE DETAILS (Fruits/Highlights) ---
-                    // Add small "specular" leaf glints based on seed
-                    ctx.fillStyle = "rgba(255,255,255,0.4)";
-                    for(let i=0; i<3; i++) {
-                        let lx = cx + Math.sin(seed + i) * (s * 0.5);
-                        let ly = cy - s + Math.cos(seed * i) * (s * 0.5);
-                        ctx.fillRect(lx, ly, 3, 3);
-                    }
-
-                    // --- 5. BRANCH PEAKING ---
-                    // Tiny branches that "poke through" the leaf canopy gaps
-                    ctx.strokeStyle = obj.trunk;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy);
-                    ctx.lineTo(cx + (seed % 20 - 10), cy - (s * 0.4));
-                    ctx.stroke();
-                }
-                else if (obj.type === 'player') {
-                    // --- 1. ANIMATION CONSTANTS ---
-                    const time = Date.now();
-                    const isMoving = keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight || 
-                                     keys.w || keys.a || keys.s || keys.d;
-                    
-                    // Procedural "Bob" (Breathing vs Running)
-                    const bobSpeed = isMoving ? 0.15 : 0.05;
-                    const bobAmt = isMoving ? 4 : 1.5;
-                    const bob = Math.sin(time * bobSpeed) * bobAmt;
-                    
-                    // Lean effect (tilt slightly while moving)
-                    const lean = isMoving ? (keys.ArrowLeft || keys.a ? -0.05 : (keys.ArrowRight || keys.d ? 0.05 : 0)) : 0;
-                    
-                    const px = obj.x;
-                    const py = obj.y + bob; // Apply bobbing to vertical position
-                    const pw = obj.width;
-                    const ph = obj.height;
-
-                    ctx.save();
-                    ctx.translate(px + pw / 2, py + ph / 2);
-                    ctx.rotate(lean);
-                    ctx.translate(-(px + pw / 2), -(py + ph / 2));
-
-                    // --- 2. DYNAMIC SHADOW ---
-                    // The shadow shrinks and grows as the player bobs/jumps
-                    const shadowScale = 1 - (bob / 20);
-                    ctx.fillStyle = "rgba(0,0,0,0.2)";
-                    ctx.beginPath();
-                    ctx.ellipse(px + pw / 2, obj.y + ph + 2, (pw * 0.6) * shadowScale, (5) * shadowScale, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // --- 3. THE BACKPACK (Depth Detail) ---
-                    ctx.fillStyle = "#5d4037"; // Leather brown
-                    ctx.beginPath();
-                    ctx.roundRect(px - 4, py + 8, pw + 8, ph * 0.5, 4);
-                    ctx.fill();
-                    // Backpack Straps
-                    ctx.strokeStyle = "#3e2723";
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(px + 2, py + 8, pw - 4, ph * 0.5);
-
-                    // --- 4. BODY (Gradient & Lighting) ---
-                    let bodyGrad = ctx.createLinearGradient(px, py, px + pw, py);
-                    bodyGrad.addColorStop(0, "#c0392b"); // Shadow side
-                    bodyGrad.addColorStop(0.5, obj.color); // Base
-                    bodyGrad.addColorStop(1, "#ff6b6b"); // Rim light
-                    
-                    ctx.fillStyle = bodyGrad;
-                    ctx.beginPath();
-                    ctx.roundRect(px, py, pw, ph, [8, 8, 4, 4]); // Rounded top
-                    ctx.fill();
-
-                    // --- 5. THE FACE (Eyes & Blinking) ---
-                    // Pupils look in the direction of movement
-                    let lookX = 0;
-                    let lookY = 0;
-                    if (keys.ArrowLeft || keys.a) lookX = -2;
-                    if (keys.ArrowRight || keys.d) lookX = 2;
-                    if (keys.ArrowUp || keys.w) lookY = -1;
-                    if (keys.ArrowDown || keys.s) lookY = 1;
-
-                    // Procedural Blink Logic
-                    const isBlinking = Math.sin(time * 0.005) > 0.98;
-                    
-                    if (!isBlinking) {
-                        ctx.fillStyle = "white"; // Sclera
-                        ctx.fillRect(px + 4, py + 8, 6, 6);
-                        ctx.fillRect(px + 14, py + 8, 6, 6);
-
-                        ctx.fillStyle = "#2c3e50"; // Pupils
-                        ctx.fillRect(px + 6 + lookX, py + 10 + lookY, 3, 3);
-                        ctx.fillRect(px + 16 + lookX, py + 10 + lookY, 3, 3);
-                    } else {
-                        ctx.strokeStyle = "rgba(0,0,0,0.3)"; // Closed Eye Slits
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(px + 4, py + 11); ctx.lineTo(px + 10, py + 11);
-                        ctx.moveTo(px + 14, py + 11); ctx.lineTo(px + 20, py + 11);
-                        ctx.stroke();
-                    }
-
-                    // --- 6. CLOTHING DETAILS (The Scarf) ---
-                    ctx.fillStyle = "#f1c40f"; // Yellow scarf
-                    ctx.beginPath();
-                    ctx.roundRect(px - 1, py + 18, pw + 2, 6, 2);
-                    ctx.fill();
-                    
-                    // Animated Scarf Tail (Wiggles when moving)
-                    if (isMoving) {
-                        const tailWiggle = Math.sin(time * 0.2) * 5;
-                        ctx.beginPath();
-                        ctx.moveTo(px + pw - 4, py + 22);
-                        ctx.quadraticCurveTo(px + pw + 10, py + 22 + tailWiggle, px + pw + 5, py + 32 + tailWiggle);
-                        ctx.lineWidth = 4;
-                        ctx.strokeStyle = "#f1c40f";
-                        ctx.stroke();
-                    }
-
-                    // --- 7. FEET (Walking Animation) ---
-                    const footOffset = Math.sin(time * 0.15) * 6;
-                    ctx.fillStyle = "#2c3e50"; // Boot color
-                    
-                    if (isMoving) {
-                        // Left Foot
-                        ctx.fillRect(px + 2, py + ph - 2 + (footOffset > 0 ? -footOffset/2 : 0), 8, 4);
-                        // Right Foot
-                        ctx.fillRect(px + pw - 10, py + ph - 2 + (footOffset < 0 ? footOffset/2 : 0), 8, 4);
-                    } else {
-                        ctx.fillRect(px + 2, py + ph - 2, 8, 4);
-                        ctx.fillRect(px + pw - 10, py + ph - 2, 8, 4);
-                    }
-
-                    ctx.restore();
-                }
-
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-    </script>
+    <!-- Asset and Logic Script -->
+    <script src="terrain.js"></script>
 </body>
 </html>
