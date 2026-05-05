@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shadow Bridge: iPad Edition</title>
+    <title>Lumina Bridge</title>
     <style>
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -46,36 +46,59 @@
          * ASSETS & DETAILS SCRIPT 
          * Logic for non-colliding silhouettes (Trees/Bushes)
          */
-        const Details = {
-            list: [],
-            generate(x, w) {
-                const count = Math.floor(Math.random() * 2) + 1;
-                for (let i = 0; i < count; i++) {
-                    this.list.push({
-                        x: x + (Math.random() * w),
-                        type: Math.random() > 0.5 ? 'tree' : 'bush',
-                        size: 20 + Math.random() * 40
-                    });
+const Details = {
+    list: [],
+    generate(x, w) {
+        const count = Math.floor(Math.random() * 2) + 1;
+        for (let i = 0; i < count; i++) {
+            this.list.push({
+                x: x + (Math.random() * w),
+                // Added "lean" and "seed" for unique organic shapes per instance
+                type: Math.random() > 0.5 ? 'tree' : 'bush',
+                size: 20 + Math.random() * 40,
+                lean: (Math.random() - 0.5) * 4,
+                seed: Math.random() * 100 
+            });
+        }
+    },
+    draw(ctx, groundY) {
+        ctx.fillStyle = "#000";
+        this.list.forEach(item => {
+            ctx.save();
+            ctx.translate(item.x, groundY);
+            
+            if (item.type === 'tree') {
+                // Realistic Trunk
+                ctx.fillRect(-2, -item.size * 0.4, 4, item.size * 0.4);
+                
+                // Jagged Pine Layers
+                for (let i = 0; i < 3; i++) {
+                    const yOffset = -item.size * (0.3 + i * 0.25);
+                    const width = item.size * (0.6 - i * 0.15);
+                    const height = item.size * 0.5;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(item.lean, yOffset - height); // Tip
+                    ctx.lineTo(-width, yOffset); // Bottom Left
+                    ctx.lineTo(width, yOffset);  // Bottom Right
+                    ctx.fill();
                 }
-            },
-            draw(ctx, groundY) {
-                ctx.fillStyle = "#000";
-                this.list.forEach(item => {
-                    if (item.type === 'tree') {
-                        ctx.fillRect(item.x - 2, groundY - item.size, 4, item.size);
-                        ctx.beginPath();
-                        ctx.moveTo(item.x, groundY - item.size * 1.5);
-                        ctx.lineTo(item.x - item.size/2, groundY - item.size/3);
-                        ctx.lineTo(item.x + item.size/2, groundY - item.size/3);
-                        ctx.fill();
-                    } else {
-                        ctx.beginPath();
-                        ctx.arc(item.x, groundY, item.size/2, Math.PI, 0);
-                        ctx.fill();
-                    }
-                });
+            } else {
+                // Detailed "Cluster" Bush
+                for (let i = 0; i < 5; i++) {
+                    const radius = (item.size / 3) * (0.6 + Math.sin(item.seed + i) * 0.4);
+                    const ox = Math.cos(i * 2) * (item.size / 4);
+                    const oy = -Math.abs(Math.sin(i * 2) * (item.size / 5));
+                    
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
-        };
+            ctx.restore();
+        });
+    }
+};
 
         /** 
          * MAIN GAME LOGIC 
