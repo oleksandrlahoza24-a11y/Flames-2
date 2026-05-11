@@ -1,85 +1,1692 @@
-<div style="text-align:center; font-family:Arial,sans-serif; max-width:800px; margin:0 auto; padding:20px;">
-  <h1>Ultra-Fast AI Image Generator</h1>
-  <p style="color:#555; margin-bottom:30px;">Enter a detailed description to generate ultra-realistic images instantly</p>
-  
-  <div style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
-    <input 
-      id="promptInput" 
-      type="text" 
-      placeholder="Describe your image in detail..." 
-      style="flex:1; max-width:500px; padding:12px; border:2px solid #ddd; border-radius:6px; font-size:16px;"
-      onkeypress="if(event.key==='Enter') generateImageHandler()"
-    />
-    <button 
-      id="generateBtn"
-      onclick="generateImageHandler()"
-      style="padding:12px 24px; background:#4a6cf7; color:white; border:none; border-radius:6px; font-size:16px; cursor:pointer; transition:background 0.3s;"
-      onmouseover="this.style.background='#3a5ce5'"
-      onmouseout="this.style.background='#4a6cf7'"
-    >
-      Generate Image
-    </button>
-  </div>
 
-  <div id="loadingEl" hidden style="margin:20px 0; color:#4a6cf7; font-weight:bold;">
-    ⏳ Generating ultra-realistic image... (may take up to 30 seconds)
-  </div>
-
-  <div id="resultCtn" style="margin-top:20px;">
-    <img id="outputImg" style="max-width:100%; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);" hidden />
-    <div id="errorEl" style="color:#d32f2f; margin-top:20px;" hidden></div>
-  </div>
-
-  <div style="margin-top:40px; padding:20px; background:#f5f7fa; border-radius:8px; text-align:left;">
-    <h3 style="margin-top:0;">Tips for best results:</h3>
-    <ul style="padding-left:20px; line-height:1.6;">
-      <li>Include specific details about lighting, textures, and atmosphere</li>
-      <li>Describe composition (e.g., "close-up portrait" or "wide landscape")</li>
-      <li>Specify artistic styles (photorealistic, cinematic, 8K, HDR)</li>
-      <li>Add details about subjects (age, clothing, expressions)</li>
-    </ul>
-  </div>
-</div>
-
-<script>
-  async function generateImageHandler() {
-    const prompt = promptInput.value.trim();
-    if (!prompt) {
-      errorEl.textContent = "Please enter a description";
-      errorEl.hidden = false;
-      outputImg.hidden = true;
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Physics Playground</title>
+  <style>
+    :root {
+      --primary-color: #4285f4;
+      --secondary-color: #34a853;
+      --accent-color: #ea4335;
+      --background-light: #f0f0f0;
+      --background-dark: #333;
+      --text-light: #333;
+      --text-dark: #f0f0f0;
+      --panel-light: #fff;
+      --panel-dark: #222;
     }
     
-    // Reset UI state
-    generateBtn.disabled = true;
-    generateBtn.textContent = "Generating...";
-    loadingEl.hidden = false;
-    errorEl.hidden = true;
-    outputImg.hidden = true;
+    html { color-scheme: light dark; }
     
-    try {
-      // Generate image using enhanced AI prompt for better understanding and realism
-      const dataUrl = await generateImage(
-        `Ultra-realistic, highly detailed, professional photograph: ${prompt}. 8K resolution, good lighting, sharp focus, high detail, photorealistic textures. Masterpiece quality, hyperrealistic, intricate details, lifelike, natural shadows, vivid colors, professional color grading, ultra-HD, realistic materials, detailed background, depth of field, bokeh effect, don't look and a dumb version, no artifacts, perfect composition.`
+    body { 
+      text-align: center; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s ease;
+    }
+    
+    .header {
+      padding: 20px;
+      background-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .canvas-container {
+      position: relative;
+      margin: 10px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    canvas {
+      display: block;
+      background-color: var(--background-light);
+      transition: background-color 0.3s ease;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 15px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 10px 16px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+    }
+    
+    button:hover {
+      background-color: #3367d6;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button i {
+      margin-right: 5px;
+    }
+    
+    .special-button {
+      background-color: var(--secondary-color);
+    }
+    
+    .special-button:hover {
+      background-color: #2d9249;
+    }
+    
+    .danger-button {
+      background-color: var(--accent-color);
+    }
+    
+    .danger-button:hover {
+      background-color: #d33426;
+    }
+    
+    .tools-panel, .settings-panel {
+      background-color: var(--panel-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      width: 100%;
+      max-width: 800px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    
+    .panel-header h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    
+    .panel-content {
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    
+    .collapsed .panel-content {
+      max-height: 0;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 10px 0;
+      justify-content: center;
+    }
+    
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      min-width: 150px;
+      max-width: 200px;
+    }
+    
+    .control-item label {
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .control-item input[type="range"] {
+      width: 100%;
+    }
+    
+    .control-item .value-display {
+      font-size: 0.9rem;
+      margin-top: 5px;
+      color: #666;
+    }
+    
+    .info-panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 0.8rem;
+      text-align: left;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    
+    .info-panel p {
+      margin: 5px 0;
+    }
+    
+    .object-panel {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 5px;
+      padding: 10px;
+      text-align: left;
+      width: 200px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 100;
+      transition: transform 0.3s;
+      transform: translateX(-220px);
+    }
+    
+    .object-panel.visible {
+      transform: translateX(0);
+    }
+    
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .preset-item {
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    
+    .preset-item:hover {
+      background-color: #e0e0e0;
+      transform: translateY(-2px);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      canvas {
+        background-color: var(--background-dark);
+      }
+      
+      .tools-panel, .settings-panel {
+        background-color: var(--panel-dark);
+        color: var(--text-dark);
+      }
+      
+      .preset-item {
+        background-color: #444;
+        color: white;
+      }
+      
+      .preset-item:hover {
+        background-color: #555;
+      }
+      
+      .object-panel {
+        background-color: rgba(40,40,40,0.9);
+        color: white;
+      }
+      
+      .control-item .value-display {
+        color: #aaa;
+      }
+    }
+    
+    @media (max-width: 800px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .canvas-container {
+        width: 100%;
+      }
+      
+      canvas {
+        width: 100% !important;
+        height: auto !important;
+      }
+    }
+    
+    /* Tooltip styles */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      width: 120px;
+      background-color: rgba(0,0,0,0.8);
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -60px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    /* Switch styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Advanced Physics Playground</h1>
+    <p>Create, experiment, and learn with interactive physics simulations</p>
+  </div>
+
+  <div class="container">
+    <div class="canvas-container">
+      <canvas id="gameCanvasEl" width="800" height="500"></canvas>
+      
+      <!-- Info panel shows physics stats -->
+      <div id="infoPanel" class="info-panel">
+        <p>Objects: <span id="objectCount">0</span></p>
+        <p>FPS: <span id="fpsCounter">0</span></p>
+        <p>Gravity: <span id="gravityValue">1</span></p>
+      </div>
+      
+      <!-- Object properties panel -->
+      <div id="objectPanel" class="object-panel">
+        <h3>Object Properties</h3>
+        <div class="control-group">
+          <div class="control-item">
+            <label for="objFriction">Friction</label>
+            <input type="range" id="objFriction" min="0" max="1" step="0.01" value="0.5">
+            <span class="value-display" id="objFrictionValue">0.5</span>
+          </div>
+          <div class="control-item">
+            <label for="objRestitution">Elasticity</label>
+            <input type="range" id="objRestitution" min="0" max="1" step="0.01" value="0.7">
+            <span class="value-display" id="objRestitutionValue">0.7</span>
+          </div>
+          <div class="control-item">
+            <label for="objDensity">Density</label>
+            <input type="range" id="objDensity" min="0.001" max="0.05" step="0.001" value="0.001">
+            <span class="value-display" id="objDensityValue">0.001</span>
+          </div>
+          <div class="control-item">
+            <label for="objColor">Color</label>
+            <input type="color" id="objColor" value="#4285f4">
+          </div>
+        </div>
+        <button id="applyObjChangesBtn">Apply Changes</button>
+        <button id="deleteObjBtn" class="danger-button">Delete Object</button>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button onclick="addCircle()" class="tooltip">
+        <i>⚪</i> Circle
+        <span class="tooltip-text">Add a circle</span>
+      </button>
+      <button onclick="addBox()" class="tooltip">
+        <i>⬛</i> Box
+        <span class="tooltip-text">Add a box</span>
+      </button>
+      <button onclick="addPolygon()" class="tooltip">
+        <i>🔺</i> Polygon
+        <span class="tooltip-text">Add a polygon</span>
+      </button>
+      <button onclick="addTriangle()" class="tooltip">
+        <i>△</i> Triangle
+        <span class="tooltip-text">Add a triangle</span>
+      </button>
+      <button onclick="addStar()" class="tooltip">
+        <i>★</i> Star
+        <span class="tooltip-text">Add a star</span>
+      </button>
+      <button onclick="toggleGravity()" id="gravityBtn" class="tooltip special-button">
+        <i>🧲</i> Gravity: ON
+        <span class="tooltip-text">Toggle gravity</span>
+      </button>
+      <button onclick="applyExplosion()" class="tooltip special-button">
+        <i>💥</i> Explode
+        <span class="tooltip-text">Apply explosion force</span>
+      </button>
+      <button onclick="toggleWater()" id="waterBtn" class="tooltip special-button">
+        <i>💧</i> Water
+        <span class="tooltip-text">Add water area</span>
+      </button>
+      <button onclick="clearObjects()" class="tooltip danger-button">
+        <i>🗑️</i> Clear All
+        <span class="tooltip-text">Remove all objects</span>
+      </button>
+    </div>
+
+    <div class="tools-panel" id="toolsPanel">
+      <div class="panel-header" onclick="togglePanel('toolsPanel')">
+        <h3>Advanced Tools</h3>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="panel-content">
+        <div class="control-group">
+          <button onclick="addPendulum()" class="tooltip">
+            <i>🔄</i> Pendulum
+            <span class="tooltip-text">Create a pendulum</span>
+          </button>
+          <button onclick="addDominos()" class="tooltip">
+            <i>🀄</i> Dominos
+            <span class="tooltip-text">Create domino setup</span>
+          </button>
+          <button onclick="addSeesaw()" class="tooltip">
+            <i>⚖️</i> Seesaw
+            <span class="tooltip-text">Create a seesaw</span>
+          </button>
+          <button onclick="addNewton()" class="tooltip">
+            <i>🔮</i> Newton's Cradle
+            <span class="tooltip-text">Create Newton's cradle</span>
+          </button>
+          <button onclick="addCatapult()" class="tooltip">
+            <i>🏹</i> Catapult
+            <span class="tooltip-text">Create a catapult</span>
+          </button>
+        </div>
+        
+        <div class="control-group">
+          <div class="control-item">
+            <label for="customDraw">Draw Mode</label>
+            <label class="switch">
+              <input type="checkbox" id="customDraw">
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div class="control-item">
+            <label for="theme">Dark Mode</label>
+            <label class="switch">
+              <input type="checkbox" id="theme" onchange="toggleTheme()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div class="control-item">
+            <label>Save/Load</label>
+            <div style="display: flex; gap: 5px;">
+              <button onclick="saveScene()" style="min-width: auto; padding: 5px 10px;">💾</button>
+              <button onclick="loadScene()" style="min-width: auto; padding: 5px 10px;">📂</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="panel-header" onclick="togglePanel('settingsPanel')">
+        <h3>Physics Settings</h3>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="panel-content">
+        <div class="control-group">
+          <div class="control-item">
+            <label for="gravityStrength">Gravity Strength</label>
+            <input type="range" id="gravityStrength" min="0" max="2" step="0.1" value="1" oninput="updateGravity()">
+            <span class="value-display" id="gravityStrengthValue">1.0</span>
+          </div>
+          
+          <div class="control-item">
+            <label for="defaultFriction">Default Friction</label>
+            <input type="range" id="defaultFriction" min="0" max="1" step="0.05" value="0.5" oninput="updateDefaults()">
+            <span class="value-display" id="defaultFrictionValue">0.5</span>
+          </div>
+          
+          <div class="control-item">
+            <label for="defaultRestitution">Default Elasticity</label>
+            <input type="range" id="defaultRestitution" min="0" max="1" step="0.05" value="0.7" oninput="updateDefaults()">
+            <span class="value-display" id="defaultRestitutionValue">0.7</span>
+          </div>
+          
+          <div class="control-item">
+            <label for="airResistance">Air Resistance</label>
+            <input type="range" id="airResistance" min="0" max="0.1" step="0.001" value="0" oninput="updateAirResistance()">
+            <span class="value-display" id="airResistanceValue">0.000</span>
+          </div>
+        </div>
+        
+        <div class="control-group">
+          <div class="control-item">
+            <label for="timeScale">Time Scale</label>
+            <input type="range" id="timeScale" min="0.1" max="2" step="0.1" value="1" oninput="updateTimeScale()">
+            <span class="value-display" id="timeScaleValue">1.0</span>
+          </div>
+          
+          <div class="control-item">
+            <label for="defaultColor">Default Color</label>
+            <input type="color" id="defaultColor" value="#4285f4" oninput="updateDefaults()">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <script>
+    // Initialize physics engine (Matter.js)
+    const Engine = Matter.Engine;
+    const Render = Matter.Render;
+    const World = Matter.World;
+    const Bodies = Matter.Bodies;
+    const Body = Matter.Body;
+    const Mouse = Matter.Mouse;
+    const MouseConstraint = Matter.MouseConstraint;
+    const Composite = Matter.Composite;
+    const Composites = Matter.Composites;
+    const Constraint = Matter.Constraint;
+    const Vector = Matter.Vector;
+    const Events = Matter.Events;
+    
+    // Create engine and world
+    const engine = Engine.create();
+    const world = engine.world;
+    
+    // Setup renderer
+    const canvas = gameCanvasEl;
+    const render = Render.create({
+      canvas: canvas,
+      engine: engine,
+      options: {
+        width: canvas.width,
+        height: canvas.height,
+        wireframes: false,
+        background: getComputedStyle(canvas).backgroundColor,
+        showCollisions: false,
+        showVelocity: false,
+        showAngleIndicator: false
+      }
+    });
+    
+    // Global variables and settings
+    let objects = [];
+    let gravityEnabled = true;
+    let selectedObject = null;
+    let waterArea = null;
+    let isWaterEnabled = false;
+    let customDrawMode = false;
+    let drawPoints = [];
+    let lastFrameTime = 0;
+    let frameCount = 0;
+    let fps = 0;
+    let walls = [];
+    let defaultSettings = {
+      friction: 0.5,
+      restitution: 0.7,
+      density: 0.001,
+      color: "#4285f4"
+    };
+    
+    // Add walls (boundaries)
+    const wallOptions = {
+      isStatic: true,
+      render: {
+        fillStyle: '#555',
+        strokeStyle: '#333',
+        lineWidth: 1
+      }
+    };
+    
+    // Calculate wall positions based on canvas size
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const wallThickness = 20;
+    
+    // Create the walls
+    const ground = Bodies.rectangle(canvasWidth/2, canvasHeight - wallThickness/2, canvasWidth, wallThickness, wallOptions);
+    const leftWall = Bodies.rectangle(wallThickness/2, canvasHeight/2, wallThickness, canvasHeight, wallOptions);
+    const rightWall = Bodies.rectangle(canvasWidth - wallThickness/2, canvasHeight/2, wallThickness, canvasHeight, wallOptions);
+    const ceiling = Bodies.rectangle(canvasWidth/2, wallThickness/2, canvasWidth, wallThickness, wallOptions);
+    
+    // Add walls to world and tracking array
+    walls = [ground, leftWall, rightWall, ceiling];
+    World.add(world, walls);
+    
+    // Create mouse constraint for interaction
+    const mouse = Mouse.create(canvas);
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: {
+        stiffness: 0.2,
+        render: {
+          visible: true
+        }
+      }
+    });
+    
+    World.add(world, mouseConstraint);
+    
+    // Mouse events
+    Events.on(mouseConstraint, 'mousedown', function(event) {
+      // Check if in draw mode
+      customDrawMode = document.getElementById('customDraw').checked;
+      if (customDrawMode) {
+        drawPoints = [];
+        drawPoints.push(mouse.position);
+      }
+    });
+    
+    Events.on(mouseConstraint, 'mousemove', function(event) {
+      if (customDrawMode && mouseConstraint.mouse.button === 0) {
+        // Only add points that are a minimum distance away from the last one
+        let lastPoint = drawPoints[drawPoints.length - 1];
+        let currentPoint = mouse.position;
+        let distance = Math.sqrt(Math.pow(currentPoint.x - lastPoint.x, 2) + Math.pow(currentPoint.y - lastPoint.y, 2));
+        
+        if (distance > 10) {
+          drawPoints.push({ x: currentPoint.x, y: currentPoint.y });
+        }
+      }
+    });
+    
+    Events.on(mouseConstraint, 'mouseup', function(event) {
+      if (customDrawMode && drawPoints.length > 2) {
+        createCustomShape(drawPoints);
+        drawPoints = [];
+      }
+    });
+    
+    // Mouse click for selecting objects
+    Events.on(mouseConstraint, 'startdrag', function(event) {
+      if (!customDrawMode) {
+        selectedObject = event.body;
+        updateObjectPanel();
+      }
+    });
+    
+    // Helper to generate random colors
+    function getRandomColor() {
+      const hue = Math.floor(Math.random() * 360);
+      return `hsl(${hue}, 70%, 50%)`;
+    }
+    
+    // Add a circle to the world
+    function addCircle(x, y, radius) {
+      if (!x) x = Math.random() * (canvasWidth - 100) + 50;
+      if (!y) y = Math.random() * (canvasHeight - 200) + 50;
+      if (!radius) radius = 15 + Math.random() * 25;
+      
+      const circle = Bodies.circle(x, y, radius, {
+        restitution: defaultSettings.restitution,
+        friction: defaultSettings.friction,
+        density: defaultSettings.density,
+        render: {
+          fillStyle: document.getElementById('defaultColor').value || defaultSettings.color,
+          strokeStyle: '#000',
+          lineWidth: 1
+        }
+      });
+      
+      World.add(world, circle);
+      objects.push(circle);
+      return circle;
+    }
+    
+    // Add a box to the world
+    function addBox(x, y, width, height) {
+      if (!x) x = Math.random() * (canvasWidth - 100) + 50;
+      if (!y) y = Math.random() * (canvasHeight - 200) + 50;
+      if (!width) width = 30 + Math.random() * 40;
+      if (!height) height = 30 + Math.random() * 40;
+      
+      const box = Bodies.rectangle(x, y, width, height, {
+        restitution: defaultSettings.restitution,
+        friction: defaultSettings.friction,
+        density: defaultSettings.density,
+        render: {
+          fillStyle: document.getElementById('defaultColor').value || defaultSettings.color,
+          strokeStyle: '#000',
+          lineWidth: 1
+        }
+      });
+      
+      World.add(world, box);
+      objects.push(box);
+      return box;
+    }
+    
+    // Add a polygon to the world
+    function addPolygon(x, y, sides, radius) {
+      if (!x) x = Math.random() * (canvasWidth - 100) + 50;
+      if (!y) y = Math.random() * (canvasHeight - 200) + 50;
+      if (!sides) sides = Math.floor(3 + Math.random() * 5); // 3 to 7 sides
+      if (!radius) radius = 20 + Math.random() * 25;
+      
+      const polygon = Bodies.polygon(x, y, sides, radius, {
+        restitution: defaultSettings.restitution,
+        friction: defaultSettings.friction,
+        density: defaultSettings.density,
+        render: {
+          fillStyle: document.getElementById('defaultColor').value || defaultSettings.color,
+          strokeStyle: '#000',
+          lineWidth: 1
+        }
+      });
+      
+      World.add(world, polygon);
+      objects.push(polygon);
+      return polygon;
+    }
+    
+    // Add a triangle
+    function addTriangle(x, y, size) {
+      return addPolygon(x, y, 3, size || 30);
+    }
+    
+    // Add a star shape
+    function addStar(x, y, points, outerRadius, innerRadius) {
+      if (!x) x = Math.random() * (canvasWidth - 100) + 50;
+      if (!y) y = Math.random() * (canvasHeight - 200) + 50;
+      if (!points) points = 5;
+      if (!outerRadius) outerRadius = 30;
+      if (!innerRadius) innerRadius = 15;
+      
+      const vertices = [];
+      const angle = Math.PI * 2 / points;
+      
+      for (let i = 0; i < points * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const theta = i * angle / 2;
+        vertices.push({ x: x + radius * Math.cos(theta), y: y + radius * Math.sin(theta) });
+      }
+      
+      const star = Bodies.fromVertices(x, y, [vertices], {
+        restitution: defaultSettings.restitution,
+        friction: defaultSettings.friction,
+        density: defaultSettings.density,
+        render: {
+          fillStyle: document.getElementById('defaultColor').value || defaultSettings.color,
+          strokeStyle: '#000',
+          lineWidth: 1
+        }
+      });
+      
+      World.add(world, star);
+      objects.push(star);
+      return star;
+    }
+    
+    // Create a custom shape from drawn points
+    function createCustomShape(points) {
+      if (points.length < 3) return;
+      
+      // Simplify the points to avoid too complex shapes
+      const simplified = [];
+      let skipCounter = 0;
+      
+      for (let i = 0; i < points.length; i++) {
+        skipCounter++;
+        if (skipCounter >= 3) {
+          simplified.push(points[i]);
+          skipCounter = 0;
+        }
+      }
+      
+      if (simplified.length < 3) simplified = points;
+      
+      try {
+        const customShape = Bodies.fromVertices(
+          points[0].x, 
+          points[0].y, 
+          [simplified], 
+          {
+            restitution: defaultSettings.restitution,
+            friction: defaultSettings.friction,
+            density: defaultSettings.density,
+            render: {
+              fillStyle: document.getElementById('defaultColor').value || defaultSettings.color,
+              strokeStyle: '#000',
+              lineWidth: 1
+            }
+          }
+        );
+        
+        if (customShape) {
+          World.add(world, customShape);
+          objects.push(customShape);
+        }
+      } catch (e) {
+        console.error("Could not create custom shape:", e);
+      }
+    }
+    
+    // Clear all objects
+    function clearObjects() {
+      for (let obj of objects) {
+        World.remove(world, obj);
+      }
+      
+      if (waterArea) {
+        World.remove(world, waterArea);
+        waterArea = null;
+        isWaterEnabled = false;
+        document.getElementById('waterBtn').innerHTML = '<i>💧</i> Water';
+      }
+      
+      objects = [];
+      selectedObject = null;
+      hideObjectPanel();
+    }
+    
+    // Toggle gravity
+    function toggleGravity() {
+      if (gravityEnabled) {
+        engine.world.gravity.y = 0;
+        gravityEnabled = false;
+        document.getElementById('gravityBtn').innerHTML = '<i>🧲</i> Gravity: OFF';
+      } else {
+        engine.world.gravity.y = parseFloat(document.getElementById('gravityStrength').value);
+        gravityEnabled = true;
+        document.getElementById('gravityBtn').innerHTML = '<i>🧲</i> Gravity: ON';
+      }
+      
+      document.getElementById('gravityValue').textContent = gravityEnabled ? engine.world.gravity.y.toFixed(1) : "OFF";
+    }
+    
+    // Apply explosion force to all objects
+    function applyExplosion() {
+      const explosionCenter = {
+        x: canvasWidth/2,
+        y: canvasHeight/2
+      };
+      
+      const explosionForce = 0.2;
+      const explosionRadius = 300;
+      
+      for (let obj of objects) {
+        const dx = obj.position.x - explosionCenter.x;
+        const dy = obj.position.y - explosionCenter.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < explosionRadius) {
+          const force = explosionForce * (1 - distance / explosionRadius);
+          const forceMagnitude = force / Math.max(0.01, obj.mass);
+          
+          Body.applyForce(obj, obj.position, {
+            x: (dx / distance) * forceMagnitude,
+            y: (dy / distance) * forceMagnitude
+          });
+        }
+      }
+      
+      // Add explosion effect particles
+      addExplosionEffect(explosionCenter.x, explosionCenter.y);
+    }
+    
+    // Add visual particles for explosion effect
+    function addExplosionEffect(x, y) {
+      const particleCount = 15;
+      const particles = [];
+      
+      for (let i = 0; i < particleCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 2 + Math.random() * 3;
+        const distance = 10 + Math.random() * 30;
+        
+        const particle = Bodies.circle(
+          x + Math.cos(angle) * 5, 
+          y + Math.sin(angle) * 5, 
+          radius, 
+          {
+            restitution: 0.9,
+            friction: 0.05,
+            density: 0.0001,
+            frictionAir: 0.02,
+            collisionFilter: { group: -1 },  // Don't collide with other particles
+            render: {
+              fillStyle: `hsl(${30 + Math.random() * 30}, 100%, 60%)`,
+              opacity: 0.8
+            },
+            isParticle: true
+          }
+        );
+        
+        const forceMagnitude = 0.01 * radius;
+        Body.applyForce(particle, particle.position, {
+          x: Math.cos(angle) * forceMagnitude,
+          y: Math.sin(angle) * forceMagnitude
+        });
+        
+        particles.push(particle);
+        
+        // Set a timer to remove the particle after some time
+        setTimeout(() => {
+          World.remove(world, particle);
+        }, 1000 + Math.random() * 1000);
+      }
+      
+      World.add(world, particles);
+    }
+    
+    // Toggle water/fluid area
+    function toggleWater() {
+      if (isWaterEnabled) {
+        // Remove water
+        if (waterArea) {
+          World.remove(world, waterArea);
+          waterArea = null;
+        }
+        isWaterEnabled = false;
+        document.getElementById('waterBtn').innerHTML = '<i>💧</i> Water';
+      } else {
+        // Add water area
+        const waterHeight = canvasHeight / 3;
+        waterArea = Bodies.rectangle(
+          canvasWidth / 2,
+          canvasHeight - wallThickness - waterHeight / 2,
+          canvasWidth - wallThickness * 2,
+          waterHeight,
+          {
+            isStatic: true,
+            isSensor: true, // Allows objects to pass through
+            render: {
+              fillStyle: 'rgba(0, 120, 255, 0.3)',
+              strokeStyle: 'rgba(0, 120, 255, 0.7)',
+              lineWidth: 1
+            }
+          }
+        );
+        World.add(world, waterArea);
+        isWaterEnabled = true;
+        document.getElementById('waterBtn').innerHTML = '<i>💧</i> Water: ON';
+      }
+    }
+    
+    // Apply water physics to objects when in the water area
+    function applyWaterPhysics() {
+      if (!waterArea) return;
+      
+      const waterLevel = waterArea.position.y - waterArea.height / 2;
+      const waterDensity = 0.01;
+      const waterDrag = 0.05;
+      
+      for (let obj of objects) {
+        // Skip particles (explosion effects)
+        if (obj.isParticle) continue;
+        
+        const objectBottom = obj.position.y + obj.bounds.max.y - obj.bounds.min.y;
+        const objectTop = obj.position.y - (obj.bounds.max.y - obj.bounds.min.y);
+        
+        // Object is at least partially submerged
+        if (objectBottom > waterLevel) {
+          // Calculate how much of the object is submerged
+          const submergedPortion = Math.min(1, (objectBottom - waterLevel) / (objectBottom - objectTop));
+          
+          // Calculate buoyancy force based on submerged volume and water density
+          const displacedVolume = submergedPortion * obj.area;
+          const buoyancyForce = displacedVolume * waterDensity;
+          
+          // Apply buoyancy force upward
+          Body.applyForce(obj, obj.position, {
+            x: 0,
+            y: -buoyancyForce * 0.001
+          });
+          
+          // Apply drag force
+          const velocity = obj.velocity;
+          Body.setVelocity(obj, {
+            x: velocity.x * (1 - waterDrag * submergedPortion),
+            y: velocity.y * (1 - waterDrag * submergedPortion)
+          });
+        }
+      }
+    }
+    
+    // Add a pendulum to the scene
+    function addPendulum() {
+      const ropeCount = 3;
+      const ropeLength = 8;
+      const ropeSegmentLength = 10;
+      const ropePosX = canvasWidth / 2;
+      const ropePosY = 50;
+      
+      for (let i = 0; i < ropeCount; i++) {
+        const offsetX = (i - (ropeCount - 1) / 2) * 60;
+        
+        // Create rope
+        const rope = Composites.stack(
+          ropePosX + offsetX, ropePosY, 1, ropeLength, 0, 0, 
+          function(x, y, column, row) {
+            return Bodies.rectangle(x, y, 15, 5, {
+              collisionFilter: { group: -1 },
+              render: { fillStyle: '#FFC107' }
+            });
+          }
+        );
+        
+        Composites.chain(rope, 0.5, 0, -0.5, 0, {
+          stiffness: 0.8,
+          length: ropeSegmentLength,
+          render: { strokeStyle: '#BCAAA4', lineWidth: 2 }
+        });
+        
+        // Add a weight at the end
+        const weightSize = 30 + i * 10;
+        const weight = Bodies.circle(
+          ropePosX + offsetX,
+          ropePosY + ropeLength * ropeSegmentLength,
+          weightSize / 2,
+          {
+            density: 0.01,
+            render: { fillStyle: document.getElementById('defaultColor').value || defaultSettings.color }
+          }
+        );
+        
+        // Connect rope to weight
+        const constraint = Constraint.create({
+          bodyA: rope.bodies[rope.bodies.length - 1],
+          bodyB: weight,
+          pointA: { x: 0, y: 0 },
+          pointB: { x: 0, y: -weightSize / 2 },
+          stiffness: 0.8,
+          length: 0,
+          render: { strokeStyle: '#BCAAA4', lineWidth: 2 }
+        });
+        
+        // Anchor the first rope segment to a fixed point
+        const anchor = Constraint.create({
+          pointA: { x: ropePosX + offsetX, y: ropePosY },
+          bodyB: rope.bodies[0],
+          pointB: { x: 0, y: 0 },
+          stiffness: 0.8,
+          length: 0,
+          render: { strokeStyle: '#BCAAA4', lineWidth: 2 }
+        });
+        
+        // Add everything to the world
+        Composite.add(rope, weight);
+        Composite.add(rope, constraint);
+        World.add(world, [rope, anchor]);
+        objects.push(rope);
+        objects.push(weight);
+      }
+    }
+    
+    // Add dominos to the scene
+    function addDominos() {
+      const dominoCount = 10;
+      const spacing = 25;
+      const dominoHeight = 50;
+      const dominoWidth = 10;
+      const startX = canvasWidth / 4;
+      const startY = canvasHeight - wallThickness - dominoHeight / 2;
+      
+      for (let i = 0; i < dominoCount; i++) {
+        const domino = Bodies.rectangle(
+          startX + i * spacing,
+          startY,
+          dominoWidth,
+          dominoHeight,
+          {
+            restitution: 0.2,
+            friction: 0.8,
+            density: 0.002,
+            render: {
+              fillStyle: i % 2 === 0 ? '#E91E63' : '#3F51B5',
+              strokeStyle: '#000',
+              lineWidth: 1
+            }
+          }
+        );
+        
+        World.add(world, domino);
+        objects.push(domino);
+      }
+      
+      // Add a sphere to knock over the first domino
+      const sphere = Bodies.circle(
+        startX - 60,
+        startY - 30,
+        15,
+        {
+          restitution: 0.3,
+          friction: 0.8,
+          render: {
+            fillStyle: '#FF9800',
+            strokeStyle: '#000',
+            lineWidth: 1
+          }
+        }
       );
       
-      // Display result
-      outputImg.src = dataUrl;
-      outputImg.hidden = false;
+      // Give the sphere an initial velocity
+      Body.setVelocity(sphere, { x: 2, y: 0 });
       
-      // Reset button state
-      generateBtn.disabled = false;
-      generateBtn.textContent = "Generate Image";
-      loadingEl.hidden = true;
-      
-    } catch (error) {
-      console.error("Generation error:", error);
-      errorEl.textContent = "Failed to generate image. Please try a different description.";
-      errorEl.hidden = false;
-      generateBtn.disabled = false;
-      generateBtn.textContent = "Generate Image";
-      loadingEl.hidden = true;
+      World.add(world, sphere);
+      objects.push(sphere);
     }
-  }
-</script>
+    
+    // Add a seesaw to the scene
+    function addSeesaw() {
+      // Create a fulcrum (triangle)
+      const fulcrum = Bodies.polygon(
+        canvasWidth / 2,
+        canvasHeight - wallThickness - 20,
+        3,
+        20,
+        {
+          isStatic: true,
+          render: { fillStyle: '#795548' }
+        }
+      );
+      
+      // Create a plank
+      const plank = Bodies.rectangle(
+        canvasWidth / 2,
+        canvasHeight - wallThickness - 45,
+        200,
+        10,
+        {
+          density: 0.001,
+          restitution: 0.1,
+          friction: 0.2,
+          render: { fillStyle: '#8D6E63' }
+        }
+      );
+      
+      // Create a pivot constraint
+      const pivot = Constraint.create({
+        bodyA: plank,
+        pointA: { x: 0, y: 0 },
+        pointB: { x: canvasWidth / 2, y: canvasHeight - wallThickness - 45 },
+        stiffness: 1,
+        length: 0
+      });
+      
+      // Add weights on either side
+      const smallWeight = Bodies.circle(
+        canvasWidth / 2 - 70,
+        canvasHeight - wallThickness - 70,
+        15,
+        {
+          density: 0.005,
+          render: { fillStyle: '#F44336' }
+        }
+      );
+      
+      const largeWeight = Bodies.circle(
+        canvasWidth / 2 + 70,
+        canvasHeight - wallThickness - 100,
+        25,
+        {
+          density: 0.008,
+          render: { fillStyle: '#4CAF50' }
+        }
+      );
+      
+      World.add(world, [fulcrum, plank, pivot, smallWeight, largeWeight]);
+      objects.push(plank);
+      objects.push(smallWeight);
+      objects.push(largeWeight);
+    }
+    
+    // Add Newton's cradle
+    function addNewton() {
+      const cradleX = canvasWidth / 2;
+      const cradleY = canvasHeight / 3;
+      const ballRadius = 20;
+      const ballCount = 5;
+      const spacing = ballRadius * 2 + 5;
+      
+      // Create a static bar to hang from
+      const bar = Bodies.rectangle(
+        cradleX,
+        cradleY - ballRadius - 50,
+        ballCount * spacing + 100,
+        10,
+        {
+          isStatic: true,
+          render: { fillStyle: '#9E9E9E' }
+        }
+      );
+      
+      World.add(world, bar);
+      
+      for (let i = 0; i < ballCount; i++) {
+        const x = cradleX + (i - Math.floor(ballCount / 2)) * spacing;
+        
+        // Create ball
+        const ball = Bodies.circle(
+          x,
+          cradleY + 120,
+          ballRadius,
+          {
+            density: 0.01,
+            friction: 0.05,
+            restitution: 0.95,
+            render: { fillStyle: '#CFD8DC' }
+          }
+        );
+        
+        // Create string
+        const string = Constraint.create({
+          pointA: { x: x, y: cradleY - ballRadius - 45 },
+          bodyB: ball,
+          pointB: { x: 0, y: -ballRadius },
+          stiffness: 0.9,
+          length: 120,
+          render: { strokeStyle: '#BDBDBD', lineWidth: 1 }
+        });
+        
+        World.add(world, [ball, string]);
+        objects.push(ball);
+      }
+      
+      // Pull the first ball back
+      if (objects.length > 0) {
+        Body.setPosition(objects[objects.length - ballCount], {
+          x: cradleX - (ballCount/2) * spacing - 30,
+          y: cradleY + 80
+        });
+      }
+    }
+    
+    // Add a catapult
+    function addCatapult() {
+      const catapultX = canvasWidth / 2;
+      const catapultY = canvasHeight - wallThickness - 40;
+      
+      // Base
+      const base = Bodies.rectangle(
+        catapultX,
+        catapultY,
+        100,
+        20,
+        {
+          isStatic: true,
+          render: { fillStyle: '#795548' }
+        }
+      );
+      
+      // Arm
+      const arm = Bodies.rectangle(
+        catapultX - 20,
+        catapultY - 30,
+        150,
+        10,
+        {
+          density: 0.001,
+          render: { fillStyle: '#A1887F' }
+        }
+      );
+      
+      // Pivot
+      const pivot = Constraint.create({
+        bodyA: arm,
+        pointA: { x: -60, y: 0 },
+        pointB: { x: catapultX - 80, y: catapultY - 20 },
+        stiffness: 1,
+        length: 0
+      });
+      
+      // Elastic constraint
+      const elastic = Constraint.create({
+        bodyA: arm,
+        pointA: { x: 60, y: 0 },
+        pointB: { x: catapultX + 50, y: catapultY },
+        stiffness: 0.1,
+        damping: 0.1,
+        length: 10,
+        render: { strokeStyle: '#E91E63', lineWidth: 2 }
+      });
+      
+      // Projectile
+      const projectile = Bodies.circle(
+        catapultX + 40,
+        catapultY - 40,
+        15,
+        {
+          density: 0.002,
+          render: { fillStyle: '#F44336' }
+        }
+      );
+      
+      // Target
+      const target = Bodies.rectangle(
+        catapultX + 250,
+        catapultY - 25,
+        20,
+        50,
+        {
+          density: 0.001,
+          render: { fillStyle: '#4CAF50' }
+        }
+      );
+      
+      World.add(world, [base, arm, pivot, elastic, projectile, target]);
+      objects.push(arm);
+      objects.push(projectile);
+      objects.push(target);
+    }
+    
+    // Update object panel with selected object properties
+    function updateObjectPanel() {
+      if (!selectedObject || walls.includes(selectedObject)) {
+        hideObjectPanel();
+        return;
+      }
+      
+      const panel = document.getElementById('objectPanel');
+      panel.classList.add('visible');
+      
+      const frictionInput = document.getElementById('objFriction');
+      const restitutionInput = document.getElementById('objRestitution');
+      const densityInput = document.getElementById('objDensity');
+      const colorInput = document.getElementById('objColor');
+      
+      // Update input values
+      frictionInput.value = selectedObject.friction || defaultSettings.friction;
+      document.getElementById('objFrictionValue').textContent = frictionInput.value;
+      
+      restitutionInput.value = selectedObject.restitution || defaultSettings.restitution;
+      document.getElementById('objRestitutionValue').textContent = restitutionInput.value;
+      
+      densityInput.value = selectedObject.density || defaultSettings.density;
+      document.getElementById('objDensityValue').textContent = densityInput.value;
+      
+      if (selectedObject.render.fillStyle) {
+        colorInput.value = selectedObject.render.fillStyle;
+      }
+    }
+    
+    // Hide object panel
+    function hideObjectPanel() {
+      const panel = document.getElementById('objectPanel');
+      panel.classList.remove('visible');
+    }
+    
+    // Apply changes to selected object
+    document.getElementById('applyObjChangesBtn').addEventListener('click', function() {
+      if (!selectedObject) return;
+      
+      const frictionValue = parseFloat(document.getElementById('objFriction').value);
+      const restitutionValue = parseFloat(document.getElementById('objRestitution').value);
+      const densityValue = parseFloat(document.getElementById('objDensity').value);
+      const colorValue = document.getElementById('objColor').value;
+      
+      selectedObject.friction = frictionValue;
+      selectedObject.restitution = restitutionValue;
+      
+      // Changing density requires recreating the body
+      Body.setDensity(selectedObject, densityValue);
+      
+      // Update color
+      selectedObject.render.fillStyle = colorValue;
+    });
+    
+    // Delete selected object
+    document.getElementById('deleteObjBtn').addEventListener('click', function() {
+      if (!selectedObject) return;
+      
+      World.remove(world, selectedObject);
+      objects = objects.filter(obj => obj !== selectedObject);
+      selectedObject = null;
+      hideObjectPanel();
+    });
+    
+    // Updates for input controls
+    document.getElementById('objFriction').addEventListener('input', function() {
+      document.getElementById('objFrictionValue').textContent = this.value;
+    });
+    
+    document.getElementById('objRestitution').addEventListener('input', function() {
+      document.getElementById('objRestitutionValue').textContent = this.value;
+    });
+    
+    document.getElementById('objDensity').addEventListener('input', function() {
+      document.getElementById('objDensityValue').textContent = this.value;
+    });
+    
+    // Update gravity based on slider
+    function updateGravity() {
+      const value = parseFloat(document.getElementById('gravityStrength').value);
+      document.getElementById('gravityStrengthValue').textContent = value.toFixed(1);
+      
+      if (gravityEnabled) {
+        engine.world.gravity.y = value;
+        document.getElementById('gravityValue').textContent = value.toFixed(1);
+      }
+    }
+    
+    // Update default physics settings
+    function updateDefaults() {
+      defaultSettings.friction = parseFloat(document.getElementById('defaultFriction').value);
+      document.getElementById('defaultFrictionValue').textContent = defaultSettings.friction.toFixed(2);
+      
+      defaultSettings.restitution = parseFloat(document.getElementById('defaultRestitution').value);
+      document.getElementById('defaultRestitutionValue').textContent = defaultSettings.restitution.toFixed(2);
+      
+      defaultSettings.color = document.getElementById('defaultColor').value;
+    }
+    
+    // Update air resistance
+    function updateAirResistance() {
+      const value = parseFloat(document.getElementById('airResistance').value);
+      document.getElementById('airResistanceValue').textContent = value.toFixed(3);
+      
+      // Apply to all bodies
+      for (let obj of objects) {
+        obj.frictionAir = value;
+      }
+    }
+    
+    // Update time scale
+    function updateTimeScale() {
+      const value = parseFloat(document.getElementById('timeScale').value);
+      document.getElementById('timeScaleValue').textContent = value.toFixed(1);
+      
+      engine.timing.timeScale = value;
+    }
+    
+    // Toggle theme (dark/light mode)
+    function toggleTheme() {
+      const isDark = document.getElementById('theme').checked;
+      document.body.classList.toggle('dark-theme', isDark);
+      
+      // Update canvas background
+      render.options.background = isDark ? 
+        getComputedStyle(document.documentElement).getPropertyValue('--background-dark') : 
+        getComputedStyle(document.documentElement).getPropertyValue('--background-light');
+    }
+    
+    // Toggle panel collapse
+    function togglePanel(panelId) {
+      const panel = document.getElementById(panelId);
+      panel.classList.toggle('collapsed');
+      
+      const icon = panel.querySelector('.toggle-icon');
+      icon.textContent = panel.classList.contains('collapsed') ? '▶' : '▼';
+    }
+    
+    // Save current scene
+    function saveScene() {
+      // Create a serializable version of objects (without circular references)
+      const saveData = {
+        objects: objects.map(obj => {
+          // Only save the necessary properties to recreate the object
+          return {
+            type: obj.label || 'rectangle', // rectangle is the default type in Matter.js
+            x: obj.position.x,
+            y: obj.position.y,
+            width: obj.bounds.max.x - obj.bounds.min.x,
+            height: obj.bounds.max.y - obj.bounds.min.y,
+            radius: obj.circleRadius,
+            sides: obj.sides,
+            angle: obj.angle,
+            friction: obj.friction,
+            restitution: obj.restitution,
+            density: obj.density,
+            fillStyle: obj.render.fillStyle
+          };
+        }),
+        settings: {
+          gravity: engine.world.gravity.y,
+          waterEnabled: isWaterEnabled
+        }
+      };
+      
+      localStorage.savedScene = JSON.stringify(saveData);
+      alert("Scene saved successfully!");
+    }
+    
+    // Load saved scene
+    function loadScene() {
+      if (!localStorage.savedScene) {
+        alert("No saved scene found!");
+        return;
+      }
+      
+      try {
+        clearObjects();
+        
+        const saveData = JSON.parse(localStorage.savedScene);
+        
+        // Restore settings
+        engine.world.gravity.y = saveData.settings.gravity;
+        gravityEnabled = saveData.settings.gravity > 0;
+        document.getElementById('gravityBtn').innerHTML = gravityEnabled ? 
+          '<i>🧲</i> Gravity: ON' : '<i>🧲</i> Gravity: OFF';
+        document.getElementById('gravityValue').textContent = gravityEnabled ? 
+          engine.world.gravity.y.toFixed(1) : "OFF";
+        
+        // Restore water if it was enabled
+        if (saveData.settings.waterEnabled) {
+          toggleWater();
+        }
+        
+        // Recreate objects
+        for (let obj of saveData.objects) {
+          let body;
+          
+          // Create appropriate shape based on type
+          if (obj.type === 'circle') {
+            body = addCircle(obj.x, obj.y, obj.radius);
+          } else if (obj.type === 'polygon') {
+            body = addPolygon(obj.x, obj.y, obj.sides, obj.radius);
+          } else {
+            body = addBox(obj.x, obj.y, obj.width, obj.height);
+          }
+          
+          // Apply saved properties
+          if (body) {
+            body.friction = obj.friction || defaultSettings.friction;
+            body.restitution = obj.restitution || defaultSettings.restitution;
+            Body.setDensity(body, obj.density || defaultSettings.density);
+            body.render.fillStyle = obj.fillStyle || defaultSettings.color;
+            if (obj.angle) Body.setAngle(body, obj.angle);
+          }
+        }
+        
+        alert("Scene loaded successfully!");
+      } catch (e) {
+        console.error("Error loading scene:", e);
+        alert("Error loading scene. See console for details.");
+      }
+    }
+    
+    // Update FPS and stats
+    function updateStats() {
+      const now = performance.now();
+      frameCount++;
+      
+      if (now - lastFrameTime >= 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        lastFrameTime = now;
+        
+        document.getElementById('fpsCounter').textContent = fps;
+        document.getElementById('objectCount').textContent = objects.length;
+      }
+    }
+    
+    // Randomize scene - matches the original update() function name
+    function update() {
+      clearObjects();
+      
+      // Add random number of objects
+      const numObjects = 5 + Math.floor(Math.random() * 15);
+      
+      for (let i = 0; i < numObjects; i++) {
+        const type = Math.random();
+        if (type < 0.2) {
+          addCircle();
+        } else if (type < 0.4) {
+          addBox();
+        } else if (type < 0.6) {
+          addPolygon();
+        } else if (type < 0.8) {
+          addTriangle();
+        } else {
+          addStar();
+        }
+      }
+    }
+    
+    // Custom renderer modifications
+    Events.on(render, 'afterRender', function() {
+      const ctx = render.context;
+      
+      // Draw water waves if water is enabled
+      if (waterArea) {
+        const waterTop = waterArea.position.y - waterArea.height / 2;
+        const waterWidth = waterArea.width;
+        const waterX = waterArea.position.x - waterWidth / 2;
+        
+        ctx.save();
+        ctx.beginPath();
+        
+        // Draw wavy top for water
+        ctx.moveTo(waterX, waterTop);
+        for (let i = 0; i <= 20; i++) {
+          const waveX = waterX + (i / 20) * waterWidth;
+          const waveY = waterTop + Math.sin(Date.now() / 500 + i) * 3;
+          ctx.lineTo(waveX, waveY);
+        }
+        
+        ctx.strokeStyle = 'rgba(0, 150, 255, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      }
+      
+      // Draw custom shape preview in draw mode
+      if (customDrawMode && drawPoints.length > 1) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(drawPoints[0].x, drawPoints[0].y);
+        
+        for (let i = 1; i < drawPoints.length; i++) {
+          ctx.lineTo(drawPoints[i].x, drawPoints[i].y);
+        }
+        
+        ctx.lineTo(mouse.position.x, mouse.position.y);
+        
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(100, 200, 255, 0.3)';
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      // Update stats
+      updateStats();
+    });
+    
+    // Physics update event for applying water effects
+    Events.on(engine, 'afterUpdate', function() {
+      if (isWaterEnabled) {
+        applyWaterPhysics();
+      }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      // For simplicity, we're keeping a fixed canvas size
+      render.options.width = canvas.width;
+      render.options.height = canvas.height;
+      Render.setPixelRatio(render, window.devicePixelRatio);
+    });
+    
+    // Initialize panel states
+    document.getElementById('defaultFrictionValue').textContent = defaultSettings.friction.toFixed(2);
+    document.getElementById('defaultRestitutionValue').textContent = defaultSettings.restitution.toFixed(2);
+    document.getElementById('gravityStrengthValue').textContent = "1.0";
+    document.getElementById('timeScaleValue').textContent = "1.0";
+    document.getElementById('airResistanceValue').textContent = "0.000";
+    
+    // Run the physics engine
+    Engine.run(engine);
+    Render.run(render);
+    
+    // Add some initial objects
+    update();
+  </script>
+</body>
+</html>
