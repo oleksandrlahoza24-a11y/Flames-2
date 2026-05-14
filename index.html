@@ -3,513 +3,775 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-  <title>Cozy Neon Fluid Screensaver</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cozy Immersive PNG Experience</title>
   <style>
-    /* === BASE STYLES === */
+    /* CSS Reset & Base */
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body,
     html {
-      margin: 0;
-      padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #030305;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #050505;
+      color: #fff;
     }
 
-    /* Canvas acts as our screen */
-    canvas {
-      display: block;
-      position: fixed;
+    /* --- SETUP SCREEN --- */
+    #setup-container {
+      position: absolute;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      width: 100dvw;
-      height: 100dvh;
-      filter: blur(2px);
-    }
-
-    /* === UI CONTROLS === */
-    .ui-container {
-      position: fixed;
-      bottom: max(20px, env(safe-area-inset-bottom, 20px));
-      right: max(20px, env(safe-area-inset-right, 20px));
+      width: 100%;
+      height: 100%;
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(-45deg, #16102b, #2b1738, #18283b, #0d1221);
+      background-size: 400% 400%;
+      animation: gradientFlow 15s ease infinite;
       z-index: 100;
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transition: opacity 1s ease, visibility 1s ease;
     }
 
-    /* Hides the UI when the mouse is still (Screensaver mode) */
-    .ui-container.idle {
-      opacity: 0;
-      transform: translateY(10px);
+    @keyframes gradientFlow {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .glass-card {
+      background: rgba(20, 20, 30, 0.4);
+      padding: 40px;
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      text-align: center;
+      max-width: 90%;
+      width: 420px;
+      transform: translateY(0);
+      transition: transform 0.3s ease;
+    }
+
+    .glass-card h1 {
+      margin-bottom: 25px;
+      font-weight: 400;
+      font-size: 1.8rem;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group {
+      margin-bottom: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+    }
+
+    label {
+      font-size: 0.95rem;
+      color: #a19db1;
+      font-weight: 500;
+    }
+
+    /* Custom File Upload Zone */
+    .file-drop-zone {
+      position: relative;
+      width: 100%;
+      padding: 30px 20px;
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .file-drop-zone:hover {
+      border-color: #a78bfa;
+      background: rgba(167, 139, 250, 0.05);
+    }
+
+    .file-drop-zone p {
+      font-size: 0.9rem;
+      color: #fff;
       pointer-events: none;
     }
 
-    button {
-      background: rgba(10, 10, 18, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      color: rgba(255, 255, 255, 0.3);
-      padding: 6px 13px;
-      border-radius: 20px;
+    .file-drop-zone small {
+      color: #8b879c;
+      font-size: 0.8rem;
+      pointer-events: none;
+    }
+
+    input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
       cursor: pointer;
-      font-size: 11px;
-      letter-spacing: 0.4px;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      transition: all 0.4s ease;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
-    button:hover {
-      background: rgba(255, 255, 255, 0.07);
-      color: rgba(255, 255, 255, 0.75);
-      border-color: rgba(255, 255, 255, 0.18);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(255, 255, 255, 0.06);
+    select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      outline: none;
+      cursor: pointer;
+      font-size: 1rem;
+      appearance: none;
     }
 
-    button:active {
+    select option {
+      background: #1a1525;
+      color: #fff;
+    }
+
+    #applyBtn {
+      background: linear-gradient(135deg, #8b5cf6, #d946ef);
+      border: none;
+      padding: 16px 30px;
+      border-radius: 12px;
+      color: white;
+      font-size: 1.1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+    }
+
+    #applyBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(217, 70, 239, 0.4);
+    }
+
+    #applyBtn:active {
       transform: translateY(1px);
+    }
+
+    /* --- IMMERSIVE ENVIRONMENT --- */
+    #immersive-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, #15111e 0%, #060408 100%);
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    /* Tiny Fullscreen Button (Top Right) */
+    #fsBtn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 8px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 1000;
+      transition: all 0.3s;
+    }
+
+    #fsBtn:hover {
+      background: rgba(255, 255, 255, 0.8);
+      transform: scale(2);
+      box-shadow: 0 0 8px #fff;
+    }
+
+    /* Hardware Acceleration Wrapper */
+    #animContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    .hw-accel {
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    /* ANIMATION 1: Strips */
+    .strip-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      height: 100%;
+      transform: rotate(-5deg) scale(1.1);
+    }
+
+    .strip {
+      display: flex;
+      width: max-content;
+      gap: 40px;
+    }
+
+    .strip img {
+      height: 25vh;
+      max-width: 300px;
+      object-fit: contain;
+      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.6));
+    }
+
+    .strip1 {
+      animation: rollLeft 35s linear infinite;
+    }
+
+    .strip2 {
+      animation: rollRight 40s linear infinite;
+    }
+
+    @keyframes rollLeft {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+
+      100% {
+        transform: translate3d(-50%, 0, 0);
+      }
+    }
+
+    @keyframes rollRight {
+      0% {
+        transform: translate3d(-50%, 0, 0);
+      }
+
+      100% {
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    /* ANIMATION 2: Rain */
+    .rain-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      object-fit: contain;
+      animation: fall linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translate3d(var(--startX), -20vh, 0) scale(var(--scale)) rotate(var(--rot));
+      }
+
+      100% {
+        transform: translate3d(var(--startX), 120vh, 0) scale(var(--scale)) rotate(calc(var(--rot) + 20deg));
+      }
+    }
+
+    /* ANIMATION 3: Space */
+    .space-img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      object-fit: contain;
+      animation: flowSpace linear infinite;
+      opacity: 0;
+    }
+
+    @keyframes flowSpace {
+      0% {
+        transform: translate3d(0, 0, -1000px) scale(0) rotate(0deg);
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 1;
+      }
+
+      80% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate3d(var(--tx), var(--ty), 500px) scale(var(--scale)) rotate(var(--rot));
+        opacity: 0;
+      }
+    }
+
+    /* ANIMATION 4: Bouncing (JS controlled, simple base style) */
+    .bounce-img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.5));
+    }
+
+    /* ANIMATION 5: Bubbles */
+    .bubble-img {
+      position: absolute;
+      bottom: -20vh;
+      left: 0;
+      object-fit: contain;
+      animation: floatUp linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translate3d(var(--startX), 20vh, 0) scale(var(--scale)) rotate(var(--rot));
+        opacity: 0;
+      }
+
+      10% {
+        opacity: var(--max-opacity);
+      }
+
+      90% {
+        opacity: var(--max-opacity);
+      }
+
+      100% {
+        transform: translate3d(calc(var(--startX) + var(--sway)), -120vh, 0) scale(var(--scale)) rotate(calc(var(--rot) + 90deg));
+        opacity: 0;
+      }
+    }
+
+    /* ANIMATION 6: Whirlwind */
+    .whirlwind-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-style: preserve-3d;
+      animation: spinY 20s linear infinite;
+    }
+
+    .whirlwind-img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      object-fit: contain;
+    }
+
+    @keyframes spinY {
+      0% {
+        transform: translate3d(-50%, -50%, 0) rotateY(0deg) rotateX(-10deg);
+      }
+
+      100% {
+        transform: translate3d(-50%, -50%, 0) rotateY(360deg) rotateX(-10deg);
+      }
+    }
+
+    /* ANIMATION 7: Orbit */
+    .orbit-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1px;
+      height: 1px;
+    }
+
+    .orbit-container {
+      position: absolute;
+      transform-style: preserve-3d;
+      animation: orbitRing linear infinite;
+    }
+
+    .orbit-img {
+      position: absolute;
+      object-fit: contain;
+      transform: translate(-50%, -50%);
+      animation: counterOrbit linear infinite;
+    }
+
+    @keyframes orbitRing {
+      0% {
+        transform: rotateZ(0deg);
+      }
+
+      100% {
+        transform: rotateZ(360deg);
+      }
+    }
+
+    @keyframes counterOrbit {
+      0% {
+        transform: translate(-50%, -50%) rotateZ(0deg);
+      }
+
+      100% {
+        transform: translate(-50%, -50%) rotateZ(-360deg);
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <canvas id="fluidCanvas"></canvas>
+  <!-- Setup Screen -->
+  <div id="setup-container">
+    <div class="glass-card">
+      <h1>Immersive View</h1>
+      <div class="input-group">
+        <label>1. Upload PNGs (Any amount)</label>
+        <div class="file-drop-zone" id="dropZone">
+          <input type="file" id="fileInput" multiple accept="image/png">
+          <p id="fileCountText">Click or Drop PNGs here</p>
+          <small>High resolution is supported</small>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="animSelect">2. Choose the vibe</label>
+        <select id="animSelect">
+                    <option value="rain">Cozy Rain (Falling smoothly)</option>
+                    <option value="bubbles">Floating Bubbles (Gentle rise)</option>
+                    <option value="space">Deep Space (Zooming past)</option>
+                    <option value="whirlwind">3D Whirlwind (Tornado)</option>
+                    <option value="orbit">Orbit (Circling center)</option>
+                    <option value="strips">Two Rolling Strips (Marquee)</option>
+                    <option value="bounce">Bouncing Physics</option>
+                </select>
+      </div>
+      <button id="applyBtn">Apply & Immerse</button>
+    </div>
+  </div>
 
-  <div class="ui-container" id="uiContainer">
-    <button id="btnTheme">
-            <span>✦</span> Next Vibe
-        </button>
-    <button id="btnFullscreen">
-            <span>⛶</span>
-        </button>
+  <!-- Immersive Screen -->
+  <div id="immersive-container">
+    <!-- Tiny hidden button for full screen trigger -->
+    <button id="fsBtn" title="Toggle Fullscreen"></button>
+    <div id="animContainer"></div>
   </div>
 
   <script>
-    /**
-         * ==========================================
-         * CONFIGURATION & EXTENSIBILITY
-         * ==========================================
-         * This code is built to be easily modifiable.
-         * You can add new color themes below, or add 
-         * new types of entities to the engine.
-         */
+    // DOM Elements
+        const setupContainer = document.getElementById('setup-container');
+        const immersiveContainer = document.getElementById('immersive-container');
+        const fileInput = document.getElementById('fileInput');
+        const fileCountText = document.getElementById('fileCountText');
+        const animSelect = document.getElementById('animSelect');
+        const applyBtn = document.getElementById('applyBtn');
+        const animContainer = document.getElementById('animContainer');
+        const fsBtn = document.getElementById('fsBtn');
+
+        let imageURLs = [];
+        let animationFrameId = null;
+        let bouncePhysicsData = [];
         
-        const canvas = document.getElementById('fluidCanvas');
-        const ctx = canvas.getContext('2d', { alpha: false });
-        let width, height;
+        // Cache window dimensions for physics to avoid lag
+        let winW = window.innerWidth;
+        let winH = window.innerHeight;
+        window.addEventListener('resize', () => { winW = window.innerWidth; winH = window.innerHeight; });
 
-        // Color Themes (RGB values) — each with 6 color slots for more variety
-        // Each theme defines: name, bg, blob colors, particle style, and special fx
-        const THEMES = [
-        {
-        name: 'Cyberpunk',
-        bg: '#02020a',
-        colors: [[255, 42, 109], [5, 217, 232], [1, 255, 195], [113, 34, 250], [255, 0, 180], [0, 255, 255]],
-        particle: 'scanline', // Sharp horizontal scan streaks
-        blobShape: 'circle'
-        },
-        {
-        name: 'Ember',
-        bg: '#060100',
-        colors: [[255, 60, 0], [255, 140, 0], [255, 10, 60], [200, 30, 0], [255, 200, 50], [180, 10, 10]],
-        particle: 'ember', // Rising flame cinders
-        blobShape: 'flame'
-        },
-        {
-        name: 'Abyss',
-        bg: '#000408',
-        colors: [[0, 80, 255], [0, 220, 180], [20, 0, 200], [0, 180, 255], [0, 100, 200], [30, 255, 200]],
-        particle: 'bubble', // Slow drifting hollow circles
-        blobShape: 'circle'
-        },
-        {
-        name: 'Aurora',
-        bg: '#010804',
-        colors: [[0, 255, 100], [100, 255, 50], [0, 180, 120], [20, 200, 80], [150, 255, 0], [0, 150, 200]],
-        particle: 'ribbon', // Horizontal ribbon streaks
-        blobShape: 'wave'
-        },
-        {
-        name: 'Sunset',
-        bg: '#060203',
-        colors: [[255, 80, 80], [255, 160, 60], [200, 60, 200], [255, 120, 150], [180, 40, 120], [255, 200, 100]],
-        particle: 'dust', // Diagonal drifting motes
-        blobShape: 'circle'
-        },
-        {
-        name: 'Toxic',
-        bg: '#010601',
-        colors: [[50, 255, 0], [200, 255, 0], [0, 255, 80], [100, 200, 0], [180, 255, 50], [0, 180, 50]],
-        particle: 'hex', // Spinning hexagon outlines
-        blobShape: 'circle'
-        },
-        {
-        name: 'Galaxy',
-        bg: '#01000c',
-        colors: [[130, 0, 255], [200, 0, 255], [255, 0, 180], [80, 0, 200], [220, 80, 255], [150, 50, 255]],
-        particle: 'star', // 6-point sparkle stars
-        blobShape: 'circle'
-        },
-        {
-        name: 'Arctic',
-        bg: '#010408',
-        colors: [[0, 200, 255], [100, 220, 255], [200, 240, 255], [0, 150, 220], [150, 200, 255], [50, 180, 255]],
-        particle: 'crystal', // Diamond/shard shapes
-        blobShape: 'circle'
-        },
-        {
-        name: 'Blood Moon',
-        bg: '#050000',
-        colors: [[200, 0, 0], [255, 30, 0], [180, 0, 60], [255, 0, 80], [150, 0, 0], [255, 80, 0]],
-        particle: 'drip', // Falling drops
-        blobShape: 'circle'
-        },
-        {
-        name: 'Gold Rush',
-        bg: '#040300',
-        colors: [[255, 200, 0], [255, 160, 0], [200, 120, 0], [255, 220, 80], [180, 100, 0], [255, 240, 100]],
-        particle: 'sparkle', // 4-ray light bursts
-        blobShape: 'circle'
-        },
-        {
-        name: 'Void',
-        bg: '#000000',
-        colors: [[60, 0, 120], [20, 0, 80], [100, 0, 160], [40, 0, 100], [80, 20, 140], [30, 0, 70]],
-        particle: 'warp', // Radial warp streaks from center
-        blobShape: 'circle'
-        },
-        {
-        name: 'Sakura',
-        bg: '#040102',
-        colors: [[255, 150, 180], [255, 200, 210], [220, 100, 150], [255, 180, 200], [200, 80, 130], [255, 220, 230]],
-        particle: 'petal', // Spinning petal shapes
-        blobShape: 'circle'
-        },
-        {
-        name: 'Glitch',
-        bg: '#010005',
-        colors: [[0, 255, 100], [255, 0, 80], [0, 200, 255], [200, 255, 0], [255, 100, 0], [100, 0, 255]],
-        particle: 'glitch', // Jittery rectangle fragments
-        blobShape: 'circle'
-        },
-        ];
-
-        let currentThemeIndex = 0;
-        let globalTime = 0;
-
-        // Utility: Linear Interpolation for smooth transitions
-        const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
-
-        /**
-         * ==========================================
-         * ENTITY SYSTEM
-         * ==========================================
-         * Having a base class makes it very easy to add
-         * big possibilities later (like shooting stars, ripples, text).
-         */
-        class Entity {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = 0;
-                this.vy = 0;
+        // Auto-hide cursor for true immersion
+        let cursorTimeout;
+        document.addEventListener('mousemove', () => {
+            if(immersiveContainer.style.visibility === 'visible') {
+                document.body.style.cursor = 'default';
+                clearTimeout(cursorTimeout);
+                cursorTimeout = setTimeout(() => { document.body.style.cursor = 'none'; }, 2000);
             }
-            update() {}
-            draw() {}
-        }
-
-        /**
-         * FluidBlobs are the large glowing orbs that create the neon fluid effect.
-         * They use mathematical flow fields to drift naturally.
-         */
-        class FluidBlob extends Entity {
-            constructor() {
-                super();
-                this.size = Math.random() * 220 + 120;
-                this.colorIndex = Math.floor(Math.random() * 6);
-                this.pulseOffset = Math.random() * Math.PI * 2;
-                this.pulseSpeed = Math.random() * 0.02 + 0.005;
-                
-                // Set initial colors
-                let initColor = THEMES[currentThemeIndex].colors[this.colorIndex];
-                this.color = { r: initColor[0], g: initColor[1], b: initColor[2] };
-                
-                // Movement uniqueness
-                this.speedMult = Math.random() * 0.022 + 0.008;
-                this.noiseOffset = Math.random() * 1000;
-                this.rotationBias = (Math.random() - 0.5) * 0.5;
-            }
-
-            update() {
-                // Smoothly shift color to the current theme's target color
-                let targetColor = THEMES[currentThemeIndex].colors[this.colorIndex];
-                this.color.r = lerp(this.color.r, targetColor[0], 0.025);
-                this.color.g = lerp(this.color.g, targetColor[1], 0.025);
-                this.color.b = lerp(this.color.b, targetColor[2], 0.025);
-
-                // Calculate fluid-like movement using overlapping sine waves
-                let angle = Math.sin(this.x * 0.002 + globalTime * 0.5) + 
-                            Math.cos(this.y * 0.002 + globalTime * 0.5) * Math.PI;
-                
-                // Accelerate gently into the angle
-                this.vx += Math.cos(angle) * this.speedMult;
-                this.vy += Math.sin(angle) * this.speedMult;
-
-                // Friction to prevent infinite speeding
-                this.vx *= 0.96;
-                this.vy *= 0.96;
-
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Screen wrapping (creates a continuous infinite fluid)
-                if (this.x < -this.size) this.x = width + this.size;
-                if (this.x > width + this.size) this.x = -this.size;
-                if (this.y < -this.size) this.y = height + this.size;
-                if (this.y > height + this.size) this.y = -this.size;
-            }
-
-            draw() {
-                const pulse = 0.5 + 0.5 * Math.sin(globalTime * this.pulseSpeed * 60 + this.pulseOffset);
-                const innerAlpha = 0.45 + pulse * 0.3;
-                const outerSize = this.size * (1 + pulse * 0.12);
-
-                // Outer soft glow
-                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, outerSize);
-                gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${innerAlpha})`);
-                gradient.addColorStop(0.35, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.15)`);
-                gradient.addColorStop(0.7, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.04)`);
-                gradient.addColorStop(1, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
-
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, outerSize, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Bright inner core
-                const coreSize = this.size * 0.15;
-                const core = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, coreSize);
-                core.addColorStop(0, `rgba(255, 255, 255, ${0.2 + pulse * 0.25})`);
-                core.addColorStop(1, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
-                ctx.fillStyle = core;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, coreSize, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        /**
-         * Sparkles — multi-type particles: dots, stars, crosses, rings
-         */
-        class Sparkle extends Entity {
-            constructor() {
-                super();
-                this.size = Math.random() * 2.5 + 0.4;
-                this.alpha = Math.random();
-                this.wobbleSpeed = Math.random() * 0.05 + 0.008;
-                this.riseSpeed = Math.random() * 0.6 + 0.15;
-                this.type = Math.floor(Math.random() * 4); // 0=dot, 1=star, 2=cross, 3=ring
-                this.colorIndex = Math.floor(Math.random() * 6);
-                this.twinkleOffset = Math.random() * Math.PI * 2;
-                this.rotation = Math.random() * Math.PI * 2;
-                this.rotSpeed = (Math.random() - 0.5) * 0.04;
-            }
-
-            update() {
-                this.y -= this.riseSpeed;
-                this.x += Math.sin(globalTime * this.wobbleSpeed + this.y * 0.01) * 0.4;
-                this.alpha = (Math.sin(globalTime * this.wobbleSpeed * 2 + this.twinkleOffset) + 1) * 0.5;
-                this.rotation += this.rotSpeed;
-
-                if (this.y < -10) {
-                    this.y = height + 10;
-                    this.x = Math.random() * width;
-                }
-            }
-
-            draw() {
-                const theme = THEMES[currentThemeIndex];
-                const col = theme.colors[this.colorIndex % theme.colors.length];
-                const a = this.alpha * 0.7;
-                const s = this.size;
-
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-
-                if (this.type === 0) {
-                    // Glowing dot
-                    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, s * 2);
-                    g.addColorStop(0, `rgba(255,255,255,${a})`);
-                    g.addColorStop(0.4, `rgba(${col[0]},${col[1]},${col[2]},${a * 0.6})`);
-                    g.addColorStop(1, `rgba(${col[0]},${col[1]},${col[2]},0)`);
-                    ctx.fillStyle = g;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, s * 2, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (this.type === 1) {
-                    // 4-point star
-                    ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${a})`;
-                    ctx.lineWidth = 0.8;
-                    ctx.shadowBlur = 4;
-                    ctx.shadowColor = `rgba(${col[0]},${col[1]},${col[2]},0.8)`;
-                    for (let i = 0; i < 4; i++) {
-                        ctx.beginPath();
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(Math.cos(i * Math.PI / 2) * s * 3, Math.sin(i * Math.PI / 2) * s * 3);
-                        ctx.stroke();
-                    }
-                    ctx.shadowBlur = 0;
-                } else if (this.type === 2) {
-                    // Tiny cross / plus
-                    ctx.strokeStyle = `rgba(255,255,255,${a * 0.8})`;
-                    ctx.lineWidth = 0.6;
-                    ctx.beginPath();
-                    ctx.moveTo(-s * 2, 0); ctx.lineTo(s * 2, 0);
-                    ctx.moveTo(0, -s * 2); ctx.lineTo(0, s * 2);
-                    ctx.stroke();
-                } else {
-                    // Ring / halo
-                    ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${a * 0.6})`;
-                    ctx.lineWidth = 0.5;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, s * 2.5, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
-
-                ctx.restore();
-            }
-        }
-
-        /**
-         * ==========================================
-         * ENGINE & MAIN LOOP
-         * ==========================================
-         */
-        const entities = [];
-
-        function init() {
-            // Adjust canvas to window size
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            
-            entities.length = 0; // Clear entities array on resize
-
-            // 1. Spawn Fluid Blobs (Adjust number based on screen size, 30 is a good standard)
-            let blobCount = Math.floor((width * height) / 30000); 
-            // Clamp between 15 and 40 so it always looks good
-            blobCount = Math.max(15, Math.min(blobCount, 40)); 
-            
-            for (let i = 0; i < blobCount; i++) {
-                entities.push(new FluidBlob());
-            }
-
-            // 2. Spawn Cozy Sparkles
-            for (let i = 0; i < 80; i++) {
-                entities.push(new Sparkle());
-            }
-        }
-
-        function animate() {
-            globalTime += 0.01;
-
-            // Deep dark background from current theme
-            ctx.fillStyle = THEMES[currentThemeIndex].bg;
-            ctx.fillRect(0, 0, width, height);
-
-            // Using 'screen' blend mode combines colors beautifully like real light/neon
-            ctx.globalCompositeOperation = 'screen';
-
-            // Update and draw everything
-            for (let entity of entities) {
-                entity.update();
-                entity.draw();
-            }
-
-            // Reset composite operation so background clears correctly next frame
-            ctx.globalCompositeOperation = 'source-over';
-
-            requestAnimationFrame(animate);
-        }
-
-        /**
-         * ==========================================
-         * INTERACTIONS & EVENTS
-         * ==========================================
-         */
-        
-        // Handle Resizing
-        window.addEventListener('resize', init);
-
-        // Buttons
-        const btnTheme = document.getElementById('btnTheme');
-        const btnFullscreen = document.getElementById('btnFullscreen');
-        const uiContainer = document.getElementById('uiContainer');
-
-        function updateThemeBtn() {
-            const next = (currentThemeIndex + 1) % THEMES.length;
-            btnTheme.innerHTML = `<span>✦</span> ${THEMES[next].name}`;
-        }
-
-        btnTheme.addEventListener('click', () => {
-            currentThemeIndex = (currentThemeIndex + 1) % THEMES.length;
-            updateThemeBtn();
         });
 
-        updateThemeBtn();
-
-        btnFullscreen.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log("Error attempting to enable fullscreen:", err);
-                });
+        // Handle File Uploads
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files).filter(f => f.type === "image/png");
+            if (files.length > 0) {
+                imageURLs = files.map(file => URL.createObjectURL(file));
+                fileCountText.innerText = `${files.length} PNG(s) loaded ✨`;
+                fileCountText.style.color = "#d946ef";
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                fileCountText.innerText = `Click or Drop PNGs here`;
+                fileCountText.style.color = "#fff";
             }
         });
 
-        // Screensaver Logic: Hide UI when mouse is idle
-        let idleTimer;
-        function resetIdleTimer() {
-            uiContainer.classList.remove('idle');
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => {
-                uiContainer.classList.add('idle');
-            }, 3000); // Hides after 3 seconds of no movement
+        // Apply Button Logic
+        applyBtn.addEventListener('click', () => {
+            if (imageURLs.length === 0) {
+                alert("Please upload at least one PNG file first.");
+                return;
+            }
+            // Transition UI
+            setupContainer.style.opacity = '0';
+            setTimeout(() => {
+                setupContainer.style.visibility = 'hidden';
+                immersiveContainer.style.visibility = 'visible';
+                immersiveContainer.style.opacity = '1';
+                startAnimation(animSelect.value);
+            }, 800);
+        });
+
+        // Fullscreen Logic (Hides top bar on iPad/Desktop)
+        fsBtn.addEventListener('click', () => {
+            const elem = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (elem.requestFullscreen) elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        });
+
+        // Helper: Ensure we have enough items for rich visual effects without overwhelming DOM
+        function getPopulatedImageArray(idealAmount, maxAmount = 80) {
+            let arr = [...imageURLs];
+            while (arr.length < idealAmount && arr.length < maxAmount) { arr = arr.concat(imageURLs); }
+            return arr.slice(0, maxAmount);
         }
 
-        window.addEventListener('mousemove', resetIdleTimer);
-        window.addEventListener('touchstart', resetIdleTimer);
-        window.addEventListener('keydown', resetIdleTimer);
+        // Helper: Create an Image with async decoding for performance
+        function createOptimizedImg(src, className) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.className = `hw-accel ${className}`;
+            img.decoding = "async"; // Prevents lag spikes when rendering
+            return img;
+        }
 
-        // Start
-        init();
-        animate();
-        resetIdleTimer(); // Kick off idle timer
+        // --- ANIMATION ROUTER ---
+        function startAnimation(type) {
+            animContainer.innerHTML = '';
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            if (type === 'strips') runStrips();
+            else if (type === 'rain') runRain();
+            else if (type === 'space') runSpace();
+            else if (type === 'bounce') runBounce();
+            else if (type === 'bubbles') runBubbles();
+            else if (type === 'whirlwind') runWhirlwind();
+            else if (type === 'orbit') runOrbit();
+        }
+
+        // 1. Rolling Strips
+        function runStrips() {
+            const stripImages = getPopulatedImageArray(30, 40);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'strip-wrapper';
+
+            const fillStrip = (className) => {
+                const strip = document.createElement('div');
+                strip.className = `hw-accel strip ${className}`;
+                [...stripImages, ...stripImages].forEach(src => strip.appendChild(createOptimizedImg(src, '')));
+                return strip;
+            };
+
+            wrapper.appendChild(fillStrip('strip1'));
+            wrapper.appendChild(fillStrip('strip2'));
+            animContainer.appendChild(wrapper);
+        }
+
+        // 2. Cozy Rain
+        function runRain() {
+            const drops = getPopulatedImageArray(40, 60);
+            const fragment = document.createDocumentFragment();
+
+            drops.forEach(src => {
+                const img = createOptimizedImg(src, 'rain-img');
+                const size = 30 + Math.random() * 60;
+                const startX = Math.random() * 100;
+                const duration = 4 + Math.random() * 6;
+                const delay = Math.random() * -10; // Negative delay so it starts mid-animation
+                const rot = (Math.random() - 0.5) * 45;
+
+                img.style.width = `${size}px`;
+                img.style.setProperty('--startX', `${startX}vw`);
+                img.style.setProperty('--scale', 1);
+                img.style.setProperty('--rot', `${rot}deg`);
+                img.style.animationDuration = `${duration}s`;
+                img.style.animationDelay = `${delay}s`;
+                fragment.appendChild(img);
+            });
+            animContainer.appendChild(fragment);
+        }
+
+        // 3. Space Zoom
+        function runSpace() {
+            const objects = getPopulatedImageArray(50, 60);
+            const fragment = document.createDocumentFragment();
+
+            objects.forEach(src => {
+                const img = createOptimizedImg(src, 'space-img');
+                const tx = (Math.random() - 0.5) * 3000;
+                const ty = (Math.random() - 0.5) * 3000;
+                const scale = 2 + Math.random() * 4;
+                const rot = (Math.random() - 0.5) * 360;
+                const duration = 5 + Math.random() * 7;
+                const delay = Math.random() * -10;
+
+                img.style.width = `${30 + Math.random() * 40}px`;
+                img.style.setProperty('--tx', `${tx}px`);
+                img.style.setProperty('--ty', `${ty}px`);
+                img.style.setProperty('--scale', scale);
+                img.style.setProperty('--rot', `${rot}deg`);
+                img.style.animationDuration = `${duration}s`;
+                img.style.animationDelay = `${delay}s`;
+                fragment.appendChild(img);
+            });
+            animContainer.appendChild(fragment);
+        }
+
+        // 4. Floating Bubbles
+        function runBubbles() {
+            const bubbles = getPopulatedImageArray(40, 50);
+            const fragment = document.createDocumentFragment();
+
+            bubbles.forEach(src => {
+                const img = createOptimizedImg(src, 'bubble-img');
+                const size = 40 + Math.random() * 70;
+                const startX = Math.random() * 100;
+                const sway = (Math.random() - 0.5) * 40; // Horizontal drift
+                const duration = 8 + Math.random() * 12;
+                const delay = Math.random() * -15;
+
+                img.style.width = `${size}px`;
+                img.style.setProperty('--startX', `${startX}vw`);
+                img.style.setProperty('--sway', `${sway}vw`);
+                img.style.setProperty('--scale', 0.8 + Math.random() * 0.5);
+                img.style.setProperty('--rot', `${Math.random() * 360}deg`);
+                img.style.setProperty('--max-opacity', 0.4 + Math.random() * 0.6);
+                img.style.animationDuration = `${duration}s`;
+                img.style.animationDelay = `${delay}s`;
+                fragment.appendChild(img);
+            });
+            animContainer.appendChild(fragment);
+        }
+
+        // 5. 3D Whirlwind
+        function runWhirlwind() {
+            const objects = getPopulatedImageArray(40, 50);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'whirlwind-wrapper';
+
+            objects.forEach((src, i) => {
+                const img = createOptimizedImg(src, 'whirlwind-img');
+                const size = 50 + Math.random() * 60;
+                
+                // Cylinder distribution
+                const angle = (i / objects.length) * 360 + (Math.random() * 20);
+                const height = (Math.random() - 0.5) * 800; // Spread vertically
+                const radius = 300 + Math.random() * 200;
+
+                img.style.width = `${size}px`;
+                img.style.transform = `translate(-50%, -50%) translateY(${height}px) rotateY(${angle}deg) translateZ(${radius}px)`;
+                wrapper.appendChild(img);
+            });
+            animContainer.appendChild(wrapper);
+        }
+
+        // 6. Orbit
+        function runOrbit() {
+            const objects = getPopulatedImageArray(25, 30);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'orbit-wrapper';
+
+            objects.forEach((src, i) => {
+                const container = document.createElement('div');
+                container.className = 'orbit-container';
+                
+                const img = createOptimizedImg(src, 'orbit-img');
+                const size = 60 + Math.random() * 60;
+                const distance = 150 + Math.random() * 400; // Orbit radius
+                const speed = 10 + Math.random() * 20; // Orbit duration
+                const startAngle = Math.random() * 360;
+
+                container.style.width = `${distance * 2}px`;
+                container.style.height = `${distance * 2}px`;
+                container.style.left = `-${distance}px`;
+                container.style.top = `-${distance}px`;
+                container.style.animationDuration = `${speed}s`;
+                container.style.transform = `rotateZ(${startAngle}deg)`;
+                
+                // Inverse rotation on the image keeps it upright
+                img.style.width = `${size}px`;
+                img.style.left = `50%`;
+                img.style.top = `0%`; // Positioned at the edge of the container
+                img.style.animationDuration = `${speed}s`;
+
+                container.appendChild(img);
+                wrapper.appendChild(container);
+            });
+            animContainer.appendChild(wrapper);
+        }
+
+        // 7. High Performance Bouncing Physics
+        function runBounce() {
+            bouncePhysicsData = [];
+            const bounceItems = getPopulatedImageArray(20, 25);
+            const fragment = document.createDocumentFragment();
+            
+            bounceItems.forEach(src => {
+                const img = createOptimizedImg(src, 'bounce-img');
+                const size = 70 + Math.random() * 60;
+                img.style.width = `${size}px`;
+                fragment.appendChild(img);
+
+                bouncePhysicsData.push({
+                    el: img,
+                    size: size,
+                    x: Math.random() * (winW - size),
+                    y: Math.random() * -500 - size,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: 0,
+                    rot: Math.random() * 360,
+                    vrot: (Math.random() - 0.5) * 8
+                });
+            });
+            animContainer.appendChild(fragment);
+
+            const gravity = 0.5;
+            const friction = 0.99;
+            const bounceDampening = -0.75;
+
+            function updatePhysics() {
+                bouncePhysicsData.forEach(item => {
+                    item.vy += gravity;
+                    item.x += item.vx;
+                    item.y += item.vy;
+                    item.rot += item.vrot;
+
+                    // Floor
+                    if (item.y + item.size >= winH) {
+                        item.y = winH - item.size;
+                        item.vy *= bounceDampening;
+                        item.vx *= friction;
+                    }
+                    // Walls
+                    if (item.x <= 0) { item.x = 0; item.vx *= -1; item.vrot *= -1;} 
+                    else if (item.x + item.size >= winW) { item.x = winW - item.size; item.vx *= -1; item.vrot *= -1;}
+
+                    // translate3d forces hardware acceleration
+                    item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, 0) rotate(${item.rot}deg)`;
+                });
+                animationFrameId = requestAnimationFrame(updatePhysics);
+            }
+            updatePhysics();
+        }
   </script>
 </body>
 
