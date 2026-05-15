@@ -1,778 +1,2907 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cozy Immersive PNG Experience</title>
-  <style>
-    /* CSS Reset & Base */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CodeForge IDE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===================== THEME SYSTEM ===================== */
+:root {
+  --bg0: #0d0d0f;
+  --bg1: #141416;
+  --bg2: #1a1a1e;
+  --bg3: #222228;
+  --bg4: #2a2a32;
+  --border: #2e2e38;
+  --border2: #3a3a48;
+  --text0: #e8e8f0;
+  --text1: #b0b0c8;
+  --text2: #6a6a88;
+  --accent: #7c6af7;
+  --accent2: #a78bfa;
+  --accent3: #5b4fd4;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --blue: #60a5fa;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+  --pink: #f472b6;
+  --scrollbar: #2a2a38;
+  --scrollbar-thumb: #44445a;
+  --tab-active: #1e1e28;
+  --font-ui: 'Outfit', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  --gutter-bg: #141416;
+  --gutter-num: #44445a;
+  --selection: rgba(124,106,247,0.3);
+  --line-highlight: rgba(255,255,255,0.03);
+  --sidebar-w: 220px;
+  --tab-h: 38px;
+  --header-h: 44px;
+  --statusbar-h: 24px;
+}
 
-    body,
-    html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: #050505;
-      color: #fff;
-    }
+/* THEMES */
+body.theme-monokai { --bg0:#1a1b16; --bg1:#272822; --bg2:#2d2e27; --bg3:#353630; --bg4:#3e3f38; --border:#3a3b34; --border2:#484940; --text0:#f8f8f2; --text1:#cfcfba; --text2:#75715e; --accent:#a6e22e; --accent2:#e6db74; --accent3:#66d9e8; --green:#a6e22e; --red:#f92672; --yellow:#e6db74; --blue:#66d9e8; --cyan:#66d9e8; --orange:#fd971f; --pink:#f92672; }
+body.theme-nord { --bg0:#1a1e26; --bg1:#2e3440; --bg2:#353b48; --bg3:#3b4252; --bg4:#434c5e; --border:#3b4252; --border2:#4c566a; --text0:#eceff4; --text1:#d8dee9; --text2:#8090a0; --accent:#88c0d0; --accent2:#81a1c1; --accent3:#5e81ac; --green:#a3be8c; --red:#bf616a; --yellow:#ebcb8b; --blue:#81a1c1; --cyan:#88c0d0; --orange:#d08770; --pink:#b48ead; }
+body.theme-solarized { --bg0:#001219; --bg1:#002029; --bg2:#003342; --bg3:#073642; --bg4:#094d5d; --border:#0a4453; --border2:#0d5968; --text0:#93a1a1; --text1:#839496; --text2:#586e75; --accent:#268bd2; --accent2:#2aa198; --accent3:#6c71c4; --green:#859900; --red:#dc322f; --yellow:#b58900; --blue:#268bd2; --cyan:#2aa198; --orange:#cb4b16; --pink:#d33682; }
+body.theme-dracula { --bg0:#191a21; --bg1:#282a36; --bg2:#2f3140; --bg3:#373949; --bg4:#3f4155; --border:#363848; --border2:#464860; --text0:#f8f8f2; --text1:#d0d0ea; --text2:#6272a4; --accent:#bd93f9; --accent2:#ff79c6; --accent3:#8be9fd; --green:#50fa7b; --red:#ff5555; --yellow:#f1fa8c; --blue:#8be9fd; --cyan:#8be9fd; --orange:#ffb86c; --pink:#ff79c6; }
+body.theme-github-light { --bg0:#f6f8fa; --bg1:#ffffff; --bg2:#f0f2f5; --bg3:#e8ebef; --bg4:#dde1e6; --border:#d0d7de; --border2:#c0c8d0; --text0:#1f2328; --text1:#555f69; --text2:#8c959f; --accent:#0969da; --accent2:#6639ba; --accent3:#0550ae; --green:#1a7f37; --red:#cf222e; --yellow:#9a6700; --blue:#0969da; --cyan:#1268a1; --orange:#bc4c00; --pink:#a475f9; --scrollbar:#e1e4e8; --scrollbar-thumb:#b0b8c1; --tab-active:#ffffff; --line-highlight:rgba(0,0,0,0.03); --selection:rgba(9,105,218,0.15); --gutter-bg:#f6f8fa; --gutter-num:#8c959f; }
+body.theme-ayu { --bg0:#0a0e14; --bg1:#0d1017; --bg2:#131720; --bg3:#1a2030; --bg4:#212840; --border:#1e2638; --border2:#273050; --text0:#bfbdb6; --text1:#a0a09a; --text2:#5c6773; --accent:#ffcc66; --accent2:#f07178; --accent3:#73d0ff; --green:#aad94c; --red:#f07178; --yellow:#ffcc66; --blue:#73d0ff; --cyan:#95e6cb; --orange:#ff9944; --pink:#f07178; }
+body.theme-catppuccin { --bg0:#1e1e2e; --bg1:#181825; --bg2:#1e1e2e; --bg3:#313244; --bg4:#45475a; --border:#313244; --border2:#45475a; --text0:#cdd6f4; --text1:#bac2de; --text2:#6c7086; --accent:#cba6f7; --accent2:#f5c2e7; --accent3:#89dceb; --green:#a6e3a1; --red:#f38ba8; --yellow:#f9e2af; --blue:#89b4fa; --cyan:#89dceb; --orange:#fab387; --pink:#f5c2e7; }
+body.theme-tokyo-night { --bg0:#16161e; --bg1:#1a1b26; --bg2:#1e2030; --bg3:#24283b; --bg4:#2f334d; --border:#292e42; --border2:#363b54; --text0:#c0caf5; --text1:#a9b1d6; --text2:#565f89; --accent:#7aa2f7; --accent2:#bb9af7; --accent3:#7dcfff; --green:#9ece6a; --red:#f7768e; --yellow:#e0af68; --blue:#7aa2f7; --cyan:#7dcfff; --orange:#ff9e64; --pink:#bb9af7; }
+body.theme-rose-pine { --bg0:#191724; --bg1:#1f1d2e; --bg2:#26233a; --bg3:#2a273f; --bg4:#312e4e; --border:#2a273f; --border2:#403d5c; --text0:#e0def4; --text1:#c5c3d9; --text2:#6e6a86; --accent:#c4a7e7; --accent2:#eb6f92; --accent3:#9ccfd8; --green:#31748f; --red:#eb6f92; --yellow:#f6c177; --blue:#9ccfd8; --cyan:#9ccfd8; --orange:#fe640b; --pink:#eb6f92; }
 
-    /* --- SETUP SCREEN --- */
-    #setup-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(-45deg, #16102b, #2b1738, #18283b, #0d1221);
-      background-size: 400% 400%;
-      animation: gradientFlow 15s ease infinite;
-      z-index: 100;
-      transition: opacity 1s ease, visibility 1s ease;
-    }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg0); color: var(--text0); font-family: var(--font-ui); font-size: 14px; }
 
-    @keyframes gradientFlow {
-      0% {
-        background-position: 0% 50%;
-      }
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: var(--scrollbar); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-      50% {
-        background-position: 100% 50%;
-      }
+/* ===================== LAYOUT ===================== */
+#app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
 
-      100% {
-        background-position: 0% 50%;
-      }
-    }
+#header { height: var(--header-h); background: var(--bg1); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0; padding: 0; z-index: 100; flex-shrink: 0; user-select: none; }
+#header .logo { display: flex; align-items: center; gap: 8px; padding: 0 16px; font-weight: 700; font-size: 15px; color: var(--accent2); white-space: nowrap; min-width: 160px; }
+#header .logo svg { width: 22px; height: 22px; }
 
-    .glass-card {
-      background: rgba(20, 20, 30, 0.4);
-      padding: 40px;
-      border-radius: 24px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-      text-align: center;
-      max-width: 90%;
-      width: 420px;
-      transform: translateY(0);
-      transition: transform 0.3s ease;
-    }
+.header-tabs { display: flex; align-items: stretch; flex: 1; overflow: hidden; }
+.header-tab { display: flex; align-items: center; gap: 6px; padding: 0 16px; height: 100%; cursor: pointer; font-size: 13px; color: var(--text2); border-right: 1px solid var(--border); transition: all 0.15s; white-space: nowrap; }
+.header-tab:hover { background: var(--bg2); color: var(--text0); }
+.header-tab.active { background: var(--bg2); color: var(--text0); border-bottom: 2px solid var(--accent); }
 
-    .glass-card h1 {
-      margin-bottom: 25px;
-      font-weight: 400;
-      font-size: 1.8rem;
-      letter-spacing: 0.5px;
-    }
+.header-actions { display: flex; align-items: center; gap: 4px; padding: 0 10px; margin-left: auto; }
+.hbtn { background: none; border: 1px solid transparent; color: var(--text1); padding: 5px 10px; border-radius: var(--radius); cursor: pointer; font-family: var(--font-ui); font-size: 12px; display: flex; align-items: center; gap: 5px; transition: all 0.15s; white-space: nowrap; }
+.hbtn:hover { background: var(--bg3); border-color: var(--border2); color: var(--text0); }
+.hbtn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.hbtn.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+.hbtn svg { width: 14px; height: 14px; }
 
-    .input-group {
-      margin-bottom: 25px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      text-align: left;
-    }
+#workspace { display: flex; flex: 1; overflow: hidden; }
 
-    label {
-      font-size: 0.95rem;
-      color: #a19db1;
-      font-weight: 500;
-    }
+/* ===================== ACTIVITY BAR ===================== */
+#activity-bar { width: 44px; background: var(--bg1); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 6px 0; gap: 2px; z-index: 50; flex-shrink: 0; }
+.ab-btn { width: 34px; height: 34px; border: none; background: none; color: var(--text2); cursor: pointer; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; transition: all 0.15s; position: relative; }
+.ab-btn:hover { background: var(--bg3); color: var(--text0); }
+.ab-btn.active { color: var(--accent2); background: var(--bg3); }
+.ab-btn.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:2px; height:20px; background:var(--accent); border-radius:0 2px 2px 0; }
+.ab-btn svg { width: 18px; height: 18px; }
+.ab-spacer { flex: 1; }
 
-    /* Custom File Upload Zone */
-    .file-drop-zone {
-      position: relative;
-      width: 100%;
-      padding: 30px 20px;
-      border: 2px dashed rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
+/* ===================== SIDEBAR ===================== */
+#sidebar { width: var(--sidebar-w); background: var(--bg1); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; transition: width 0.2s; flex-shrink: 0; }
+#sidebar.collapsed { width: 0; }
 
-    .file-drop-zone:hover {
-      border-color: #a78bfa;
-      background: rgba(167, 139, 250, 0.05);
-    }
+.sidebar-panel { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+.sidebar-panel.active { display: flex; }
 
-    .file-drop-zone p {
-      font-size: 0.9rem;
-      color: #fff;
-      pointer-events: none;
-    }
+.panel-header { padding: 10px 12px 8px; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.panel-header button { background: none; border: none; color: var(--text2); cursor: pointer; padding: 2px; border-radius: 3px; display: flex; }
+.panel-header button:hover { color: var(--text0); background: var(--bg3); }
+.panel-header button svg { width: 14px; height: 14px; }
 
-    .file-drop-zone small {
-      color: #8b879c;
-      font-size: 0.8rem;
-      pointer-events: none;
-    }
+/* ===================== FILE TREE ===================== */
+#file-tree { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 0; }
+.tree-item { display: flex; align-items: center; gap: 4px; padding: 3px 8px; cursor: pointer; font-size: 13px; border-radius: 4px; margin: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; }
+.tree-item:hover { background: var(--bg3); }
+.tree-item.selected { background: var(--bg4); color: var(--text0); }
+.tree-item.folder { font-weight: 500; }
+.tree-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+.tree-item .item-name { overflow: hidden; text-overflow: ellipsis; flex: 1; font-size: 12.5px; }
+.tree-item .item-actions { display: none; gap: 2px; margin-left: auto; }
+.tree-item:hover .item-actions { display: flex; }
+.tree-item .item-actions button { background: none; border: none; color: var(--text2); cursor: pointer; padding: 1px 3px; border-radius: 3px; font-size: 11px; }
+.tree-item .item-actions button:hover { color: var(--text0); }
+.tree-children { padding-left: 14px; }
+.tree-children.collapsed { display: none; }
+.tree-item.dragging { opacity: 0.5; }
+.tree-item.drag-over { background: var(--accent3); opacity: 0.8; }
+.tree-input { background: var(--bg3); border: 1px solid var(--accent); color: var(--text0); padding: 1px 6px; border-radius: 3px; font-size: 12.5px; width: 100%; font-family: var(--font-ui); outline: none; }
+.ctx-menu { position: fixed; background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 9999; padding: 4px; min-width: 160px; }
+.ctx-item { padding: 6px 12px; cursor: pointer; font-size: 12.5px; border-radius: 3px; display: flex; align-items: center; gap: 8px; color: var(--text1); }
+.ctx-item:hover { background: var(--bg3); color: var(--text0); }
+.ctx-sep { height: 1px; background: var(--border); margin: 3px 0; }
 
-    input[type="file"] {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
+/* ===================== MAIN AREA ===================== */
+#main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-    select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.3);
-      color: #fff;
-      outline: none;
-      cursor: pointer;
-      font-size: 1rem;
-      appearance: none;
-    }
+/* ===================== EDITOR TABS ===================== */
+#tab-bar { height: var(--tab-h); background: var(--bg0); border-bottom: 1px solid var(--border); display: flex; align-items: stretch; overflow-x: auto; overflow-y: hidden; flex-shrink: 0; }
+#tab-bar::-webkit-scrollbar { height: 3px; }
+.editor-tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; min-width: 100px; max-width: 180px; cursor: pointer; font-size: 12.5px; color: var(--text2); border-right: 1px solid var(--border); background: var(--bg0); white-space: nowrap; position: relative; transition: all 0.1s; flex-shrink: 0; }
+.editor-tab:hover { background: var(--bg2); color: var(--text1); }
+.editor-tab.active { background: var(--tab-active); color: var(--text0); border-bottom: 2px solid var(--accent); }
+.editor-tab .tab-icon { width: 12px; height: 12px; flex-shrink: 0; }
+.editor-tab .tab-name { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.editor-tab .tab-close { width: 16px; height: 16px; border: none; background: none; color: var(--text2); cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0; transition: opacity 0.1s; font-size: 14px; line-height: 1; }
+.editor-tab:hover .tab-close { opacity: 1; }
+.editor-tab.active .tab-close { opacity: 0.6; }
+.editor-tab.modified .tab-name::after { content: '•'; color: var(--accent2); margin-left: 4px; }
+.tab-add { min-width: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); font-size: 18px; background: none; border: none; flex-shrink: 0; }
+.tab-add:hover { color: var(--text0); background: var(--bg2); }
 
-    select option {
-      background: #1a1525;
-      color: #fff;
-    }
+/* ===================== EDITOR BODY ===================== */
+#editor-body { flex: 1; display: flex; overflow: hidden; position: relative; }
+#editor-pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-    #applyBtn {
-      background: linear-gradient(135deg, #8b5cf6, #d946ef);
-      border: none;
-      padding: 16px 30px;
-      border-radius: 12px;
-      color: white;
-      font-size: 1.1rem;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      width: 100%;
-      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
-    }
+/* CODE EDITOR */
+#code-wrapper { flex: 1; display: flex; overflow: hidden; position: relative; background: var(--bg0); }
+#line-numbers { background: var(--gutter-bg); border-right: 1px solid var(--border); padding: 12px 0; text-align: right; font-family: var(--font-code); font-size: 13px; line-height: 1.7; color: var(--gutter-num); user-select: none; overflow: hidden; min-width: 50px; padding-right: 12px; padding-left: 8px; }
+#code-scroll { flex: 1; overflow: auto; position: relative; }
+#code-area { width: 100%; min-height: 100%; position: relative; }
+#code-input { position: absolute; top: 0; left: 0; width: 100%; min-height: 100%; background: transparent; border: none; outline: none; resize: none; font-family: var(--font-code); font-size: 13px; line-height: 1.7; color: transparent; caret-color: var(--accent2); padding: 12px 16px; tab-size: 2; -webkit-text-fill-color: transparent; z-index: 2; white-space: pre; overflow-wrap: normal; }
+#code-highlight { position: absolute; top: 0; left: 0; width: 100%; min-height: 100%; font-family: var(--font-code); font-size: 13px; line-height: 1.7; padding: 12px 16px; white-space: pre; overflow-wrap: normal; pointer-events: none; z-index: 1; }
+#code-input::selection { background: var(--selection); -webkit-text-fill-color: var(--text0); }
 
-    #applyBtn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 25px rgba(217, 70, 239, 0.4);
-    }
+/* AUTOCOMPLETE */
+#autocomplete-popup { position: fixed; background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 5000; min-width: 220px; max-width: 400px; max-height: 220px; overflow-y: auto; display: none; }
+.ac-item { padding: 5px 12px; cursor: pointer; font-size: 12.5px; font-family: var(--font-code); display: flex; align-items: center; gap: 8px; }
+.ac-item:hover, .ac-item.selected { background: var(--bg4); }
+.ac-kind { font-size: 10px; color: var(--accent); background: rgba(124,106,247,0.15); padding: 1px 5px; border-radius: 3px; flex-shrink: 0; }
+.ac-label { flex: 1; color: var(--text0); }
+.ac-detail { color: var(--text2); font-size: 11px; }
 
-    #applyBtn:active {
-      transform: translateY(1px);
-    }
+/* SEARCH BAR */
+#search-bar { position: absolute; top: 8px; right: 16px; background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 6px 10px; display: none; z-index: 200; box-shadow: var(--shadow); gap: 6px; align-items: center; }
+#search-bar.visible { display: flex; }
+#search-bar input { background: var(--bg3); border: 1px solid var(--border); color: var(--text0); padding: 4px 8px; border-radius: 4px; font-family: var(--font-ui); font-size: 12.5px; width: 180px; outline: none; }
+#search-bar input:focus { border-color: var(--accent); }
+#search-bar .sb-btn { background: none; border: 1px solid var(--border); color: var(--text1); padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-family: var(--font-ui); }
+#search-bar .sb-btn:hover { background: var(--bg3); color: var(--text0); }
+#search-bar .sb-count { color: var(--text2); font-size: 12px; min-width: 60px; }
+.search-match { background: rgba(251,191,36,0.3); border-radius: 2px; }
+.search-match.current { background: rgba(251,191,36,0.65); }
 
-    /* --- IMMERSIVE ENVIRONMENT --- */
-    #immersive-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 50% 50%, #15111e 0%, #060408 100%);
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity 1.5s ease;
-      overflow: hidden;
-      cursor: default;
-    }
+/* ===================== PREVIEW PANE ===================== */
+#preview-pane { width: 0; background: var(--bg1); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; transition: width 0.2s; }
+#preview-pane.open { width: 50%; }
+#preview-header { height: 34px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 10px; gap: 8px; flex-shrink: 0; }
+#preview-header span { font-size: 12px; color: var(--text2); flex: 1; }
+#preview-frame { flex: 1; border: none; background: #fff; }
+#preview-console { height: 0; background: var(--bg0); border-top: 1px solid var(--border); overflow-y: auto; font-family: var(--font-code); font-size: 11.5px; transition: height 0.2s; }
+#preview-console.open { height: 120px; }
+.console-line { padding: 2px 10px; display: flex; gap: 8px; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.console-line.error { color: var(--red); }
+.console-line.warn { color: var(--yellow); }
+.console-line.info { color: var(--blue); }
+.console-line.log { color: var(--text1); }
+.console-ts { color: var(--text2); font-size: 10px; flex-shrink: 0; margin-top: 1px; }
 
-    /* Tiny Fullscreen Button (Top Right) */
-    #fsBtn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 8px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.15);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 1000;
-      transition: all 0.3s;
-    }
+/* ===================== TERMINAL ===================== */
+#terminal-panel { height: 0; background: var(--bg0); border-top: 1px solid var(--border); display: flex; flex-direction: column; transition: height 0.2s; overflow: hidden; }
+#terminal-panel.open { height: 200px; }
+#terminal-header { height: 30px; background: var(--bg1); display: flex; align-items: center; padding: 0 10px; gap: 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+#terminal-header span { font-size: 12px; color: var(--text2); flex: 1; }
+#terminal-output { flex: 1; overflow-y: auto; padding: 8px 12px; font-family: var(--font-code); font-size: 12px; color: var(--green); }
+.term-line { line-height: 1.6; }
+.term-prompt { color: var(--accent); }
+.term-cmd { color: var(--text0); }
+.term-out { color: var(--text1); }
+.term-err { color: var(--red); }
+#terminal-input-row { display: flex; align-items: center; padding: 4px 12px; border-top: 1px solid var(--border); gap: 6px; }
+#terminal-input-row span { color: var(--accent); font-family: var(--font-code); font-size: 12px; }
+#terminal-input { flex: 1; background: none; border: none; color: var(--text0); font-family: var(--font-code); font-size: 12px; outline: none; }
 
-    #fsBtn:hover {
-      background: rgba(255, 255, 255, 0.8);
-      transform: scale(2);
-      box-shadow: 0 0 8px #fff;
-    }
+/* ===================== STATUS BAR ===================== */
+#status-bar { height: var(--statusbar-h); background: var(--accent3); display: flex; align-items: center; padding: 0 10px; gap: 12px; font-size: 11.5px; color: rgba(255,255,255,0.9); flex-shrink: 0; user-select: none; }
+.status-item { display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 0 4px; border-radius: 3px; }
+.status-item:hover { background: rgba(255,255,255,0.15); }
+.status-sep { width: 1px; height: 14px; background: rgba(255,255,255,0.3); }
+.status-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
-    /* Hardware Acceleration Wrapper */
-    #animContainer {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      perspective: 1200px;
-      transform-style: preserve-3d;
-    }
+/* ===================== PANELS (Search/Git/etc) ===================== */
+.search-panel input { background: var(--bg3); border: 1px solid var(--border); color: var(--text0); padding: 6px 10px; border-radius: var(--radius); font-size: 13px; width: 100%; font-family: var(--font-ui); outline: none; margin-bottom: 6px; }
+.search-panel input:focus { border-color: var(--accent); }
+.search-panel { padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.search-result { padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.search-result:hover { background: var(--bg3); }
+.search-result .sr-file { color: var(--accent2); font-weight: 500; }
+.search-result .sr-line { color: var(--text1); font-family: var(--font-code); font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .hw-accel {
-      will-change: transform;
-      backface-visibility: hidden;
-    }
+/* ===================== SETTINGS PANEL ===================== */
+#settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9000; display: none; align-items: center; justify-content: center; }
+#settings-overlay.open { display: flex; }
+#settings-modal { background: var(--bg1); border: 1px solid var(--border2); border-radius: var(--radius-lg); width: min(780px, 95vw); height: min(580px, 90vh); display: flex; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
+#settings-nav { width: 180px; background: var(--bg0); border-right: 1px solid var(--border); padding: 16px 0; flex-shrink: 0; }
+#settings-nav .sn-title { padding: 0 16px 12px; font-size: 16px; font-weight: 700; color: var(--text0); }
+.sn-item { padding: 8px 16px; cursor: pointer; font-size: 13px; color: var(--text1); display: flex; align-items: center; gap: 8px; }
+.sn-item:hover { background: var(--bg2); color: var(--text0); }
+.sn-item.active { background: var(--bg3); color: var(--accent2); }
+.sn-item svg { width: 15px; height: 15px; }
+#settings-content { flex: 1; overflow-y: auto; padding: 24px; }
+.settings-section { display: none; }
+.settings-section.active { display: block; }
+.settings-section h2 { font-size: 18px; font-weight: 600; color: var(--text0); margin-bottom: 20px; }
+.setting-group { margin-bottom: 24px; }
+.setting-group h3 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text2); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 13px; color: var(--text1); }
+.setting-label small { display: block; color: var(--text2); font-size: 11px; margin-top: 2px; }
+.setting-ctrl select, .setting-ctrl input[type=text], .setting-ctrl input[type=number] { background: var(--bg3); border: 1px solid var(--border); color: var(--text0); padding: 5px 10px; border-radius: var(--radius); font-family: var(--font-ui); font-size: 12.5px; outline: none; min-width: 120px; }
+.setting-ctrl select:focus, .setting-ctrl input:focus { border-color: var(--accent); }
+.setting-ctrl input[type=range] { accent-color: var(--accent); width: 120px; }
+.toggle { position: relative; width: 38px; height: 20px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: var(--bg4); border-radius: 20px; cursor: pointer; transition: 0.2s; }
+.toggle-slider::before { content:''; position:absolute; width:14px; height:14px; left:3px; top:3px; background:#fff; border-radius:50%; transition:0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--accent); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
 
-    /* ANIMATION 1: Strips */
-    .strip-wrapper {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-evenly;
-      height: 100%;
-      transform: rotate(-5deg) scale(1.1);
-    }
+/* THEMES GRID */
+.themes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 8px; }
+.theme-card { border: 2px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: all 0.15s; }
+.theme-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.theme-card.active { border-color: var(--accent); }
+.theme-preview { height: 65px; display: flex; flex-direction: column; overflow: hidden; }
+.theme-preview-bar { height: 14px; display: flex; align-items: center; gap: 4px; padding: 0 6px; }
+.theme-preview-dot { width: 5px; height: 5px; border-radius: 50%; }
+.theme-preview-code { flex: 1; padding: 4px 6px; font-family: var(--font-code); font-size: 7px; line-height: 1.5; overflow: hidden; }
+.theme-name { padding: 5px 8px; font-size: 11px; font-weight: 500; background: var(--bg3); text-align: center; }
 
-    .strip {
-      display: flex;
-      width: max-content;
-      gap: 40px;
-    }
+/* PLUGINS SECTION */
+.plugin-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px; }
+.plugin-icon { width: 36px; height: 36px; background: var(--bg3); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+.plugin-info { flex: 1; }
+.plugin-info h4 { font-size: 13px; font-weight: 600; color: var(--text0); }
+.plugin-info p { font-size: 12px; color: var(--text2); margin-top: 3px; }
+.plugin-info .plugin-meta { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.plugin-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+.plugin-btn { background: var(--bg3); border: 1px solid var(--border2); color: var(--text1); padding: 4px 12px; border-radius: var(--radius); cursor: pointer; font-family: var(--font-ui); font-size: 12px; transition: all 0.15s; }
+.plugin-btn:hover { background: var(--bg4); color: var(--text0); }
+.plugin-btn.installed { border-color: var(--green); color: var(--green); }
 
-    .strip img {
-      height: 25vh;
-      max-width: 300px;
-      object-fit: contain;
-      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.6));
-    }
+/* AI ASSISTANT */
+#ai-panel { width: 0; background: var(--bg1); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; transition: width 0.2s; flex-shrink: 0; }
+#ai-panel.open { width: 300px; }
+#ai-header { height: 40px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 12px; gap: 8px; flex-shrink: 0; font-size: 13px; font-weight: 600; color: var(--accent2); }
+#ai-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.ai-msg { padding: 10px 12px; border-radius: var(--radius); font-size: 12.5px; line-height: 1.6; max-width: 100%; }
+.ai-msg.user { background: var(--bg4); color: var(--text0); align-self: flex-end; }
+.ai-msg.assistant { background: rgba(124,106,247,0.12); border: 1px solid rgba(124,106,247,0.25); color: var(--text1); }
+.ai-msg.thinking { color: var(--text2); font-style: italic; }
+#ai-input-area { padding: 10px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+#ai-input-area textarea { background: var(--bg2); border: 1px solid var(--border); color: var(--text0); padding: 8px 10px; border-radius: var(--radius); font-family: var(--font-ui); font-size: 12.5px; resize: none; outline: none; height: 70px; }
+#ai-input-area textarea:focus { border-color: var(--accent); }
+#ai-input-area .ai-btns { display: flex; gap: 6px; align-items: center; }
+#ai-input-area .ai-btns button { background: var(--accent); border: none; color: #fff; padding: 6px 12px; border-radius: var(--radius); cursor: pointer; font-family: var(--font-ui); font-size: 12px; font-weight: 600; flex: 1; }
+#ai-input-area .ai-btns button:hover { background: var(--accent2); }
+#ai-model-key { background: var(--bg3); border: 1px solid var(--border); color: var(--text1); padding: 5px 8px; border-radius: var(--radius); font-size: 11.5px; outline: none; font-family: var(--font-ui); width: 100%; }
 
-    .strip1 {
-      animation: rollLeft 35s linear infinite;
-    }
+/* MODALS / DIALOGS */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 8000; display: none; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 24px; min-width: 340px; max-width: 90vw; box-shadow: var(--shadow); }
+.modal h3 { font-size: 16px; font-weight: 600; color: var(--text0); margin-bottom: 16px; }
+.modal input, .modal select { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text0); padding: 8px 12px; border-radius: var(--radius); font-family: var(--font-ui); font-size: 13px; outline: none; margin-bottom: 12px; }
+.modal input:focus, .modal select:focus { border-color: var(--accent); }
+.modal .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.modal .modal-btns button { padding: 7px 18px; border-radius: var(--radius); cursor: pointer; font-family: var(--font-ui); font-size: 13px; border: 1px solid var(--border); background: var(--bg3); color: var(--text1); }
+.modal .modal-btns button.ok { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.modal .modal-btns button:hover { filter: brightness(1.15); }
 
-    .strip2 {
-      animation: rollRight 40s linear infinite;
-    }
+/* NOTIFICATIONS */
+#notif-container { position: fixed; bottom: 30px; right: 16px; z-index: 9999; display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none; }
+.notif { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 16px; font-size: 13px; color: var(--text0); box-shadow: var(--shadow); animation: slideIn 0.2s ease; max-width: 300px; pointer-events: all; }
+.notif.success { border-left: 3px solid var(--green); }
+.notif.error { border-left: 3px solid var(--red); }
+.notif.info { border-left: 3px solid var(--blue); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    @keyframes rollLeft {
-      0% {
-        transform: translate3d(0, 0, 0);
-      }
+/* SPLITTER */
+.splitter-h { width: 4px; background: var(--border); cursor: col-resize; flex-shrink: 0; }
+.splitter-h:hover, .splitter-h.dragging { background: var(--accent); }
+.splitter-v { height: 4px; background: var(--border); cursor: row-resize; flex-shrink: 0; }
+.splitter-v:hover, .splitter-v.dragging { background: var(--accent); }
 
-      100% {
-        transform: translate3d(-50%, 0, 0);
-      }
-    }
+/* FILE UPLOAD */
+.drop-zone { border: 2px dashed var(--border2); border-radius: var(--radius); padding: 16px; text-align: center; font-size: 12.5px; color: var(--text2); cursor: pointer; transition: all 0.15s; margin: 8px; }
+.drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); color: var(--accent2); background: rgba(124,106,247,0.05); }
 
-    @keyframes rollRight {
-      0% {
-        transform: translate3d(-50%, 0, 0);
-      }
+/* GIT PANEL */
+.git-file { display: flex; align-items: center; gap: 6px; padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; margin: 1px 4px; }
+.git-file:hover { background: var(--bg3); }
+.git-status { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+.git-M { background: rgba(251,191,36,0.2); color: var(--yellow); }
+.git-A { background: rgba(74,222,128,0.2); color: var(--green); }
+.git-D { background: rgba(248,113,113,0.2); color: var(--red); }
 
-      100% {
-        transform: translate3d(0, 0, 0);
-      }
-    }
+/* MINIMAP */
+#minimap { width: 60px; background: var(--bg0); border-left: 1px solid var(--border); cursor: pointer; overflow: hidden; opacity: 0.7; position: relative; flex-shrink: 0; }
+#minimap canvas { width: 100%; pointer-events: none; }
+#minimap .mm-viewport { position: absolute; left: 0; right: 0; background: rgba(255,255,255,0.08); border-radius: 2px; }
 
-    /* ANIMATION 2: Rain */
-    .rain-img {
-      position: absolute;
-      top: 0;
-      left: 0;
-      object-fit: contain;
-      animation: fall linear infinite;
-      opacity: 0.8;
-    }
+/* BREADCRUMB */
+#breadcrumb { height: 26px; background: var(--bg1); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 12px; gap: 4px; font-size: 12px; color: var(--text2); flex-shrink: 0; }
+#breadcrumb span { cursor: pointer; }
+#breadcrumb span:hover { color: var(--text0); }
+#breadcrumb .sep { color: var(--border2); }
 
-    @keyframes fall {
-      0% {
-        transform: translate3d(var(--startX), -20vh, 0) scale(var(--scale)) rotate(var(--rot));
-      }
+/* COMMAND PALETTE */
+#cmd-palette { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); width: min(600px, 90vw); background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); z-index: 9500; box-shadow: 0 20px 60px rgba(0,0,0,0.6); display: none; overflow: hidden; }
+#cmd-palette.open { display: block; }
+#cmd-palette input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text0); padding: 14px 16px; font-family: var(--font-ui); font-size: 14px; outline: none; }
+#cmd-results { max-height: 320px; overflow-y: auto; }
+.cmd-item { padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.cmd-item:hover, .cmd-item.selected { background: var(--bg3); }
+.cmd-item svg { width: 14px; height: 14px; color: var(--accent2); flex-shrink: 0; }
+.cmd-label { flex: 1; color: var(--text0); }
+.cmd-kb { color: var(--text2); font-size: 11px; font-family: var(--font-code); }
 
-      100% {
-        transform: translate3d(var(--startX), 120vh, 0) scale(var(--scale)) rotate(calc(var(--rot) + 20deg));
-      }
-    }
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 200px; }
+  #preview-pane.open { width: 100%; position: absolute; inset: 0; z-index: 40; }
+  #ai-panel.open { width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 40; }
+  #minimap { display: none; }
+}
 
-    /* ANIMATION 3: Space */
-    .space-img {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      object-fit: contain;
-      animation: flowSpace linear infinite;
-      opacity: 0;
-    }
+/* SYNTAX COLORS */
+.kw { color: var(--accent); font-weight: 500; }
+.kw2 { color: var(--blue); }
+.str { color: var(--green); }
+.num { color: var(--orange); }
+.cmt { color: var(--text2); font-style: italic; }
+.fn { color: var(--cyan); }
+.cls { color: var(--yellow); }
+.op { color: var(--accent2); }
+.tag { color: var(--red); }
+.attr { color: var(--orange); }
+.val { color: var(--green); }
+.punc { color: var(--text1); }
+.var { color: var(--text0); }
+.dec { color: var(--pink); }
+.type { color: var(--yellow); }
+.bool { color: var(--orange); }
+.hl-line { background: var(--line-highlight); }
 
-    @keyframes flowSpace {
-      0% {
-        transform: translate3d(0, 0, -1000px) scale(0) rotate(0deg);
-        opacity: 0;
-      }
+/* MARKDOWN PREVIEW */
+.md-preview { padding: 20px; color: var(--text0); line-height: 1.7; font-family: var(--font-ui); }
+.md-preview h1,.md-preview h2,.md-preview h3 { color: var(--text0); margin: 16px 0 8px; }
+.md-preview code { background: var(--bg3); padding: 1px 5px; border-radius: 3px; font-family: var(--font-code); font-size: 12px; }
+.md-preview pre { background: var(--bg2); padding: 12px; border-radius: var(--radius); margin: 10px 0; overflow-x: auto; }
+.md-preview a { color: var(--accent2); }
+.md-preview table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+.md-preview td, .md-preview th { border: 1px solid var(--border); padding: 6px 12px; font-size: 13px; }
+.md-preview th { background: var(--bg2); }
 
-      20% {
-        opacity: 1;
-      }
-
-      80% {
-        opacity: 1;
-      }
-
-      100% {
-        transform: translate3d(var(--tx), var(--ty), 500px) scale(var(--scale)) rotate(var(--rot));
-        opacity: 0;
-      }
-    }
-
-    /* ANIMATION 4: Bouncing (JS controlled, simple base style) */
-    .bounce-img {
-      position: absolute;
-      left: 0;
-      top: 0;
-      object-fit: contain;
-      filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.5));
-    }
-
-    /* ANIMATION 5: Bubbles */
-    .bubble-img {
-      position: absolute;
-      bottom: -20vh;
-      left: 0;
-      object-fit: contain;
-      animation: floatUp linear infinite;
-    }
-
-    @keyframes floatUp {
-      0% {
-        transform: translate3d(var(--startX), 20vh, 0) scale(var(--scale)) rotate(var(--rot));
-        opacity: 0;
-      }
-
-      10% {
-        opacity: var(--max-opacity);
-      }
-
-      90% {
-        opacity: var(--max-opacity);
-      }
-
-      100% {
-        transform: translate3d(calc(var(--startX) + var(--sway)), -120vh, 0) scale(var(--scale)) rotate(calc(var(--rot) + 90deg));
-        opacity: 0;
-      }
-    }
-
-    /* ANIMATION 6: Whirlwind */
-    .whirlwind-wrapper {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform-style: preserve-3d;
-      animation: spinY 20s linear infinite;
-    }
-
-    .whirlwind-img {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      object-fit: contain;
-    }
-
-    @keyframes spinY {
-      0% {
-        transform: translate3d(-50%, -50%, 0) rotateY(0deg) rotateX(-10deg);
-      }
-
-      100% {
-        transform: translate3d(-50%, -50%, 0) rotateY(360deg) rotateX(-10deg);
-      }
-    }
-
-    /* ANIMATION 7: Orbit */
-    .orbit-wrapper {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 1px;
-      height: 1px;
-    }
-
-    .orbit-container {
-      position: absolute;
-      transform-style: preserve-3d;
-      animation: orbitRing linear infinite;
-    }
-
-    .orbit-img {
-      position: absolute;
-      object-fit: contain;
-      transform: translate(-50%, -50%);
-      animation: counterOrbit linear infinite;
-    }
-
-    @keyframes orbitRing {
-      0% {
-        transform: rotateZ(0deg);
-      }
-
-      100% {
-        transform: rotateZ(360deg);
-      }
-    }
-
-    @keyframes counterOrbit {
-      0% {
-        transform: translate(-50%, -50%) rotateZ(0deg);
-      }
-
-      100% {
-        transform: translate(-50%, -50%) rotateZ(-360deg);
-      }
-    }
-  </style>
+/* INDENT GUIDES */
+.indent-guide { display: inline-block; border-left: 1px solid var(--border); margin-left: -1px; width: 1px; }
+</style>
 </head>
+<body class="theme-tokyo-night">
 
-<body>
+<!-- =================== HEADER =================== -->
+<div id="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    CodeForge
+  </div>
+  <div class="header-tabs">
+    <div class="header-tab active" data-tab="editor" onclick="switchHeaderTab('editor',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Editor
+    </div>
+    <div class="header-tab" data-tab="preview" onclick="switchHeaderTab('preview',this); togglePreview(true)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Preview
+    </div>
+    <div class="header-tab" data-tab="ai" onclick="switchHeaderTab('ai',this); toggleAI(true)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      AI Assistant
+    </div>
+    <div class="header-tab" data-tab="plugins" onclick="openSettings('plugins')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
+      Plugins
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="hbtn" onclick="openCommandPalette()" title="Command Palette (Ctrl+P)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Commands
+    </button>
+    <button class="hbtn" onclick="toggleSearchBar()" title="Search (Ctrl+F)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search
+    </button>
+    <button class="hbtn" onclick="runCode()" title="Run Code">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Run
+    </button>
+    <button class="hbtn primary" onclick="openSettings('general')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+</div>
 
-  <!-- Setup Screen -->
-  <div id="setup-container">
-    <div class="glass-card">
-      <h1>Immersive View</h1>
-      <div class="input-group">
-        <label>1. Upload PNGs (Any amount)</label>
-        <div class="file-drop-zone" id="dropZone">
-          <input type="file" id="fileInput" multiple accept="image/png">
-          <p id="fileCountText">Click or Drop PNGs here</p>
-          <small>High resolution is supported</small>
+<!-- =================== WORKSPACE =================== -->
+<div id="workspace">
+
+  <!-- Activity Bar -->
+  <div id="activity-bar">
+    <button class="ab-btn active" title="Explorer" onclick="toggleSidebar('explorer',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    </button>
+    <button class="ab-btn" title="Search" onclick="toggleSidebar('search-panel',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button class="ab-btn" title="Git" onclick="toggleSidebar('git-panel',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></svg>
+    </button>
+    <button class="ab-btn" title="Extensions" onclick="openSettings('plugins')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/></svg>
+    </button>
+    <div class="ab-spacer"></div>
+    <button class="ab-btn" title="Terminal" onclick="toggleTerminal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+    </button>
+    <button class="ab-btn" title="AI Assistant" onclick="toggleAI()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>
+    </button>
+    <button class="ab-btn" title="Settings" onclick="openSettings('general')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <!-- Explorer Panel -->
+    <div class="sidebar-panel active" id="explorer">
+      <div class="panel-header">
+        Explorer
+        <div style="display:flex;gap:4px">
+          <button title="New File" onclick="newFile()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></button>
+          <button title="New Folder" onclick="newFolder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg></button>
+          <button title="Upload File" onclick="triggerUpload()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></button>
         </div>
       </div>
-      <div class="input-group">
-        <label for="animSelect">2. Choose the vibe</label>
-        <select id="animSelect">
-                    <option value="rain">Cozy Rain (Falling smoothly)</option>
-                    <option value="bubbles">Floating Bubbles (Gentle rise)</option>
-                    <option value="space">Deep Space (Zooming past)</option>
-                    <option value="whirlwind">3D Whirlwind (Tornado)</option>
-                    <option value="orbit">Orbit (Circling center)</option>
-                    <option value="strips">Two Rolling Strips (Marquee)</option>
-                    <option value="bounce">Bouncing Physics</option>
-                </select>
+      <div id="file-tree"></div>
+      <div class="drop-zone" id="drop-zone" onclick="triggerUpload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" style="margin-bottom:6px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        Drop files or click to upload
       </div>
-      <button id="applyBtn">Apply & Immerse</button>
+      <input type="file" id="file-upload" multiple style="display:none" onchange="handleFileUpload(this.files)">
+    </div>
+
+    <!-- Search Panel -->
+    <div class="sidebar-panel" id="search-panel">
+      <div class="panel-header">Search</div>
+      <div class="search-panel">
+        <input type="text" placeholder="Search in files..." id="global-search" oninput="globalSearch(this.value)">
+        <input type="text" placeholder="Replace with..." id="global-replace">
+        <button class="hbtn" onclick="globalReplaceAll()" style="width:100%;justify-content:center">Replace All</button>
+        <div id="search-results" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- Git Panel -->
+    <div class="sidebar-panel" id="git-panel">
+      <div class="panel-header">Source Control
+        <button onclick="gitCommit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg></button>
+      </div>
+      <div id="git-changes" style="padding:8px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Changes (3)</div>
+        <div class="git-file"><span class="git-status git-M">M</span><span style="font-size:12px">main.js</span></div>
+        <div class="git-file"><span class="git-status git-A">A</span><span style="font-size:12px">utils.js</span></div>
+        <div class="git-file"><span class="git-status git-D">D</span><span style="font-size:12px">old.css</span></div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text2);margin-bottom:8px">Commit message</div>
+        <input type="text" id="commit-msg" placeholder="Message..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text0);padding:6px 10px;border-radius:4px;width:100%;font-family:var(--font-ui);font-size:12px;outline:none">
+      </div>
     </div>
   </div>
 
-  <!-- Immersive Screen -->
-  <div id="immersive-container">
-    <!-- Tiny hidden button for full screen trigger -->
-    <button id="fsBtn" title="Toggle Fullscreen"></button>
-    <div id="animContainer"></div>
+  <!-- Splitter -->
+  <div class="splitter-h" id="sidebar-splitter"></div>
+
+  <!-- Main Area -->
+  <div id="main-area">
+    <!-- Tab Bar -->
+    <div id="tab-bar">
+      <button class="tab-add" onclick="newTab()" title="New Tab">+</button>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div id="breadcrumb">
+      <span onclick="openFolder('root')">📁 workspace</span>
+      <span class="sep">›</span>
+      <span id="breadcrumb-file">untitled.js</span>
+    </div>
+
+    <!-- Editor Body -->
+    <div id="editor-body">
+      <div id="editor-pane">
+        <!-- Search Bar -->
+        <div id="search-bar">
+          <input type="text" id="sb-find" placeholder="Find..." oninput="doSearch(this.value)">
+          <input type="text" id="sb-replace" placeholder="Replace..." style="width:140px">
+          <span class="sb-count" id="sb-count">0 results</span>
+          <button class="sb-btn" onclick="findPrev()">↑</button>
+          <button class="sb-btn" onclick="findNext()">↓</button>
+          <button class="sb-btn" onclick="replaceOne()">Replace</button>
+          <button class="sb-btn" onclick="replaceAll()">All</button>
+          <button class="sb-btn" onclick="toggleSearchBar(false)" style="padding:3px 6px">✕</button>
+        </div>
+        <div id="code-wrapper">
+          <div id="line-numbers"></div>
+          <div id="code-scroll">
+            <div id="code-area">
+              <pre id="code-highlight" aria-hidden="true"></pre>
+              <textarea id="code-input" spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off"></textarea>
+            </div>
+          </div>
+          <div id="minimap"><canvas id="minimap-canvas"></canvas><div class="mm-viewport" id="mm-viewport"></div></div>
+        </div>
+      </div>
+
+      <!-- Preview Pane -->
+      <div id="preview-pane">
+        <div id="preview-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span id="preview-title">Preview</span>
+          <button class="hbtn" onclick="refreshPreview()" style="padding:2px 8px;font-size:11px">↻ Refresh</button>
+          <button class="hbtn" onclick="toggleConsole()" style="padding:2px 8px;font-size:11px">Console</button>
+          <button class="hbtn" onclick="togglePreview(false)" style="padding:2px 8px;font-size:11px">✕</button>
+        </div>
+        <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        <div id="preview-console"></div>
+      </div>
+
+      <!-- AI Panel -->
+      <div id="ai-panel">
+        <div id="ai-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          AI Assistant
+          <button class="hbtn" onclick="toggleAI(false)" style="padding:2px 6px;font-size:11px;margin-left:auto">✕</button>
+        </div>
+        <div id="ai-messages">
+          <div class="ai-msg assistant">👋 Hi! I'm your AI coding assistant. Ask me anything about your code, get explanations, debug help, or generate snippets.</div>
+        </div>
+        <div id="ai-input-area">
+          <input type="password" id="ai-model-key" placeholder="Anthropic API key (optional)...">
+          <textarea id="ai-input" placeholder="Ask about your code... (Ctrl+Enter to send)"></textarea>
+          <div class="ai-btns">
+            <button onclick="sendAIMessage()">Send ↵</button>
+            <button onclick="explainCode()" style="background:var(--bg3);color:var(--text1)">Explain</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminal Panel -->
+    <div id="terminal-panel">
+      <div id="terminal-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        <span>Terminal</span>
+        <button class="hbtn" onclick="clearTerminal()" style="padding:1px 8px;font-size:11px">Clear</button>
+        <button class="hbtn" onclick="toggleTerminal()" style="padding:1px 8px;font-size:11px">✕</button>
+      </div>
+      <div id="terminal-output"></div>
+      <div id="terminal-input-row">
+        <span>$</span>
+        <input type="text" id="terminal-input" placeholder="Enter command..." onkeydown="handleTerminalInput(event)">
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="status-bar">
+      <div class="status-item" onclick="openSettings('editor')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        <span id="status-lang">JavaScript</span>
+      </div>
+      <div class="status-sep"></div>
+      <div class="status-item" id="status-cursor">Ln 1, Col 1</div>
+      <div class="status-sep"></div>
+      <div class="status-item" id="status-indent">Spaces: 2</div>
+      <div class="status-sep"></div>
+      <div class="status-item" id="status-encoding">UTF-8</div>
+      <div class="status-right">
+        <div class="status-item" onclick="openSettings('themes')" id="status-theme">Tokyo Night</div>
+        <div class="status-sep"></div>
+        <div class="status-item" onclick="togglePreview()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Preview
+        </div>
+      </div>
+    </div>
   </div>
+</div>
 
+<!-- Autocomplete Popup -->
+<div id="autocomplete-popup"></div>
+
+<!-- =================== SETTINGS MODAL =================== -->
+<div id="settings-overlay" onclick="if(event.target===this)closeSettings()">
+  <div id="settings-modal">
+    <div id="settings-nav">
+      <div class="sn-title">⚙ Settings</div>
+      <div class="sn-item active" data-sec="general" onclick="switchSettings('general',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>
+        General
+      </div>
+      <div class="sn-item" data-sec="themes" onclick="switchSettings('themes',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.54 0 2.88-1.16 3-2.7.06-.77-.3-1.47-.86-1.87-.27-.18-.44-.53-.44-.9 0-.83.67-1.5 1.5-1.5H17c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/></svg>
+        Themes
+      </div>
+      <div class="sn-item" data-sec="editor" onclick="switchSettings('editor',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Editor
+      </div>
+      <div class="sn-item" data-sec="keybinds" onclick="switchSettings('keybinds',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Keybindings
+      </div>
+      <div class="sn-item" data-sec="ai-settings" onclick="switchSettings('ai-settings',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg>
+        AI & API
+      </div>
+      <div class="sn-item" data-sec="plugins" onclick="switchSettings('plugins',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/></svg>
+        Plugins
+      </div>
+      <div class="sn-item" data-sec="about" onclick="switchSettings('about',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        About
+      </div>
+    </div>
+    <div id="settings-content">
+      <!-- GENERAL -->
+      <div class="settings-section active" id="sec-general">
+        <h2>General</h2>
+        <div class="setting-group">
+          <h3>Interface</h3>
+          <div class="setting-row"><div class="setting-label">Language<small>UI display language</small></div><div class="setting-ctrl"><select id="ui-lang" onchange="setUILang(this.value)"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="zh">中文</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="pt">Português</option><option value="ru">Русский</option><option value="ar">العربية</option></select></div></div>
+          <div class="setting-row"><div class="setting-label">Sidebar Position<small>Left or right side</small></div><div class="setting-ctrl"><select id="sidebar-pos" onchange="setSidebarPos(this.value)"><option value="left">Left</option><option value="right">Right</option></select></div></div>
+          <div class="setting-row"><div class="setting-label">Show Activity Bar</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="toggle-actbar" checked onchange="toggleActivityBar(this.checked)"><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Show Status Bar</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="toggle-statusbar" checked onchange="toggleStatusBar(this.checked)"><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Fullscreen on launch</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="toggle-fullscreen" onchange="if(this.checked)toggleFullscreen()"><span class="toggle-slider"></span></label></div></div>
+        </div>
+        <div class="setting-group">
+          <h3>Files</h3>
+          <div class="setting-row"><div class="setting-label">Auto Save<small>Automatically save files</small></div><div class="setting-ctrl"><select id="auto-save" onchange="setAutoSave(this.value)"><option value="off">Off</option><option value="500">After 500ms</option><option value="1000" selected>After 1s</option><option value="5000">After 5s</option></select></div></div>
+          <div class="setting-row"><div class="setting-label">Default Language<small>New file language</small></div><div class="setting-ctrl"><select id="default-lang" onchange="setDefaultLang(this.value)"><option value="js">JavaScript</option><option value="ts">TypeScript</option><option value="html">HTML</option><option value="css">CSS</option><option value="py">Python</option><option value="rs">Rust</option><option value="go">Go</option><option value="cpp">C++</option><option value="json">JSON</option><option value="md">Markdown</option></select></div></div>
+        </div>
+      </div>
+
+      <!-- THEMES -->
+      <div class="settings-section" id="sec-themes">
+        <h2>Themes</h2>
+        <div class="themes-grid" id="themes-grid"></div>
+      </div>
+
+      <!-- EDITOR -->
+      <div class="settings-section" id="sec-editor">
+        <h2>Editor</h2>
+        <div class="setting-group">
+          <h3>Typography</h3>
+          <div class="setting-row"><div class="setting-label">Font Size</div><div class="setting-ctrl"><input type="range" min="10" max="22" value="13" id="font-size-slider" oninput="setFontSize(this.value)"><span id="font-size-val" style="color:var(--text2);font-size:12px;margin-left:8px">13px</span></div></div>
+          <div class="setting-row"><div class="setting-label">Line Height</div><div class="setting-ctrl"><input type="range" min="1.2" max="2.5" step="0.1" value="1.7" id="line-height-slider" oninput="setLineHeight(this.value)"><span id="line-height-val" style="color:var(--text2);font-size:12px;margin-left:8px">1.7</span></div></div>
+          <div class="setting-row"><div class="setting-label">Font Family</div><div class="setting-ctrl"><select id="font-family" onchange="setFontFamily(this.value)"><option value="JetBrains Mono">JetBrains Mono</option><option value="Fira Code">Fira Code</option><option value="Source Code Pro">Source Code Pro</option><option value="Courier New">Courier New</option><option value="monospace">System Mono</option></select></div></div>
+          <div class="setting-row"><div class="setting-label">Font Ligatures</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="toggle-ligatures" checked onchange="setLigatures(this.checked)"><span class="toggle-slider"></span></label></div></div>
+        </div>
+        <div class="setting-group">
+          <h3>Behavior</h3>
+          <div class="setting-row"><div class="setting-label">Tab Size</div><div class="setting-ctrl"><select id="tab-size" onchange="setTabSize(this.value)"><option value="2" selected>2</option><option value="4">4</option><option value="8">8</option></select></div></div>
+          <div class="setting-row"><div class="setting-label">Insert Spaces (not tabs)</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="use-spaces" checked onchange="setUseSpaces(this.checked)"><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Word Wrap</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="word-wrap" onchange="setWordWrap(this.checked)"><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Show Minimap</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="show-minimap" checked onchange="toggleMinimap(this.checked)"><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Line Numbers</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="show-linenums" checked onchange="toggleLineNumbers(this.checked)"><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Highlight Active Line</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="hl-active" checked onchange="setHlActive(this.checked)"><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Auto Pairs (brackets)</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="auto-pairs" checked><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Autocomplete</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="autocomplete-enabled" checked><span class="toggle-slider"></span></label></div></div>
+        </div>
+      </div>
+
+      <!-- KEYBINDINGS -->
+      <div class="settings-section" id="sec-keybinds">
+        <h2>Keybindings</h2>
+        <div style="font-size:12.5px;color:var(--text2);margin-bottom:16px">Default shortcuts (non-editable in this build)</div>
+        <div id="keybind-list" style="display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+
+      <!-- AI SETTINGS -->
+      <div class="settings-section" id="sec-ai-settings">
+        <h2>AI & API</h2>
+        <div class="setting-group">
+          <h3>Anthropic API</h3>
+          <div class="setting-row"><div class="setting-label">API Key<small>Your Anthropic API key for AI features</small></div><div class="setting-ctrl"><input type="password" id="api-key-setting" placeholder="sk-ant-..." style="width:200px"></div></div>
+          <div class="setting-row"><div class="setting-label">Model</div><div class="setting-ctrl"><select id="ai-model-select"><option value="claude-sonnet-4-20250514">claude-sonnet-4 (Recommended)</option><option value="claude-opus-4-20250514">claude-opus-4 (Most Capable)</option><option value="claude-haiku-4-5-20251001">claude-haiku-4.5 (Fast)</option></select></div></div>
+          <div class="setting-row"><div class="setting-label">Autocomplete AI Suggestions</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="ai-autocomplete" checked><span class="toggle-slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-label">Inline Explanations</div><div class="setting-ctrl"><label class="toggle"><input type="checkbox" id="ai-inline" checked><span class="toggle-slider"></span></label></div></div>
+        </div>
+        <div class="setting-group">
+          <h3>Plugin API</h3>
+          <div style="font-size:12.5px;color:var(--text1);line-height:1.7;background:var(--bg2);padding:12px;border-radius:var(--radius);font-family:var(--font-code);font-size:12px">
+            <div style="color:var(--accent2);margin-bottom:6px">// Plugin API (window.CodeForge)</div>
+            <div style="color:var(--text2)">window.CodeForge.registerPlugin(id, opts)</div>
+            <div style="color:var(--text2)">window.CodeForge.addCommand(label, fn, kb)</div>
+            <div style="color:var(--text2)">window.CodeForge.getCode()</div>
+            <div style="color:var(--text2)">window.CodeForge.setCode(code)</div>
+            <div style="color:var(--text2)">window.CodeForge.getLanguage()</div>
+            <div style="color:var(--text2)">window.CodeForge.onSave(callback)</div>
+            <div style="color:var(--text2)">window.CodeForge.addSidebarPanel(id, html)</div>
+            <div style="color:var(--text2)">window.CodeForge.notify(msg, type)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLUGINS -->
+      <div class="settings-section" id="sec-plugins">
+        <h2>Plugins & Extensions</h2>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input type="text" id="plugin-search" placeholder="Search plugins..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text0);padding:7px 12px;border-radius:var(--radius);flex:1;font-family:var(--font-ui);font-size:13px;outline:none">
+          <button class="hbtn primary" onclick="installPluginURL()">Install from URL</button>
+        </div>
+        <div id="plugins-list"></div>
+      </div>
+
+      <!-- ABOUT -->
+      <div class="settings-section" id="sec-about">
+        <h2>About CodeForge</h2>
+        <div style="font-size:13px;color:var(--text1);line-height:1.8">
+          <p style="margin-bottom:12px"><strong style="color:var(--text0)">CodeForge IDE v1.0.0</strong></p>
+          <p>A fully-featured web-based code editor supporting 20+ languages, themes, plugins, AI assistance, live preview, and more.</p>
+          <p style="margin-top:12px;color:var(--text2)">Built with vanilla HTML/CSS/JS. No dependencies.</p>
+          <div style="margin-top:20px;padding:12px;background:var(--bg2);border-radius:var(--radius);font-family:var(--font-code);font-size:12px">
+            <div>Version: 1.0.0</div>
+            <div>Engine: Web Platform</div>
+            <div>Plugin API: 1.0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New File Modal -->
+<div class="modal-overlay" id="new-file-modal">
+  <div class="modal">
+    <h3>New File</h3>
+    <input type="text" id="new-file-name" placeholder="filename.js" onkeydown="if(event.key==='Enter')confirmNewFile()">
+    <select id="new-file-lang">
+      <option value="js">JavaScript (.js)</option>
+      <option value="ts">TypeScript (.ts)</option>
+      <option value="html">HTML (.html)</option>
+      <option value="css">CSS (.css)</option>
+      <option value="py">Python (.py)</option>
+      <option value="rs">Rust (.rs)</option>
+      <option value="go">Go (.go)</option>
+      <option value="cpp">C++ (.cpp)</option>
+      <option value="c">C (.c)</option>
+      <option value="json">JSON (.json)</option>
+      <option value="md">Markdown (.md)</option>
+      <option value="xml">XML (.xml)</option>
+      <option value="sql">SQL (.sql)</option>
+      <option value="sh">Shell (.sh)</option>
+      <option value="yaml">YAML (.yaml)</option>
+      <option value="php">PHP (.php)</option>
+      <option value="rb">Ruby (.rb)</option>
+      <option value="swift">Swift (.swift)</option>
+      <option value="kt">Kotlin (.kt)</option>
+      <option value="java">Java (.java)</option>
+    </select>
+    <div class="modal-btns">
+      <button onclick="closeModal('new-file-modal')">Cancel</button>
+      <button class="ok" onclick="confirmNewFile()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Folder Modal -->
+<div class="modal-overlay" id="new-folder-modal">
+  <div class="modal">
+    <h3>New Folder</h3>
+    <input type="text" id="new-folder-name" placeholder="folder-name" onkeydown="if(event.key==='Enter')confirmNewFolder()">
+    <div class="modal-btns">
+      <button onclick="closeModal('new-folder-modal')">Cancel</button>
+      <button class="ok" onclick="confirmNewFolder()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rename Modal -->
+<div class="modal-overlay" id="rename-modal">
+  <div class="modal">
+    <h3>Rename</h3>
+    <input type="text" id="rename-input" onkeydown="if(event.key==='Enter')confirmRename()">
+    <div class="modal-btns">
+      <button onclick="closeModal('rename-modal')">Cancel</button>
+      <button class="ok" onclick="confirmRename()">Rename</button>
+    </div>
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div id="cmd-palette">
+  <input type="text" id="cmd-input" placeholder="Type a command or file name..." oninput="filterCommands(this.value)" onkeydown="handleCmdKey(event)">
+  <div id="cmd-results"></div>
+</div>
+
+<!-- Context Menu -->
+<div class="ctx-menu" id="ctx-menu" style="display:none"></div>
+
+<!-- Notifications -->
+<div id="notif-container"></div>
+
+<script>
+// =====================================================================
+// CODEFORGE IDE - Main Script
+// =====================================================================
+
+const IDE = {
+  tabs: [],
+  activeTab: null,
+  fs: { root: { type: 'folder', name: 'workspace', children: {}, expanded: true } },
+  settings: {
+    theme: 'theme-tokyo-night', fontSize: 13, lineHeight: 1.7,
+    tabSize: 2, useSpaces: true, wordWrap: false, minimap: true,
+    lineNumbers: true, hlActive: true, autoPairs: true, autocomplete: true,
+    autoSave: 1000, fontFamily: 'JetBrains Mono', lang: 'js',
+    aiKey: '', aiModel: 'claude-sonnet-4-20250514'
+  },
+  searchMatches: [], searchIdx: 0,
+  autoSaveTimer: null,
+  dragItem: null,
+  plugins: [],
+  cmdItems: [],
+  termHistory: [], termIdx: -1,
+  undoStack: [], redoStack: []
+};
+
+// =====================================================================
+// INITIALIZATION
+// =====================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  buildThemesGrid();
+  buildPluginsList();
+  buildKeybindList();
+  buildCommandPalette();
+  setupDefaultFS();
+  newTab('main.js', DEFAULT_CODE.js, 'js');
+  setupEditorEvents();
+  setupSplitters();
+  setupDropZone();
+  setupContextMenu();
+  updateMinimap();
+  setInterval(updateMinimap, 2000);
+  notify('Welcome to CodeForge IDE! 🚀', 'success');
+});
+
+const DEFAULT_CODE = {
+  js: `// Welcome to CodeForge IDE ✨
+// A powerful web-based code editor
+
+const greet = (name) => {
+  return \`Hello, \${name}! Welcome to CodeForge.\`;
+};
+
+class App {
+  constructor() {
+    this.name = 'CodeForge';
+    this.version = '1.0.0';
+    this.features = [
+      'Syntax highlighting',
+      'Smart autocomplete',
+      'AI assistant',
+      'Live preview',
+      'Plugin system',
+      'Multi-language support'
+    ];
+  }
+
+  run() {
+    console.log(greet(this.name));
+    this.features.forEach((f, i) => {
+      console.log(\`  \${i + 1}. \${f}\`);
+    });
+  }
+}
+
+const app = new App();
+app.run();`,
+  html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Page</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+    h1 { color: #7c6af7; }
+  </style>
+</head>
+<body>
+  <h1>Hello from CodeForge!</h1>
+  <p>Edit this file and press Run to preview.</p>
   <script>
-    // DOM Elements
-        const setupContainer = document.getElementById('setup-container');
-        const immersiveContainer = document.getElementById('immersive-container');
-        const fileInput = document.getElementById('fileInput');
-        const fileCountText = document.getElementById('fileCountText');
-        const animSelect = document.getElementById('animSelect');
-        const applyBtn = document.getElementById('applyBtn');
-        const animContainer = document.getElementById('animContainer');
-        const fsBtn = document.getElementById('fsBtn');
-
-        let imageURLs = [];
-        let animationFrameId = null;
-        let bouncePhysicsData = [];
-        
-        // Cache window dimensions for physics to avoid lag
-        let winW = window.innerWidth;
-        let winH = window.innerHeight;
-        window.addEventListener('resize', () => { winW = window.innerWidth; winH = window.innerHeight; });
-
-        // Auto-hide cursor for true immersion
-        let cursorTimeout;
-        document.addEventListener('mousemove', () => {
-            if(immersiveContainer.style.visibility === 'visible') {
-                document.body.style.cursor = 'default';
-                clearTimeout(cursorTimeout);
-                cursorTimeout = setTimeout(() => { document.body.style.cursor = 'none'; }, 2000);
-            }
-        });
-
-        // Handle File Uploads
-        fileInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files).filter(f => f.type === "image/png");
-            if (files.length > 0) {
-                imageURLs = files.map(file => URL.createObjectURL(file));
-                fileCountText.innerText = `${files.length} PNG(s) loaded ✨`;
-                fileCountText.style.color = "#d946ef";
-            } else {
-                fileCountText.innerText = `Click or Drop PNGs here`;
-                fileCountText.style.color = "#fff";
-            }
-        });
-
-        // Apply Button Logic
-        applyBtn.addEventListener('click', () => {
-            if (imageURLs.length === 0) {
-                alert("Please upload at least one PNG file first.");
-                return;
-            }
-            // Transition UI
-            setupContainer.style.opacity = '0';
-            setTimeout(() => {
-                setupContainer.style.visibility = 'hidden';
-                immersiveContainer.style.visibility = 'visible';
-                immersiveContainer.style.opacity = '1';
-                startAnimation(animSelect.value);
-            }, 800);
-        });
-
-        // Fullscreen Logic (Hides top bar on iPad/Desktop)
-        fsBtn.addEventListener('click', () => {
-            const elem = document.documentElement;
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (elem.requestFullscreen) elem.requestFullscreen();
-                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            }
-        });
-
-        // Helper: Ensure we have enough items for rich visual effects without overwhelming DOM
-        function getPopulatedImageArray(idealAmount, maxAmount = 80) {
-            let arr = [...imageURLs];
-            while (arr.length < idealAmount && arr.length < maxAmount) { arr = arr.concat(imageURLs); }
-            return arr.slice(0, maxAmount);
-        }
-
-        // Helper: Create an Image with async decoding for performance
-        function createOptimizedImg(src, className) {
-            const img = document.createElement('img');
-            img.src = src;
-            img.className = `hw-accel ${className}`;
-            img.decoding = "async"; // Prevents lag spikes when rendering
-            return img;
-        }
-
-        // --- ANIMATION ROUTER ---
-        function startAnimation(type) {
-            animContainer.innerHTML = '';
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-
-            if (type === 'strips') runStrips();
-            else if (type === 'rain') runRain();
-            else if (type === 'space') runSpace();
-            else if (type === 'bounce') runBounce();
-            else if (type === 'bubbles') runBubbles();
-            else if (type === 'whirlwind') runWhirlwind();
-            else if (type === 'orbit') runOrbit();
-        }
-
-        // 1. Rolling Strips
-        function runStrips() {
-            const stripImages = getPopulatedImageArray(30, 40);
-            const wrapper = document.createElement('div');
-            wrapper.className = 'strip-wrapper';
-
-            const fillStrip = (className) => {
-                const strip = document.createElement('div');
-                strip.className = `hw-accel strip ${className}`;
-                [...stripImages, ...stripImages].forEach(src => strip.appendChild(createOptimizedImg(src, '')));
-                return strip;
-            };
-
-            wrapper.appendChild(fillStrip('strip1'));
-            wrapper.appendChild(fillStrip('strip2'));
-            animContainer.appendChild(wrapper);
-        }
-
-        // 2. Cozy Rain
-        function runRain() {
-            const drops = getPopulatedImageArray(40, 60);
-            const fragment = document.createDocumentFragment();
-
-            drops.forEach(src => {
-                const img = createOptimizedImg(src, 'rain-img');
-                const size = 30 + Math.random() * 60;
-                const startX = Math.random() * 100;
-                const duration = 4 + Math.random() * 6;
-                const delay = Math.random() * -10; // Negative delay so it starts mid-animation
-                const rot = (Math.random() - 0.5) * 45;
-
-                img.style.width = `${size}px`;
-                img.style.setProperty('--startX', `${startX}vw`);
-                img.style.setProperty('--scale', 1);
-                img.style.setProperty('--rot', `${rot}deg`);
-                img.style.animationDuration = `${duration}s`;
-                img.style.animationDelay = `${delay}s`;
-                fragment.appendChild(img);
-            });
-            animContainer.appendChild(fragment);
-        }
-
-        // 3. Space Zoom
-        function runSpace() {
-            const objects = getPopulatedImageArray(50, 60);
-            const fragment = document.createDocumentFragment();
-
-            objects.forEach(src => {
-                const img = createOptimizedImg(src, 'space-img');
-                const tx = (Math.random() - 0.5) * 3000;
-                const ty = (Math.random() - 0.5) * 3000;
-                const scale = 2 + Math.random() * 4;
-                const rot = (Math.random() - 0.5) * 360;
-                const duration = 5 + Math.random() * 7;
-                const delay = Math.random() * -10;
-
-                img.style.width = `${30 + Math.random() * 40}px`;
-                img.style.setProperty('--tx', `${tx}px`);
-                img.style.setProperty('--ty', `${ty}px`);
-                img.style.setProperty('--scale', scale);
-                img.style.setProperty('--rot', `${rot}deg`);
-                img.style.animationDuration = `${duration}s`;
-                img.style.animationDelay = `${delay}s`;
-                fragment.appendChild(img);
-            });
-            animContainer.appendChild(fragment);
-        }
-
-        // 4. Floating Bubbles
-        function runBubbles() {
-            const bubbles = getPopulatedImageArray(40, 50);
-            const fragment = document.createDocumentFragment();
-
-            bubbles.forEach(src => {
-                const img = createOptimizedImg(src, 'bubble-img');
-                const size = 40 + Math.random() * 70;
-                const startX = Math.random() * 100;
-                const sway = (Math.random() - 0.5) * 40; // Horizontal drift
-                const duration = 8 + Math.random() * 12;
-                const delay = Math.random() * -15;
-
-                img.style.width = `${size}px`;
-                img.style.setProperty('--startX', `${startX}vw`);
-                img.style.setProperty('--sway', `${sway}vw`);
-                img.style.setProperty('--scale', 0.8 + Math.random() * 0.5);
-                img.style.setProperty('--rot', `${Math.random() * 360}deg`);
-                img.style.setProperty('--max-opacity', 0.4 + Math.random() * 0.6);
-                img.style.animationDuration = `${duration}s`;
-                img.style.animationDelay = `${delay}s`;
-                fragment.appendChild(img);
-            });
-            animContainer.appendChild(fragment);
-        }
-
-        // 5. 3D Whirlwind
-        function runWhirlwind() {
-            const objects = getPopulatedImageArray(40, 50);
-            const wrapper = document.createElement('div');
-            wrapper.className = 'whirlwind-wrapper';
-
-            objects.forEach((src, i) => {
-                const img = createOptimizedImg(src, 'whirlwind-img');
-                const size = 50 + Math.random() * 60;
-                
-                // Cylinder distribution
-                const angle = (i / objects.length) * 360 + (Math.random() * 20);
-                const height = (Math.random() - 0.5) * 800; // Spread vertically
-                const radius = 300 + Math.random() * 200;
-
-                img.style.width = `${size}px`;
-                img.style.transform = `translate(-50%, -50%) translateY(${height}px) rotateY(${angle}deg) translateZ(${radius}px)`;
-                wrapper.appendChild(img);
-            });
-            animContainer.appendChild(wrapper);
-        }
-
-        // 6. Orbit
-        function runOrbit() {
-            const objects = getPopulatedImageArray(25, 30);
-            const wrapper = document.createElement('div');
-            wrapper.className = 'orbit-wrapper';
-
-            objects.forEach((src, i) => {
-                const container = document.createElement('div');
-                container.className = 'orbit-container';
-                
-                const img = createOptimizedImg(src, 'orbit-img');
-                const size = 60 + Math.random() * 60;
-                const distance = 150 + Math.random() * 400; // Orbit radius
-                const speed = 10 + Math.random() * 20; // Orbit duration
-                const startAngle = Math.random() * 360;
-
-                container.style.width = `${distance * 2}px`;
-                container.style.height = `${distance * 2}px`;
-                container.style.left = `-${distance}px`;
-                container.style.top = `-${distance}px`;
-                container.style.animationDuration = `${speed}s`;
-                container.style.transform = `rotateZ(${startAngle}deg)`;
-                
-                // Inverse rotation on the image keeps it upright
-                img.style.width = `${size}px`;
-                img.style.left = `50%`;
-                img.style.top = `0%`; // Positioned at the edge of the container
-                img.style.animationDuration = `${speed}s`;
-
-                container.appendChild(img);
-                wrapper.appendChild(container);
-            });
-            animContainer.appendChild(wrapper);
-        }
-
-        // 7. High Performance Bouncing Physics
-        function runBounce() {
-            bouncePhysicsData = [];
-            const bounceItems = getPopulatedImageArray(20, 25);
-            const fragment = document.createDocumentFragment();
-            
-            bounceItems.forEach(src => {
-                const img = createOptimizedImg(src, 'bounce-img');
-                const size = 70 + Math.random() * 60;
-                img.style.width = `${size}px`;
-                fragment.appendChild(img);
-
-                bouncePhysicsData.push({
-                    el: img,
-                    size: size,
-                    x: Math.random() * (winW - size),
-                    y: Math.random() * -500 - size,
-                    vx: (Math.random() - 0.5) * 12,
-                    vy: 0,
-                    rot: Math.random() * 360,
-                    vrot: (Math.random() - 0.5) * 8
-                });
-            });
-            animContainer.appendChild(fragment);
-
-            const gravity = 0.5;
-            const friction = 0.99;
-            const bounceDampening = -0.75;
-
-            function updatePhysics() {
-                bouncePhysicsData.forEach(item => {
-                    item.vy += gravity;
-                    item.x += item.vx;
-                    item.y += item.vy;
-                    item.rot += item.vrot;
-
-                    // Floor
-                    if (item.y + item.size >= winH) {
-                        item.y = winH - item.size;
-                        item.vy *= bounceDampening;
-                        item.vx *= friction;
-                    }
-                    // Walls
-                    if (item.x <= 0) { item.x = 0; item.vx *= -1; item.vrot *= -1;} 
-                    else if (item.x + item.size >= winW) { item.x = winW - item.size; item.vx *= -1; item.vrot *= -1;}
-
-                    // translate3d forces hardware acceleration
-                    item.el.style.transform = `translate3d(${item.x}px, ${item.y}px, 0) rotate(${item.rot}deg)`;
-                });
-                animationFrameId = requestAnimationFrame(updatePhysics);
-            }
-            updatePhysics();
-        }
-  </script>
+    console.log('Hello from preview!');
+  <\/script>
 </body>
+</html>`,
+  css: `/* CodeForge CSS */
+:root {
+  --primary: #7c6af7;
+  --bg: #1a1a2e;
+  --text: #e8e8f0;
+}
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}`,
+  py: `# Welcome to CodeForge - Python
+from typing import List, Optional
+
+class Stack:
+    def __init__(self):
+        self._items: List = []
+
+    def push(self, item) -> None:
+        self._items.append(item)
+
+    def pop(self) -> Optional[any]:
+        return self._items.pop() if self._items else None
+
+    def peek(self) -> Optional[any]:
+        return self._items[-1] if self._items else None
+
+    def is_empty(self) -> bool:
+        return len(self._items) == 0
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def __repr__(self) -> str:
+        return f"Stack({self._items})"
+
+# Main
+stack = Stack()
+for i in range(5):
+    stack.push(i * 2)
+
+print(f"Stack: {stack}")
+print(f"Pop: {stack.pop()}")
+print(f"Peek: {stack.peek()}")`,
+  ts: `// TypeScript Example
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: 'admin' | 'user' | 'guest';
+}
+
+type ApiResponse<T> = {
+  data: T;
+  status: number;
+  message: string;
+};
+
+async function fetchUser(id: number): Promise<ApiResponse<User>> {
+  const response = await fetch(\`/api/users/\${id}\`);
+  return response.json();
+}
+
+const processUser = <T extends User>(user: T): string => {
+  return \`\${user.name} (\${user.role})\`;
+};
+
+export { User, ApiResponse, fetchUser, processUser };`,
+  md: `# CodeForge IDE
+
+A **powerful** web-based code editor with:
+
+- ✅ Multi-language syntax highlighting
+- ✅ Smart autocomplete & AI assistance
+- ✅ Live preview window
+- ✅ Plugin system
+- ✅ File tree with drag & drop
+- ✅ Terminal emulation
+- ✅ Git integration
+- ✅ Themes & customization
+
+## Getting Started
+
+\`\`\`javascript
+const ide = new CodeForge();
+ide.start();
+\`\`\`
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| \`Ctrl+F\` | Search |
+| \`Ctrl+P\` | Command Palette |
+| \`Ctrl+S\` | Save |
+| \`Ctrl+Z\` | Undo |
+`
+};
+
+function setupDefaultFS() {
+  addToFS('workspace', { type: 'file', name: 'main.js', lang: 'js', content: DEFAULT_CODE.js });
+  addToFS('workspace', { type: 'file', name: 'index.html', lang: 'html', content: DEFAULT_CODE.html });
+  addToFS('workspace', { type: 'file', name: 'style.css', lang: 'css', content: DEFAULT_CODE.css });
+  addToFS('workspace', { type: 'folder', name: 'src', children: {}, expanded: false });
+  addToFS('workspace/src', { type: 'file', name: 'app.ts', lang: 'ts', content: DEFAULT_CODE.ts });
+  addToFS('workspace/src', { type: 'file', name: 'utils.py', lang: 'py', content: DEFAULT_CODE.py });
+  addToFS('workspace', { type: 'folder', name: 'docs', children: {}, expanded: false });
+  addToFS('workspace/docs', { type: 'file', name: 'README.md', lang: 'md', content: DEFAULT_CODE.md });
+  renderFileTree();
+}
+
+// =====================================================================
+// FILE SYSTEM
+// =====================================================================
+function getNode(path) {
+  const parts = path.split('/');
+  let node = IDE.fs;
+  for (const p of parts) {
+    if (!node[p] && !node.children?.[p]) return null;
+    node = node[p] || node.children[p];
+  }
+  return node;
+}
+
+function addToFS(parentPath, item) {
+  const parent = getNode(parentPath);
+  if (!parent || parent.type !== 'folder') return;
+  parent.children[item.name] = item;
+}
+
+function renderFileTree() {
+  const tree = document.getElementById('file-tree');
+  tree.innerHTML = renderNode(IDE.fs.root, 'workspace', 0);
+  setupDragDrop();
+}
+
+function renderNode(node, path, depth) {
+  if (node.type === 'folder') {
+    const icon = node.expanded ? '📂' : '📁';
+    const childrenHtml = node.expanded && node.children
+      ? Object.values(node.children).map(c => renderNode(c, path + '/' + c.name, depth + 1)).join('')
+      : '';
+    return `<div class="tree-item folder" data-path="${path}" data-type="folder" draggable="true" onclick="toggleFolder('${path}',this)" oncontextmenu="showCtxMenu(event,'${path}','folder')">
+      <span style="margin-left:${depth*10}px;display:flex;align-items:center;gap:4px;width:100%">
+        <span style="font-size:13px">${icon}</span>
+        <span class="item-name">${node.name}</span>
+        <span class="item-actions">
+          <button onclick="event.stopPropagation();newFileIn('${path}')" title="New file">+📄</button>
+          <button onclick="event.stopPropagation();newFolderIn('${path}')" title="New folder">+📁</button>
+        </span>
+      </span>
+    </div>
+    <div class="tree-children ${node.expanded ? '' : 'collapsed'}" id="tc-${path.replace(/\//g,'_')}">${childrenHtml}</div>`;
+  } else {
+    const icon = getFileIcon(node.lang || getLangFromName(node.name));
+    return `<div class="tree-item" data-path="${path}" data-type="file" draggable="true" onclick="openFile('${path}')" oncontextmenu="showCtxMenu(event,'${path}','file')">
+      <span style="margin-left:${depth*10}px;display:flex;align-items:center;gap:4px;width:100%">
+        <span style="font-size:13px">${icon}</span>
+        <span class="item-name">${node.name}</span>
+        <span class="item-actions">
+          <button onclick="event.stopPropagation();renameItem('${path}')" title="Rename">✏</button>
+          <button onclick="event.stopPropagation();deleteItem('${path}')" title="Delete" style="color:var(--red)">✕</button>
+        </span>
+      </span>
+    </div>`;
+  }
+}
+
+function getFileIcon(lang) {
+  const icons = { js:'🟨', ts:'🔷', html:'🌐', css:'🎨', py:'🐍', rs:'🦀', go:'🐹', cpp:'⚙', c:'⚙', json:'📋', md:'📝', yaml:'📄', xml:'📄', sql:'🗃', sh:'💻', rb:'💎', swift:'🍎', kt:'🟣', java:'☕', php:'🐘', txt:'📄' };
+  return icons[lang] || '📄';
+}
+
+function getLangFromName(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const map = { js:'js', jsx:'js', ts:'ts', tsx:'ts', html:'html', htm:'html', css:'css', scss:'css', py:'py', rs:'rs', go:'go', cpp:'cpp', c:'c', h:'c', json:'json', md:'md', yaml:'yaml', yml:'yaml', xml:'xml', sql:'sql', sh:'sh', bash:'sh', rb:'rb', swift:'swift', kt:'kt', java:'java', php:'php', txt:'txt' };
+  return map[ext] || 'txt';
+}
+
+function toggleFolder(path, el) {
+  const node = getNode(path);
+  if (!node || node.type !== 'folder') return;
+  node.expanded = !node.expanded;
+  renderFileTree();
+}
+
+function openFile(path) {
+  const node = getNode(path);
+  if (!node || node.type !== 'file') return;
+  // Check if already open
+  const existing = IDE.tabs.find(t => t.path === path);
+  if (existing) { activateTab(existing.id); return; }
+  const tab = newTab(node.name, node.content || '', node.lang || getLangFromName(node.name), path);
+  document.getElementById('breadcrumb-file').textContent = node.name;
+  // Select in tree
+  document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll(`[data-path="${path}"]`).forEach(el => el.classList.add('selected'));
+}
+
+// =====================================================================
+// TABS
+// =====================================================================
+let tabIdCounter = 0;
+function newTab(name, content, lang, path) {
+  name = name || 'untitled.js';
+  content = content !== undefined ? content : DEFAULT_CODE[lang || 'js'] || '';
+  lang = lang || getLangFromName(name);
+  const id = ++tabIdCounter;
+  const tab = { id, name, content, lang, path: path || null, modified: false, scrollTop: 0, selStart: 0, selEnd: 0 };
+  IDE.tabs.push(tab);
+  renderTabs();
+  activateTab(id);
+  return tab;
+}
+
+function renderTabs() {
+  const bar = document.getElementById('tab-bar');
+  const add = `<button class="tab-add" onclick="newTab()" title="New Tab">+</button>`;
+  bar.innerHTML = add + IDE.tabs.map(t => `
+    <div class="editor-tab ${t.id === IDE.activeTab?.id ? 'active' : ''} ${t.modified ? 'modified' : ''}" data-id="${t.id}" onclick="activateTab(${t.id})" onmousedown="if(event.button===1)closeTab(${t.id})">
+      <span class="tab-icon">${getFileIcon(t.lang)}</span>
+      <span class="tab-name">${t.name}</span>
+      <button class="tab-close" onclick="event.stopPropagation();closeTab(${t.id})">×</button>
+    </div>`).join('');
+}
+
+function activateTab(id) {
+  if (IDE.activeTab) {
+    IDE.activeTab.content = document.getElementById('code-input').value;
+    IDE.activeTab.scrollTop = document.getElementById('code-scroll').scrollTop;
+  }
+  IDE.activeTab = IDE.tabs.find(t => t.id === id);
+  if (!IDE.activeTab) return;
+  const input = document.getElementById('code-input');
+  input.value = IDE.activeTab.content;
+  document.getElementById('code-scroll').scrollTop = IDE.activeTab.scrollTop || 0;
+  renderTabs();
+  highlight();
+  updateLineNumbers();
+  updateStatusBar();
+  document.getElementById('breadcrumb-file').textContent = IDE.activeTab.name;
+}
+
+function closeTab(id) {
+  const idx = IDE.tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  IDE.tabs.splice(idx, 1);
+  if (IDE.activeTab?.id === id) {
+    IDE.activeTab = IDE.tabs[Math.min(idx, IDE.tabs.length - 1)] || null;
+    if (IDE.activeTab) {
+      document.getElementById('code-input').value = IDE.activeTab.content;
+      highlight();
+    } else {
+      document.getElementById('code-input').value = '';
+      document.getElementById('code-highlight').innerHTML = '';
+    }
+  }
+  renderTabs();
+}
+
+function switchHeaderTab(tab, el) {
+  document.querySelectorAll('.header-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// =====================================================================
+// SYNTAX HIGHLIGHTING
+// =====================================================================
+const KEYWORDS = {
+  js: ['const','let','var','function','return','if','else','for','while','do','switch','case','break','continue','new','delete','typeof','instanceof','in','of','class','extends','super','import','export','default','async','await','try','catch','finally','throw','void','this','null','undefined','true','false','yield','from','as','static','get','set'],
+  ts: ['const','let','var','function','return','if','else','for','while','class','extends','import','export','interface','type','enum','namespace','implements','abstract','public','private','protected','readonly','async','await','typeof','instanceof','null','undefined','true','false','void','never','any','string','number','boolean','object'],
+  py: ['def','class','return','if','elif','else','for','while','in','not','and','or','import','from','as','try','except','finally','with','pass','break','continue','lambda','yield','global','nonlocal','del','raise','assert','True','False','None','print','range','len','type','isinstance'],
+  html: [],
+  css: ['body','div','span','h1','h2','h3','p','a','img','ul','li','input','button','@media','@keyframes','@import','from','to'],
+  rs: ['fn','let','mut','const','struct','enum','impl','trait','pub','use','mod','crate','super','self','if','else','loop','while','for','in','match','return','true','false','None','Some','Ok','Err','Vec','String','Option','Result','async','await','move','ref','type','where'],
+  go: ['func','var','const','type','struct','interface','map','chan','if','else','for','range','switch','case','default','return','break','continue','go','defer','select','import','package','nil','true','false','make','new','len','cap','append','copy','delete','close','panic','recover'],
+  cpp: ['int','float','double','char','void','bool','string','auto','const','static','struct','class','public','private','protected','virtual','override','return','if','else','for','while','do','switch','case','break','continue','new','delete','namespace','using','include','template','typename'],
+  java: ['public','private','protected','class','interface','extends','implements','static','final','void','return','if','else','for','while','do','switch','case','break','continue','new','import','package','throw','throws','try','catch','finally','null','true','false','this','super'],
+  sql: ['SELECT','FROM','WHERE','JOIN','ON','GROUP','BY','ORDER','HAVING','INSERT','INTO','VALUES','UPDATE','SET','DELETE','CREATE','TABLE','DROP','ALTER','INDEX','VIEW','AS','AND','OR','NOT','IN','LIKE','BETWEEN','IS','NULL','DISTINCT','LIMIT','OFFSET','INNER','LEFT','RIGHT','OUTER'],
+};
+
+const PAIR_CHARS = { '(':')', '{':'}', '[':']', '"':'"', "'":"'", '`':'`' };
+const CLOSE_CHARS = new Set([')', '}', ']', '"', "'", '`']);
+
+function highlight() {
+  const input = document.getElementById('code-input');
+  const hl = document.getElementById('code-highlight');
+  const code = input.value;
+  const lang = IDE.activeTab?.lang || 'js';
+  hl.innerHTML = highlightCode(code, lang);
+  updateLineNumbers();
+  syncScroll();
+}
+
+function escH(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlightCode(code, lang) {
+  if (lang === 'html') return highlightHTML(code);
+  if (lang === 'css') return highlightCSS(code);
+  if (lang === 'md') return highlightMD(code);
+  if (lang === 'json') return highlightJSON(code);
+  if (lang === 'sql') return highlightSQL(code);
+  return highlightGeneric(code, lang);
+}
+
+function highlightGeneric(code, lang) {
+  const kws = new Set((KEYWORDS[lang] || KEYWORDS.js).map(k => k.toLowerCase()));
+  const lines = code.split('\n');
+  return lines.map(line => {
+    let result = '';
+    let i = 0;
+    const chars = line;
+    while (i < chars.length) {
+      // Line comments
+      if ((chars[i] === '/' && chars[i+1] === '/') || (lang === 'py' && chars[i] === '#')) {
+        result += `<span class="cmt">${escH(chars.slice(i))}</span>`;
+        i = chars.length; continue;
+      }
+      // Block comment start
+      if (chars[i] === '/' && chars[i+1] === '*') {
+        let j = i + 2;
+        while (j < chars.length - 1 && !(chars[j] === '*' && chars[j+1] === '/')) j++;
+        j = Math.min(j + 2, chars.length);
+        result += `<span class="cmt">${escH(chars.slice(i, j))}</span>`;
+        i = j; continue;
+      }
+      // Strings
+      if (chars[i] === '"' || chars[i] === "'" || chars[i] === '`') {
+        const q = chars[i]; let j = i + 1;
+        while (j < chars.length && (chars[j] !== q || chars[j-1] === '\\')) j++;
+        j = Math.min(j + 1, chars.length);
+        result += `<span class="str">${escH(chars.slice(i, j))}</span>`;
+        i = j; continue;
+      }
+      // Numbers
+      if (/[0-9]/.test(chars[i]) && (i === 0 || /\W/.test(chars[i-1]))) {
+        let j = i;
+        while (j < chars.length && /[0-9._xboe]/i.test(chars[j])) j++;
+        result += `<span class="num">${escH(chars.slice(i, j))}</span>`;
+        i = j; continue;
+      }
+      // Identifiers / keywords
+      if (/[a-zA-Z_$]/.test(chars[i])) {
+        let j = i;
+        while (j < chars.length && /[a-zA-Z0-9_$]/.test(chars[j])) j++;
+        const word = chars.slice(i, j);
+        const wl = word.toLowerCase();
+        if (kws.has(wl)) {
+          result += `<span class="kw">${escH(word)}</span>`;
+        } else if (/^[A-Z]/.test(word)) {
+          result += `<span class="cls">${escH(word)}</span>`;
+        } else if (j < chars.length && chars[j] === '(') {
+          result += `<span class="fn">${escH(word)}</span>`;
+        } else {
+          result += escH(word);
+        }
+        i = j; continue;
+      }
+      // Operators
+      if (/[+\-*/%=<>!&|^~?:,;]/.test(chars[i])) {
+        result += `<span class="op">${escH(chars[i])}</span>`;
+        i++; continue;
+      }
+      result += escH(chars[i]); i++;
+    }
+    return result;
+  }).join('\n');
+}
+
+function highlightHTML(code) {
+  return escH(code)
+    .replace(/(&lt;\/?)([\w-]+)/g, (m,a,b) => `<span class="tag">${a}${b}</span>`)
+    .replace(/\s([\w-]+)=/g, (m,a) => ` <span class="attr">${a}</span>=`)
+    .replace(/=(&quot;|')(.*?)(\1)/g, (m,q,v,q2) => `=${q}<span class="val">${v}</span>${q2}`)
+    .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="cmt">$1</span>');
+}
+
+function highlightCSS(code) {
+  return escH(code)
+    .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="cmt">$1</span>')
+    .replace(/([\w-]+)\s*:/g, '<span class="attr">$1</span>:')
+    .replace(/:\s*([^;{}]+)/g, (m,v) => `: <span class="val">${v}</span>`)
+    .replace(/#[0-9a-fA-F]{3,8}/g, m => `<span class="num">${m}</span>`)
+    .replace(/(@\w+)/g, '<span class="kw">$1</span>');
+}
+
+function highlightMD(code) {
+  return escH(code)
+    .replace(/^(#{1,6} .*)$/gm, '<span class="cls">$1</span>')
+    .replace(/(`{3}[\s\S]*?`{3})/g, '<span class="str">$1</span>')
+    .replace(/(`[^`]+`)/g, '<span class="str">$1</span>')
+    .replace(/(\*\*[^*]+\*\*)/g, '<strong>$1</strong>')
+    .replace(/(\*[^*]+\*)/g, '<em class="cmt">$1</em>')
+    .replace(/^\s*[\-\*] /gm, '<span class="op">• </span>')
+    .replace(/(\[.*?\])\((.*?)\)/g, '<span class="fn">$1</span><span class="str">($2)</span>');
+}
+
+function highlightJSON(code) {
+  return escH(code)
+    .replace(/(".*?")\s*:/g, '<span class="attr">$1</span>:')
+    .replace(/:\s*(".*?")/g, ': <span class="str">$1</span>')
+    .replace(/:\s*(true|false|null)/g, (m,v) => `: <span class="bool">${v}</span>`)
+    .replace(/:\s*(-?[0-9.]+)/g, ': <span class="num">$1</span>');
+}
+
+function highlightSQL(code) {
+  const kws = KEYWORDS.sql;
+  let result = escH(code);
+  kws.forEach(kw => {
+    result = result.replace(new RegExp(`\\b${kw}\\b`, 'gi'), m => `<span class="kw">${m}</span>`);
+  });
+  return result.replace(/('.*?')/g, '<span class="str">$1</span>');
+}
+
+function updateLineNumbers() {
+  const input = document.getElementById('code-input');
+  const ln = document.getElementById('line-numbers');
+  const lines = input.value.split('\n').length;
+  const fontSize = IDE.settings.fontSize;
+  const lineH = IDE.settings.lineHeight;
+  ln.style.fontSize = fontSize + 'px';
+  ln.style.lineHeight = lineH;
+  const nums = Array.from({length: lines}, (_,i) => i + 1).join('\n');
+  ln.textContent = nums;
+}
+
+function syncScroll() {
+  const scroll = document.getElementById('code-scroll');
+  const hl = document.getElementById('code-highlight');
+  hl.style.transform = `translateY(-${scroll.scrollTop}px)`;
+}
+
+// =====================================================================
+// EDITOR EVENTS
+// =====================================================================
+function setupEditorEvents() {
+  const input = document.getElementById('code-input');
+  const scroll = document.getElementById('code-scroll');
+
+  input.addEventListener('input', () => {
+    if (IDE.activeTab) { IDE.activeTab.content = input.value; IDE.activeTab.modified = true; }
+    highlight();
+    updateStatusBar();
+    triggerAutocomplete();
+    scheduleAutoSave();
+    renderTabs();
+    updateMinimap();
+  });
+
+  input.addEventListener('keydown', handleEditorKeydown);
+  input.addEventListener('click', () => { updateCursorPos(); closeAutocomplete(); });
+  input.addEventListener('keyup', () => { updateCursorPos(); });
+  input.addEventListener('scroll', syncScroll);
+  scroll.addEventListener('scroll', () => { syncScroll(); updateMinimapViewport(); });
+
+  // iPad/touch paste
+  input.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    insertAtCursor(text);
+    highlight();
+  });
+
+  // Drag over editor to import
+  document.getElementById('code-wrapper').addEventListener('dragover', e => e.preventDefault());
+  document.getElementById('code-wrapper').addEventListener('drop', e => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files);
+  });
+
+  document.addEventListener('keydown', globalKeydown);
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#ctx-menu')) hideCtxMenu();
+    if (!e.target.closest('#cmd-palette') && !e.target.closest('#cmd-input')) closeCommandPalette();
+    if (!e.target.closest('#autocomplete-popup')) closeAutocomplete();
+  });
+}
+
+function handleEditorKeydown(e) {
+  const input = document.getElementById('code-input');
+
+  // Autocomplete navigation
+  const popup = document.getElementById('autocomplete-popup');
+  if (popup.style.display !== 'none') {
+    const items = popup.querySelectorAll('.ac-item');
+    const sel = popup.querySelector('.ac-item.selected');
+    const idx = [...items].indexOf(sel);
+    if (e.key === 'ArrowDown') { e.preventDefault(); items[Math.min(idx+1,items.length-1)]?.classList.add('selected'); sel?.classList.remove('selected'); items[Math.min(idx+1,items.length-1)]?.scrollIntoView({block:'nearest'}); return; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); items[Math.max(idx-1,0)]?.classList.add('selected'); sel?.classList.remove('selected'); return; }
+    if (e.key === 'Tab' || e.key === 'Enter') { e.preventDefault(); if (sel) applyAutocomplete(sel.dataset.value); else closeAutocomplete(); return; }
+    if (e.key === 'Escape') { closeAutocomplete(); return; }
+  }
+
+  // Tab
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    if (e.shiftKey) { unindentSelection(); } else { indentSelection(); }
+    return;
+  }
+
+  // Auto-pairs
+  if (document.getElementById('auto-pairs')?.checked !== false) {
+    if (PAIR_CHARS[e.key]) {
+      e.preventDefault();
+      const s = input.selectionStart, en = input.selectionEnd;
+      const close = PAIR_CHARS[e.key];
+      if (s !== en) {
+        const sel = input.value.slice(s, en);
+        insertAtCursor(e.key + sel + close, true);
+      } else if (e.key === close && input.value[s] === close) {
+        input.selectionStart = input.selectionEnd = s + 1;
+      } else {
+        insertAtCursor(e.key + close, false);
+        input.selectionStart = input.selectionEnd = s + 1;
+      }
+      highlight(); return;
+    }
+    if (e.key === 'Backspace') {
+      const s = input.selectionStart;
+      const ch = input.value[s-1];
+      if (PAIR_CHARS[ch] && input.value[s] === PAIR_CHARS[ch]) {
+        e.preventDefault();
+        const v = input.value;
+        input.value = v.slice(0,s-1) + v.slice(s+1);
+        input.selectionStart = input.selectionEnd = s - 1;
+        if (IDE.activeTab) IDE.activeTab.content = input.value;
+        highlight(); return;
+      }
+    }
+  }
+
+  // Enter - auto-indent
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const s = input.selectionStart;
+    const lines = input.value.slice(0, s).split('\n');
+    const curLine = lines[lines.length - 1];
+    const indent = curLine.match(/^(\s*)/)[1];
+    const lastChar = curLine.trimEnd().slice(-1);
+    const nextChar = input.value[s];
+    if (PAIR_CHARS[lastChar] && PAIR_CHARS[lastChar] === nextChar) {
+      insertAtCursor('\n' + indent + (IDE.settings.useSpaces ? ' '.repeat(IDE.settings.tabSize) : '\t') + '\n' + indent, false);
+      input.selectionStart = input.selectionEnd = s + indent.length + IDE.settings.tabSize + 1;
+    } else {
+      const extra = (lastChar === '{' || lastChar === '(' || lastChar === '[') ? (IDE.settings.useSpaces ? ' '.repeat(IDE.settings.tabSize) : '\t') : '';
+      insertAtCursor('\n' + indent + extra, false);
+    }
+    highlight(); updateStatusBar(); return;
+  }
+
+  // Undo / Redo
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); return; }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); doRedo(); return; }
+
+  // Comment toggle
+  if ((e.ctrlKey || e.metaKey) && e.key === '/') { e.preventDefault(); toggleComment(); return; }
+
+  // Duplicate line
+  if ((e.ctrlKey || e.metaKey) && e.key === 'd') { e.preventDefault(); duplicateLine(); return; }
+
+  // Move line
+  if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); moveLine(e.key === 'ArrowUp' ? -1 : 1); return; }
+
+  // Save
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); return; }
+
+  // Select all
+  if ((e.ctrlKey || e.metaKey) && e.key === 'a') { return; } // allow default
+
+  // Push to undo stack before content changes
+  IDE.undoStack.push({ content: input.value, sel: input.selectionStart });
+  if (IDE.undoStack.length > 500) IDE.undoStack.shift();
+}
+
+function globalKeydown(e) {
+  const tag = e.target.tagName;
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); toggleSearchBar(true); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') { e.preventDefault(); openCommandPalette(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); toggleSidebar(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === '`') { e.preventDefault(); toggleTerminal(); }
+  if (e.key === 'F11') { e.preventDefault(); toggleFullscreen(); }
+  if (e.key === 'Escape') { closeCommandPalette(); toggleSearchBar(false); closeAutocomplete(); }
+}
+
+function insertAtCursor(text, selectRange) {
+  const input = document.getElementById('code-input');
+  const s = input.selectionStart, e = input.selectionEnd;
+  const v = input.value;
+  input.value = v.slice(0, s) + text + v.slice(e);
+  if (selectRange) { input.selectionStart = s; input.selectionEnd = s + text.length; }
+  else { input.selectionStart = input.selectionEnd = s + text.length; }
+  if (IDE.activeTab) IDE.activeTab.content = input.value;
+}
+
+function indentSelection() {
+  const input = document.getElementById('code-input');
+  const s = input.selectionStart, e = input.selectionEnd;
+  const v = input.value;
+  const indent = IDE.settings.useSpaces ? ' '.repeat(IDE.settings.tabSize) : '\t';
+  if (s === e) {
+    insertAtCursor(indent, false);
+  } else {
+    const start = v.lastIndexOf('\n', s - 1) + 1;
+    const end = v.indexOf('\n', e - 1);
+    const block = v.slice(start, end === -1 ? v.length : end);
+    const indented = block.split('\n').map(l => indent + l).join('\n');
+    input.value = v.slice(0, start) + indented + v.slice(end === -1 ? v.length : end);
+    input.selectionStart = start;
+    input.selectionEnd = start + indented.length;
+  }
+  if (IDE.activeTab) IDE.activeTab.content = input.value;
+  highlight();
+}
+
+function unindentSelection() {
+  const input = document.getElementById('code-input');
+  const s = input.selectionStart;
+  const v = input.value;
+  const indent = IDE.settings.useSpaces ? ' '.repeat(IDE.settings.tabSize) : '\t';
+  const start = v.lastIndexOf('\n', s - 1) + 1;
+  const lineStart = v.slice(start);
+  if (lineStart.startsWith(indent)) {
+    input.value = v.slice(0, start) + lineStart.slice(indent.length);
+    input.selectionStart = input.selectionEnd = Math.max(s - indent.length, start);
+    if (IDE.activeTab) IDE.activeTab.content = input.value;
+    highlight();
+  }
+}
+
+function toggleComment() {
+  const input = document.getElementById('code-input');
+  const lang = IDE.activeTab?.lang || 'js';
+  const prefix = { js:'// ', ts:'// ', py:'# ', html:'<!-- ', css:'/* ', go:'// ', rs:'// ', cpp:'// ', c:'// ', java:'// ', sh:'# ', rb:'# ', sql:'-- ' }[lang] || '// ';
+  const suffix = { html:' -->', css:' */' }[lang] || '';
+  const s = input.selectionStart;
+  const v = input.value;
+  const lineStart = v.lastIndexOf('\n', s - 1) + 1;
+  const lineEnd = v.indexOf('\n', s);
+  const end = lineEnd === -1 ? v.length : lineEnd;
+  const line = v.slice(lineStart, end);
+  let newLine;
+  if (line.trimStart().startsWith(prefix.trim())) {
+    newLine = line.replace(prefix, '').replace(suffix, '');
+  } else {
+    newLine = prefix + line + suffix;
+  }
+  input.value = v.slice(0, lineStart) + newLine + v.slice(end);
+  input.selectionStart = input.selectionEnd = s + (newLine.length - line.length);
+  if (IDE.activeTab) IDE.activeTab.content = input.value;
+  highlight();
+}
+
+function duplicateLine() {
+  const input = document.getElementById('code-input');
+  const s = input.selectionStart;
+  const v = input.value;
+  const lineStart = v.lastIndexOf('\n', s - 1) + 1;
+  const lineEnd = v.indexOf('\n', s);
+  const end = lineEnd === -1 ? v.length : lineEnd;
+  const line = v.slice(lineStart, end);
+  input.value = v.slice(0, end) + '\n' + line + v.slice(end);
+  input.selectionStart = input.selectionEnd = s + line.length + 1;
+  if (IDE.activeTab) IDE.activeTab.content = input.value;
+  highlight();
+}
+
+function moveLine(dir) {
+  const input = document.getElementById('code-input');
+  const s = input.selectionStart;
+  const v = input.value;
+  const lines = v.split('\n');
+  let charCount = 0, lineIdx = 0;
+  for (let i = 0; i < lines.length; i++) {
+    if (charCount + lines[i].length >= s) { lineIdx = i; break; }
+    charCount += lines[i].length + 1;
+  }
+  const target = lineIdx + dir;
+  if (target < 0 || target >= lines.length) return;
+  [lines[lineIdx], lines[target]] = [lines[target], lines[lineIdx]];
+  const newV = lines.join('\n');
+  const offset = dir * (lines[lineIdx].length + 1);
+  input.value = newV;
+  input.selectionStart = input.selectionEnd = s + offset;
+  if (IDE.activeTab) IDE.activeTab.content = newV;
+  highlight();
+}
+
+function doUndo() {
+  const item = IDE.undoStack.pop();
+  if (!item) return;
+  const input = document.getElementById('code-input');
+  IDE.redoStack.push({ content: input.value, sel: input.selectionStart });
+  input.value = item.content;
+  input.selectionStart = input.selectionEnd = item.sel;
+  if (IDE.activeTab) IDE.activeTab.content = item.content;
+  highlight();
+}
+
+function doRedo() {
+  const item = IDE.redoStack.pop();
+  if (!item) return;
+  const input = document.getElementById('code-input');
+  IDE.undoStack.push({ content: input.value, sel: input.selectionStart });
+  input.value = item.content;
+  input.selectionStart = input.selectionEnd = item.sel;
+  if (IDE.activeTab) IDE.activeTab.content = item.content;
+  highlight();
+}
+
+// =====================================================================
+// AUTOCOMPLETE
+// =====================================================================
+const COMPLETIONS = {
+  js: [
+    {label:'console.log',kind:'fn',detail:'Log to console',insert:'console.log()'},
+    {label:'console.error',kind:'fn',detail:'Log error',insert:'console.error()'},
+    {label:'document.getElementById',kind:'fn',detail:'Get DOM element',insert:'document.getElementById("")'},
+    {label:'document.querySelector',kind:'fn',detail:'Query selector',insert:'document.querySelector("")'},
+    {label:'addEventListener',kind:'fn',detail:'Add event listener',insert:'addEventListener("", () => {})'},
+    {label:'setTimeout',kind:'fn',detail:'Delay execution',insert:'setTimeout(() => {}, 1000)'},
+    {label:'setInterval',kind:'fn',detail:'Repeat execution',insert:'setInterval(() => {}, 1000)'},
+    {label:'Promise',kind:'cls',detail:'Async promise',insert:'new Promise((resolve, reject) => {})'},
+    {label:'async function',kind:'kw',detail:'Async function',insert:'async function name() {\n  \n}'},
+    {label:'arrow function',kind:'fn',detail:'Arrow function',insert:'const name = () => {\n  \n}'},
+    {label:'class',kind:'kw',detail:'Class definition',insert:'class Name {\n  constructor() {\n    \n  }\n}'},
+    {label:'import',kind:'kw',detail:'Import module',insert:"import { } from ''"},
+    {label:'export default',kind:'kw',detail:'Export default',insert:'export default '},
+    {label:'fetch',kind:'fn',detail:'HTTP request',insert:"fetch('').then(r => r.json())"},
+    {label:'JSON.parse',kind:'fn',detail:'Parse JSON',insert:'JSON.parse()'},
+    {label:'JSON.stringify',kind:'fn',detail:'Stringify JSON',insert:'JSON.stringify(, null, 2)'},
+    {label:'Array.from',kind:'fn',detail:'Create array from',insert:'Array.from()'},
+    {label:'Object.keys',kind:'fn',detail:'Get object keys',insert:'Object.keys()'},
+    {label:'Object.values',kind:'fn',detail:'Get object values',insert:'Object.values()'},
+    {label:'try catch',kind:'kw',detail:'Error handling',insert:'try {\n  \n} catch (error) {\n  console.error(error);\n}'},
+    {label:'for of',kind:'kw',detail:'For..of loop',insert:'for (const item of items) {\n  \n}'},
+    {label:'forEach',kind:'fn',detail:'Array forEach',insert:'.forEach((item) => {\n  \n})'},
+    {label:'map',kind:'fn',detail:'Array map',insert:'.map((item) => item)'},
+    {label:'filter',kind:'fn',detail:'Array filter',insert:'.filter((item) => item)'},
+    {label:'reduce',kind:'fn',detail:'Array reduce',insert:'.reduce((acc, item) => acc + item, 0)'},
+  ],
+  py: [
+    {label:'def',kind:'kw',detail:'Function definition',insert:'def name():\n    pass'},
+    {label:'class',kind:'kw',detail:'Class definition',insert:'class Name:\n    def __init__(self):\n        pass'},
+    {label:'if __name__',kind:'kw',detail:'Main guard',insert:"if __name__ == '__main__':\n    main()"},
+    {label:'print',kind:'fn',detail:'Print output',insert:'print()'},
+    {label:'range',kind:'fn',detail:'Range iterator',insert:'range()'},
+    {label:'list comprehension',kind:'kw',detail:'List comprehension',insert:'[x for x in items]'},
+    {label:'dict comprehension',kind:'kw',detail:'Dict comprehension',insert:'{k: v for k, v in items.items()}'},
+    {label:'lambda',kind:'kw',detail:'Lambda function',insert:'lambda x: x'},
+    {label:'try except',kind:'kw',detail:'Error handling',insert:'try:\n    pass\nexcept Exception as e:\n    print(e)'},
+    {label:'with open',kind:'kw',detail:'File context',insert:"with open('file', 'r') as f:\n    content = f.read()"},
+    {label:'@property',kind:'dec',detail:'Property decorator',insert:'@property\ndef name(self):\n    return self._name'},
+    {label:'@staticmethod',kind:'dec',detail:'Static method',insert:'@staticmethod\ndef name():\n    pass'},
+  ],
+  html: [
+    {label:'div',kind:'tag',detail:'Block container',insert:'<div class="">\n  \n</div>'},
+    {label:'button',kind:'tag',detail:'Button element',insert:'<button onclick="">\n  \n</button>'},
+    {label:'input',kind:'tag',detail:'Input field',insert:'<input type="text" placeholder="">'},
+    {label:'form',kind:'tag',detail:'Form element',insert:'<form onsubmit="">\n  \n</form>'},
+    {label:'img',kind:'tag',detail:'Image',insert:'<img src="" alt="">'},
+    {label:'a',kind:'tag',detail:'Link',insert:'<a href="">\n  \n</a>'},
+    {label:'ul',kind:'tag',detail:'Unordered list',insert:'<ul>\n  <li></li>\n</ul>'},
+    {label:'table',kind:'tag',detail:'Table',insert:'<table>\n  <tr><th></th></tr>\n  <tr><td></td></tr>\n</table>'},
+    {label:'script',kind:'tag',detail:'Script block',insert:'<script>\n  \n<\/script>'},
+    {label:'style',kind:'tag',detail:'Style block',insert:'<style>\n  \n</style>'},
+    {label:'meta viewport',kind:'tag',detail:'Viewport meta',insert:'<meta name="viewport" content="width=device-width, initial-scale=1.0">'},
+    {label:'link css',kind:'tag',detail:'CSS link',insert:'<link rel="stylesheet" href="">'},
+  ],
+  css: [
+    {label:'display flex',kind:'val',detail:'Flexbox',insert:'display: flex;\nalign-items: center;\njustify-content: center;'},
+    {label:'display grid',kind:'val',detail:'Grid layout',insert:'display: grid;\ngrid-template-columns: repeat(3, 1fr);\ngap: 16px;'},
+    {label:'transition',kind:'prop',detail:'CSS transition',insert:'transition: all 0.3s ease;'},
+    {label:'animation',kind:'prop',detail:'CSS animation',insert:'animation: name 1s ease infinite;'},
+    {label:'@keyframes',kind:'kw',detail:'Keyframes',insert:'@keyframes name {\n  from { }\n  to { }\n}'},
+    {label:'border-radius',kind:'prop',detail:'Rounded corners',insert:'border-radius: 8px;'},
+    {label:'box-shadow',kind:'prop',detail:'Box shadow',insert:'box-shadow: 0 4px 20px rgba(0,0,0,0.15);'},
+    {label:'media query',kind:'kw',detail:'Responsive breakpoint',insert:'@media (max-width: 768px) {\n  \n}'},
+    {label:'var()',kind:'fn',detail:'CSS variable',insert:'var(--name)'},
+    {label:'linear-gradient',kind:'fn',detail:'Linear gradient',insert:'linear-gradient(135deg, #667eea, #764ba2)'},
+    {label:'position absolute',kind:'val',detail:'Absolute positioning',insert:'position: absolute;\ntop: 0;\nleft: 0;'},
+  ]
+};
+
+let acTimer = null;
+function triggerAutocomplete() {
+  clearTimeout(acTimer);
+  if (!document.getElementById('autocomplete-enabled')?.checked) return;
+  acTimer = setTimeout(showAutocomplete, 300);
+}
+
+function showAutocomplete() {
+  const input = document.getElementById('code-input');
+  const pos = input.selectionStart;
+  const text = input.value.slice(0, pos);
+  const wordMatch = text.match(/[\w.]+$/);
+  if (!wordMatch || wordMatch[0].length < 2) { closeAutocomplete(); return; }
+  const word = wordMatch[0].toLowerCase();
+  const lang = IDE.activeTab?.lang || 'js';
+  const pool = [...(COMPLETIONS[lang] || []), ...(COMPLETIONS.js || [])];
+  const matches = pool.filter(c => c.label.toLowerCase().includes(word) || (c.insert || '').toLowerCase().includes(word)).slice(0, 12);
+  if (!matches.length) { closeAutocomplete(); return; }
+
+  const popup = document.getElementById('autocomplete-popup');
+  popup.innerHTML = matches.map((m, i) => `
+    <div class="ac-item ${i===0?'selected':''}" data-value="${escH(m.insert||m.label)}" onclick="applyAutocomplete(this.dataset.value)">
+      <span class="ac-kind">${m.kind}</span>
+      <span class="ac-label">${escH(m.label)}</span>
+      <span class="ac-detail">${escH(m.detail||'')}</span>
+    </div>`).join('');
+
+  // Position popup near cursor
+  const rect = input.getBoundingClientRect();
+  const lineH = IDE.settings.fontSize * IDE.settings.lineHeight;
+  const lines = input.value.slice(0, pos).split('\n');
+  const row = lines.length;
+  const col = lines[lines.length - 1].length;
+  popup.style.left = Math.min(rect.left + col * IDE.settings.fontSize * 0.6, window.innerWidth - 420) + 'px';
+  popup.style.top = Math.min(rect.top + row * lineH + 14, window.innerHeight - 240) + 'px';
+  popup.style.display = 'block';
+}
+
+function applyAutocomplete(value) {
+  const input = document.getElementById('code-input');
+  const pos = input.selectionStart;
+  const text = input.value.slice(0, pos);
+  const wordMatch = text.match(/[\w.]+$/);
+  const start = wordMatch ? pos - wordMatch[0].length : pos;
+  input.value = input.value.slice(0, start) + value + input.value.slice(pos);
+  input.selectionStart = input.selectionEnd = start + value.length;
+  if (IDE.activeTab) IDE.activeTab.content = input.value;
+  closeAutocomplete();
+  highlight();
+}
+
+function closeAutocomplete() {
+  document.getElementById('autocomplete-popup').style.display = 'none';
+}
+
+// =====================================================================
+// SEARCH & REPLACE
+// =====================================================================
+function toggleSearchBar(force) {
+  const bar = document.getElementById('search-bar');
+  const visible = force !== undefined ? force : !bar.classList.contains('visible');
+  bar.classList.toggle('visible', visible);
+  if (visible) { document.getElementById('sb-find').focus(); document.getElementById('sb-find').select(); }
+  else { clearSearchHighlights(); }
+}
+
+function doSearch(query) {
+  clearSearchHighlights();
+  IDE.searchMatches = [];
+  IDE.searchIdx = 0;
+  if (!query) { document.getElementById('sb-count').textContent = '0 results'; return; }
+  const input = document.getElementById('code-input');
+  const code = input.value;
+  const lower = code.toLowerCase();
+  const ql = query.toLowerCase();
+  let idx = 0;
+  while ((idx = lower.indexOf(ql, idx)) !== -1) {
+    IDE.searchMatches.push(idx);
+    idx += ql.length;
+  }
+  document.getElementById('sb-count').textContent = `${IDE.searchMatches.length} result${IDE.searchMatches.length!==1?'s':''}`;
+  if (IDE.searchMatches.length) { IDE.searchIdx = 0; scrollToMatch(); }
+  applySearchHighlights(query);
+}
+
+function applySearchHighlights(query) {
+  // visual indicator in status
+  const cnt = IDE.searchMatches.length;
+  const el = document.getElementById('sb-count');
+  el.textContent = cnt ? `${IDE.searchIdx+1}/${cnt}` : '0 results';
+}
+
+function clearSearchHighlights() { IDE.searchMatches = []; }
+
+function findNext() {
+  if (!IDE.searchMatches.length) return;
+  IDE.searchIdx = (IDE.searchIdx + 1) % IDE.searchMatches.length;
+  scrollToMatch();
+}
+
+function findPrev() {
+  if (!IDE.searchMatches.length) return;
+  IDE.searchIdx = (IDE.searchIdx - 1 + IDE.searchMatches.length) % IDE.searchMatches.length;
+  scrollToMatch();
+}
+
+function scrollToMatch() {
+  const input = document.getElementById('code-input');
+  const query = document.getElementById('sb-find').value;
+  const idx = IDE.searchMatches[IDE.searchIdx];
+  input.focus();
+  input.setSelectionRange(idx, idx + query.length);
+  const el = document.getElementById('sb-count');
+  el.textContent = `${IDE.searchIdx+1}/${IDE.searchMatches.length}`;
+  // Scroll to line
+  const before = input.value.slice(0, idx);
+  const lineNum = before.split('\n').length - 1;
+  const lineH = IDE.settings.fontSize * IDE.settings.lineHeight;
+  document.getElementById('code-scroll').scrollTop = Math.max(0, lineNum * lineH - 100);
+}
+
+function replaceOne() {
+  const query = document.getElementById('sb-find').value;
+  const repl = document.getElementById('sb-replace').value;
+  if (!query || !IDE.searchMatches.length) return;
+  const input = document.getElementById('code-input');
+  const idx = IDE.searchMatches[IDE.searchIdx];
+  input.value = input.value.slice(0, idx) + repl + input.value.slice(idx + query.length);
+  if (IDE.activeTab) IDE.activeTab.content = input.value;
+  highlight();
+  doSearch(query);
+  notify(`Replaced 1 occurrence`, 'info');
+}
+
+function replaceAll() {
+  const query = document.getElementById('sb-find').value;
+  const repl = document.getElementById('sb-replace').value;
+  if (!query) return;
+  const input = document.getElementById('code-input');
+  const count = IDE.searchMatches.length;
+  const flags = 'gi';
+  try {
+    input.value = input.value.replace(new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), flags), repl);
+  } catch { input.value = input.value.split(query).join(repl); }
+  if (IDE.activeTab) IDE.activeTab.content = input.value;
+  highlight();
+  doSearch(query);
+  notify(`Replaced ${count} occurrence${count!==1?'s':''}`, 'success');
+}
+
+function globalSearch(query) {
+  const results = document.getElementById('search-results');
+  if (!query) { results.innerHTML = ''; return; }
+  const matches = [];
+  function searchNode(node, path) {
+    if (node.type === 'file' && node.content) {
+      const lines = node.content.split('\n');
+      lines.forEach((line, i) => {
+        if (line.toLowerCase().includes(query.toLowerCase())) {
+          matches.push({ file: path, line: i + 1, text: line.trim(), path });
+        }
+      });
+    } else if (node.type === 'folder' && node.children) {
+      Object.values(node.children).forEach(c => searchNode(c, path + '/' + c.name));
+    }
+  }
+  searchNode(IDE.fs.root, 'workspace');
+  results.innerHTML = matches.slice(0, 50).map(m => `
+    <div class="search-result" onclick="openFile('${m.path}');IDE.settings._jumpLine=${m.line}">
+      <div class="sr-file">${m.file.split('/').pop()} :${m.line}</div>
+      <div class="sr-line">${escH(m.text)}</div>
+    </div>`).join('') || '<div style="color:var(--text2);font-size:12px;padding:8px">No results</div>';
+}
+
+function globalReplaceAll() {
+  const query = document.getElementById('global-search').value;
+  const repl = document.getElementById('global-replace').value;
+  if (!query) return;
+  let count = 0;
+  function replaceNode(node) {
+    if (node.type === 'file' && node.content) {
+      const before = node.content;
+      node.content = node.content.split(query).join(repl);
+      if (node.content !== before) count += (before.split(query).length - 1);
+    } else if (node.type === 'folder' && node.children) {
+      Object.values(node.children).forEach(replaceNode);
+    }
+  }
+  replaceNode(IDE.fs.root);
+  if (IDE.activeTab) { document.getElementById('code-input').value = IDE.activeTab.content; highlight(); }
+  notify(`Replaced ${count} occurrence${count!==1?'s':''} across all files`, 'success');
+}
+
+// =====================================================================
+// FILE OPERATIONS
+// =====================================================================
+function saveFile() {
+  if (!IDE.activeTab) return;
+  IDE.activeTab.content = document.getElementById('code-input').value;
+  IDE.activeTab.modified = false;
+  if (IDE.activeTab.path) {
+    const node = getNode(IDE.activeTab.path);
+    if (node) node.content = IDE.activeTab.content;
+  }
+  renderTabs();
+  notify(`${IDE.activeTab.name} saved`, 'success');
+  window.CodeForge._saveCallbacks.forEach(cb => cb(IDE.activeTab));
+}
+
+function scheduleAutoSave() {
+  if (!IDE.settings.autoSave) return;
+  clearTimeout(IDE.autoSaveTimer);
+  IDE.autoSaveTimer = setTimeout(saveFile, IDE.settings.autoSave);
+}
+
+function newFile() {
+  document.getElementById('new-file-name').value = '';
+  openModal('new-file-modal');
+  setTimeout(() => document.getElementById('new-file-name').focus(), 100);
+}
+
+function newFileIn(path) {
+  IDE._newFileInPath = path;
+  newFile();
+}
+
+function confirmNewFile() {
+  const name = document.getElementById('new-file-name').value.trim();
+  if (!name) return;
+  const lang = getLangFromName(name);
+  const path = (IDE._newFileInPath || 'workspace') + '/' + name;
+  addToFS(IDE._newFileInPath || 'workspace', { type: 'file', name, lang, content: DEFAULT_CODE[lang] || '' });
+  IDE._newFileInPath = null;
+  renderFileTree();
+  closeModal('new-file-modal');
+  openFile(path);
+}
+
+function newFolder() {
+  document.getElementById('new-folder-name').value = '';
+  openModal('new-folder-modal');
+  setTimeout(() => document.getElementById('new-folder-name').focus(), 100);
+}
+
+function newFolderIn(path) { IDE._newFolderInPath = path; newFolder(); }
+
+function confirmNewFolder() {
+  const name = document.getElementById('new-folder-name').value.trim();
+  if (!name) return;
+  addToFS(IDE._newFolderInPath || 'workspace', { type: 'folder', name, children: {}, expanded: false });
+  IDE._newFolderInPath = null;
+  renderFileTree();
+  closeModal('new-folder-modal');
+}
+
+function deleteItem(path) {
+  const parts = path.split('/');
+  const name = parts.pop();
+  const parent = getNode(parts.join('/'));
+  if (!parent || !parent.children) return;
+  delete parent.children[name];
+  IDE.tabs = IDE.tabs.filter(t => t.path !== path);
+  if (IDE.activeTab?.path === path) {
+    IDE.activeTab = IDE.tabs[0] || null;
+    if (IDE.activeTab) activateTab(IDE.activeTab.id);
+    else document.getElementById('code-input').value = '';
+  }
+  renderFileTree();
+  renderTabs();
+  notify(`Deleted ${name}`, 'info');
+}
+
+function renameItem(path) {
+  const name = path.split('/').pop();
+  IDE._renamePath = path;
+  document.getElementById('rename-input').value = name;
+  openModal('rename-modal');
+  setTimeout(() => { document.getElementById('rename-input').focus(); document.getElementById('rename-input').select(); }, 100);
+}
+
+function confirmRename() {
+  const newName = document.getElementById('rename-input').value.trim();
+  if (!newName || !IDE._renamePath) return;
+  const path = IDE._renamePath;
+  const parts = path.split('/');
+  const oldName = parts.pop();
+  const parent = getNode(parts.join('/'));
+  if (!parent?.children) return;
+  const node = parent.children[oldName];
+  node.name = newName;
+  if (node.type === 'file') node.lang = getLangFromName(newName);
+  delete parent.children[oldName];
+  parent.children[newName] = node;
+  const tab = IDE.tabs.find(t => t.path === path);
+  if (tab) { tab.name = newName; tab.path = parts.join('/') + '/' + newName; tab.lang = node.lang; }
+  IDE._renamePath = null;
+  renderFileTree();
+  renderTabs();
+  closeModal('rename-modal');
+}
+
+function triggerUpload() { document.getElementById('file-upload').click(); }
+
+function handleFileUpload(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    const lang = getLangFromName(file.name);
+    reader.onload = e => {
+      addToFS('workspace', { type: 'file', name: file.name, lang, content: e.target.result });
+      renderFileTree();
+      openFile('workspace/' + file.name);
+      notify(`Uploaded: ${file.name}`, 'success');
+    };
+    if (file.type.startsWith('image/')) {
+      reader.onload = e => {
+        addToFS('workspace', { type: 'file', name: file.name, lang: 'image', content: e.target.result, isImage: true });
+        renderFileTree();
+        notify(`Image uploaded: ${file.name}`, 'success');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      reader.readAsText(file);
+    }
+  });
+}
+
+function setupDropZone() {
+  const dz = document.getElementById('drop-zone');
+  ['dragover','dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, () => dz.classList.remove('dragover')));
+  dz.addEventListener('drop', e => { e.preventDefault(); handleFileUpload(e.dataTransfer.files); });
+  document.addEventListener('dragover', e => e.preventDefault());
+  document.addEventListener('drop', e => { e.preventDefault(); if(e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files); });
+}
+
+// =====================================================================
+// DRAG AND DROP IN TREE
+// =====================================================================
+function setupDragDrop() {
+  const items = document.querySelectorAll('.tree-item[draggable]');
+  items.forEach(item => {
+    item.addEventListener('dragstart', e => {
+      IDE.dragItem = item.dataset.path;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => item.classList.remove('dragging'));
+    item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation();
+      item.classList.remove('drag-over');
+      const from = IDE.dragItem;
+      const to = item.dataset.path;
+      if (!from || from === to) return;
+      moveTreeItem(from, to);
+    });
+  });
+}
+
+function moveTreeItem(fromPath, toPath) {
+  const fromParts = fromPath.split('/');
+  const fromName = fromParts.pop();
+  const fromParent = getNode(fromParts.join('/'));
+  const toNode = getNode(toPath);
+  if (!fromParent?.children || !toNode) return;
+  const item = fromParent.children[fromName];
+  const targetFolder = toNode.type === 'folder' ? getNode(toPath) : getNode(toPath.split('/').slice(0,-1).join('/'));
+  if (!targetFolder?.children) return;
+  targetFolder.children[fromName] = item;
+  delete fromParent.children[fromName];
+  renderFileTree();
+  notify(`Moved ${fromName}`, 'info');
+}
+
+// =====================================================================
+// CONTEXT MENU
+// =====================================================================
+function setupContextMenu() {
+  document.addEventListener('contextmenu', e => {
+    if (!e.target.closest('.tree-item')) hideCtxMenu();
+  });
+}
+
+function showCtxMenu(e, path, type) {
+  e.preventDefault();
+  const menu = document.getElementById('ctx-menu');
+  const items = type === 'file' ? [
+    { label: '📂 Open', action: `openFile('${path}')` },
+    { label: '✏️ Rename', action: `renameItem('${path}')` },
+    { label: '📋 Copy Path', action: `copyToClipboard('${path}')` },
+    { sep: true },
+    { label: '🗑️ Delete', action: `deleteItem('${path}')`, danger: true }
+  ] : [
+    { label: '📄 New File Here', action: `newFileIn('${path}')` },
+    { label: '📁 New Folder Here', action: `newFolderIn('${path}')` },
+    { label: '✏️ Rename', action: `renameItem('${path}')` },
+    { sep: true },
+    { label: '🗑️ Delete', action: `deleteItem('${path}')`, danger: true }
+  ];
+  menu.innerHTML = items.map(item => item.sep ? '<div class="ctx-sep"></div>' :
+    `<div class="ctx-item ${item.danger?'style="color:var(--red)"':''}" onclick="${item.action};hideCtxMenu()">${item.label}</div>`).join('');
+  menu.style.cssText = `display:block;left:${Math.min(e.clientX, window.innerWidth-180)}px;top:${Math.min(e.clientY, window.innerHeight-200)}px`;
+}
+
+function hideCtxMenu() { document.getElementById('ctx-menu').style.display = 'none'; }
+
+// =====================================================================
+// PREVIEW
+// =====================================================================
+function togglePreview(force) {
+  const pane = document.getElementById('preview-pane');
+  const open = force !== undefined ? force : !pane.classList.contains('open');
+  pane.classList.toggle('open', open);
+  if (open) refreshPreview();
+}
+
+function refreshPreview() {
+  const tab = IDE.activeTab;
+  if (!tab) return;
+  const frame = document.getElementById('preview-frame');
+  let content = tab.content;
+  document.getElementById('preview-title').textContent = tab.name;
+  if (tab.lang === 'html') {
+    frame.srcdoc = content;
+  } else if (tab.lang === 'js') {
+    frame.srcdoc = `<!DOCTYPE html><html><body><script>${content}<\/script></body></html>`;
+  } else if (tab.lang === 'css') {
+    frame.srcdoc = `<!DOCTYPE html><html><head><style>${content}</style></head><body><div class="demo">CSS Preview</div></body></html>`;
+  } else if (tab.lang === 'md') {
+    frame.srcdoc = `<!DOCTYPE html><html><head><style>body{font-family:sans-serif;padding:20px;background:#1a1a2e;color:#eee}h1,h2,h3{color:#7c6af7}code{background:#2a2a3e;padding:2px 6px;border-radius:3px}</style></head><body>${simpleMarkdown(content)}</body></html>`;
+  } else {
+    frame.srcdoc = `<pre style="padding:20px;font-family:monospace;background:#1a1a2e;color:#eee;min-height:100vh">${escH(content)}</pre>`;
+  }
+}
+
+function simpleMarkdown(md) {
+  return md
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>').replace(/```[\s\S]*?```/g, m => `<pre>${m.slice(3,-3)}</pre>`)
+    .replace(/^\s*[-*] (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>')
+    .replace(/\n\n/g,'<br><br>');
+}
+
+function runCode() {
+  togglePreview(true);
+  refreshPreview();
+}
+
+function toggleConsole() {
+  const el = document.getElementById('preview-console');
+  el.classList.toggle('open');
+}
+
+// =====================================================================
+// TERMINAL
+// =====================================================================
+function toggleTerminal() {
+  const panel = document.getElementById('terminal-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    document.getElementById('terminal-input').focus();
+    if (!panel.dataset.init) {
+      panel.dataset.init = '1';
+      addTermLine('CodeForge Terminal v1.0 — Web Simulated Environment', 'out');
+      addTermLine('Type "help" for available commands.', 'out');
+    }
+  }
+}
+
+function addTermLine(text, type) {
+  const out = document.getElementById('terminal-output');
+  const div = document.createElement('div');
+  div.className = `term-line term-${type}`;
+  div.textContent = text;
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
+}
+
+const termCmds = {
+  help: () => { ['Available commands:','  ls  - list files','  cat <file> - show file content','  clear - clear terminal','  echo <text> - print text','  pwd - print directory','  date - show date','  node <file> - run JS (simulated)','  lang - show current language'].forEach(l => addTermLine(l,'out')); },
+  ls: () => { const files = Object.keys(IDE.fs.root.children||{}).join('  '); addTermLine(files || '(empty)', 'out'); },
+  clear: clearTerminal,
+  pwd: () => addTermLine('/workspace', 'out'),
+  date: () => addTermLine(new Date().toString(), 'out'),
+  echo: (args) => addTermLine(args.join(' '), 'out'),
+  cat: (args) => {
+    const name = args[0]; if (!name) { addTermLine('Usage: cat <filename>', 'err'); return; }
+    const node = IDE.fs.root.children?.[name];
+    if (!node || node.type !== 'file') { addTermLine(`cat: ${name}: No such file`, 'err'); return; }
+    (node.content || '').split('\n').forEach(l => addTermLine(l, 'out'));
+  },
+  node: (args) => {
+    const name = args[0]; if (!name) { addTermLine('Usage: node <filename>', 'err'); return; }
+    const node = IDE.fs.root.children?.[name];
+    if (!node) { addTermLine(`node: ${name}: Not found`, 'err'); return; }
+    try {
+      const output = [];
+      const fakeConsole = { log: (...a) => output.push(a.join(' ')), error: (...a) => output.push('Error: ' + a.join(' ')), warn: (...a) => output.push('Warn: ' + a.join(' ')) };
+      new Function('console', node.content)(fakeConsole);
+      output.forEach(l => addTermLine(l, 'out'));
+    } catch(e) { addTermLine('Error: ' + e.message, 'err'); }
+  },
+  lang: () => addTermLine(`Current language: ${IDE.activeTab?.lang || 'none'}`, 'out')
+};
+
+function handleTerminalInput(e) {
+  if (e.key === 'ArrowUp') { if (IDE.termIdx < IDE.termHistory.length - 1) { IDE.termIdx++; e.target.value = IDE.termHistory[IDE.termHistory.length - 1 - IDE.termIdx]; } return; }
+  if (e.key === 'ArrowDown') { if (IDE.termIdx > 0) { IDE.termIdx--; e.target.value = IDE.termHistory[IDE.termHistory.length - 1 - IDE.termIdx]; } return; }
+  if (e.key !== 'Enter') return;
+  const raw = e.target.value.trim();
+  if (!raw) return;
+  IDE.termHistory.push(raw); IDE.termIdx = -1;
+  const [cmd, ...args] = raw.split(' ');
+  addTermLine(`$ ${raw}`, 'prompt');
+  e.target.value = '';
+  if (termCmds[cmd]) termCmds[cmd](args);
+  else addTermLine(`${cmd}: command not found`, 'err');
+}
+
+function clearTerminal() {
+  document.getElementById('terminal-output').innerHTML = '';
+}
+
+// =====================================================================
+// AI ASSISTANT
+// =====================================================================
+function toggleAI(force) {
+  const panel = document.getElementById('ai-panel');
+  const open = force !== undefined ? force : !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+}
+
+async function sendAIMessage() {
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  addAIMsg(msg, 'user');
+  const thinking = addAIMsg('Thinking...', 'thinking');
+  const apiKey = document.getElementById('ai-model-key').value || document.getElementById('api-key-setting').value;
+  const model = document.getElementById('ai-model-select').value;
+  const codeCtx = IDE.activeTab ? `\n\nCurrent file: ${IDE.activeTab.name} (${IDE.activeTab.lang})\n\`\`\`\n${IDE.activeTab.content.slice(0, 2000)}\n\`\`\`` : '';
+  if (apiKey) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model, max_tokens: 1500, messages: [{ role: 'user', content: msg + codeCtx }], system: 'You are an expert coding assistant. Be concise and helpful. When providing code, use markdown code blocks.' })
+      });
+      const data = await res.json();
+      thinking.remove();
+      addAIMsg(data.content?.[0]?.text || 'No response', 'assistant');
+    } catch (err) {
+      thinking.remove();
+      addAIMsg('Error: ' + err.message, 'assistant');
+    }
+  } else {
+    setTimeout(() => {
+      thinking.remove();
+      const responses = {
+        default: `I can help you with that! To get full AI responses, add your Anthropic API key in the AI Settings panel.\n\nFor now, here are some quick tips:\n• Press **Ctrl+F** to search\n• Press **Ctrl+/** to toggle comments\n• Press **Tab** for autocomplete\n• Press **Ctrl+D** to duplicate lines`,
+        explain: `This code ${IDE.activeTab?.lang === 'js' ? 'defines JavaScript functions and classes' : 'contains various programming constructs'}. Add your API key for detailed explanations!`,
+        fix: `To fix this code, I'd need to analyze it carefully. Add your Anthropic API key for intelligent code fixes!`,
+        refactor: `I can suggest refactoring patterns for this code. Add your API key to get specific suggestions!`
+      };
+      const key = msg.toLowerCase().includes('explain') ? 'explain' : msg.toLowerCase().includes('fix') ? 'fix' : msg.toLowerCase().includes('refactor') ? 'refactor' : 'default';
+      addAIMsg(responses[key], 'assistant');
+    }, 800);
+  }
+}
+
+function addAIMsg(text, role) {
+  const msgs = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = `ai-msg ${role}`;
+  div.innerHTML = text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`(.+?)`/g,'<code style="background:var(--bg3);padding:1px 4px;border-radius:3px;font-family:var(--font-code)">$1</code>').replace(/\n/g,'<br>');
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function explainCode() {
+  document.getElementById('ai-input').value = 'Explain this code in detail';
+  sendAIMessage();
+}
+
+document.getElementById('ai-input')?.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendAIMessage(); }
+});
+
+// =====================================================================
+// COMMAND PALETTE
+// =====================================================================
+const COMMANDS = [
+  { label: 'New File', icon: '📄', kb: 'Ctrl+N', fn: newFile },
+  { label: 'New Folder', icon: '📁', kb: '', fn: newFolder },
+  { label: 'Save File', icon: '💾', kb: 'Ctrl+S', fn: saveFile },
+  { label: 'Open Settings', icon: '⚙', kb: '', fn: () => openSettings('general') },
+  { label: 'Toggle Sidebar', icon: '◧', kb: 'Ctrl+B', fn: () => toggleSidebar() },
+  { label: 'Toggle Terminal', icon: '>', kb: 'Ctrl+`', fn: toggleTerminal },
+  { label: 'Toggle Preview', icon: '▶', kb: '', fn: () => togglePreview() },
+  { label: 'Toggle AI', icon: '🤖', kb: '', fn: () => toggleAI() },
+  { label: 'Run Code', icon: '▶', kb: 'F5', fn: runCode },
+  { label: 'Search in File', icon: '🔍', kb: 'Ctrl+F', fn: () => toggleSearchBar(true) },
+  { label: 'Toggle Comment', icon: '//', kb: 'Ctrl+/', fn: toggleComment },
+  { label: 'Duplicate Line', icon: '⬇', kb: 'Ctrl+D', fn: duplicateLine },
+  { label: 'Toggle Fullscreen', icon: '⛶', kb: 'F11', fn: toggleFullscreen },
+  { label: 'Change Theme', icon: '🎨', kb: '', fn: () => openSettings('themes') },
+  { label: 'Editor Settings', icon: '✏', kb: '', fn: () => openSettings('editor') },
+  { label: 'Increase Font Size', icon: 'A+', kb: '', fn: () => { IDE.settings.fontSize = Math.min(22, IDE.settings.fontSize + 1); applyFontSize(); } },
+  { label: 'Decrease Font Size', icon: 'A-', kb: '', fn: () => { IDE.settings.fontSize = Math.max(10, IDE.settings.fontSize - 1); applyFontSize(); } },
+  { label: 'Format Code', icon: '⬛', kb: 'Shift+Alt+F', fn: formatCode },
+  { label: 'Word Wrap Toggle', icon: '↵', kb: '', fn: () => { IDE.settings.wordWrap = !IDE.settings.wordWrap; applySettings(); } },
+  { label: 'Upload Files', icon: '⬆', kb: '', fn: triggerUpload },
+  { label: 'Clear Terminal', icon: '🗑', kb: '', fn: clearTerminal },
+  { label: 'Close Current Tab', icon: '✕', kb: 'Ctrl+W', fn: () => IDE.activeTab && closeTab(IDE.activeTab.id) },
+];
+
+function buildCommandPalette() {
+  IDE.cmdItems = [...COMMANDS];
+  // Add language switch commands
+  ['js','ts','html','css','py','rs','go','cpp','json','md'].forEach(l => {
+    IDE.cmdItems.push({ label: `Set Language: ${l.toUpperCase()}`, icon: getFileIcon(l), kb: '', fn: () => { if (IDE.activeTab) { IDE.activeTab.lang = l; highlight(); updateStatusBar(); } } });
+  });
+}
+
+function openCommandPalette() {
+  const palette = document.getElementById('cmd-palette');
+  palette.classList.add('open');
+  document.getElementById('cmd-input').value = '';
+  filterCommands('');
+  document.getElementById('cmd-input').focus();
+}
+
+function closeCommandPalette() {
+  document.getElementById('cmd-palette').classList.remove('open');
+}
+
+function filterCommands(query) {
+  const results = document.getElementById('cmd-results');
+  const matches = IDE.cmdItems.filter(c => c.label.toLowerCase().includes(query.toLowerCase())).slice(0, 15);
+  results.innerHTML = matches.map((c, i) => `
+    <div class="cmd-item ${i===0?'selected':''}" data-idx="${i}" onclick="execCommand(${i},${JSON.stringify(query)})">
+      <span>${c.icon}</span>
+      <span class="cmd-label">${c.label}</span>
+      ${c.kb ? `<span class="cmd-kb">${c.kb}</span>` : ''}
+    </div>`).join('');
+}
+
+function handleCmdKey(e) {
+  const items = document.querySelectorAll('#cmd-results .cmd-item');
+  const sel = document.querySelector('#cmd-results .cmd-item.selected');
+  const idx = [...items].indexOf(sel);
+  if (e.key === 'ArrowDown') { items[Math.min(idx+1,items.length-1)]?.classList.add('selected'); sel?.classList.remove('selected'); }
+  if (e.key === 'ArrowUp') { items[Math.max(idx-1,0)]?.classList.add('selected'); sel?.classList.remove('selected'); }
+  if (e.key === 'Enter') {
+    const query = document.getElementById('cmd-input').value;
+    const matches = IDE.cmdItems.filter(c => c.label.toLowerCase().includes(query.toLowerCase()));
+    if (matches[idx]) { matches[idx].fn(); closeCommandPalette(); }
+  }
+}
+
+function execCommand(idx, query) {
+  const matches = IDE.cmdItems.filter(c => c.label.toLowerCase().includes(query.toLowerCase()));
+  if (matches[idx]) { matches[idx].fn(); closeCommandPalette(); }
+}
+
+// =====================================================================
+// SETTINGS
+// =====================================================================
+function openSettings(section) {
+  document.getElementById('settings-overlay').classList.add('open');
+  if (section) switchSettings(section, document.querySelector(`[data-sec="${section}"]`));
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+  saveSettings();
+}
+
+function switchSettings(section, el) {
+  document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sn-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + section)?.classList.add('active');
+  el?.classList.add('active');
+}
+
+function buildThemesGrid() {
+  const THEMES = [
+    { id: 'theme-tokyo-night', name: 'Tokyo Night', bg: '#16161e', bg1: '#1a1b26', accent: '#7aa2f7', text: '#c0caf5', kw: '#bb9af7', str: '#9ece6a' },
+    { id: '', name: 'Default Dark', bg: '#0d0d0f', bg1: '#141416', accent: '#7c6af7', text: '#e8e8f0', kw: '#7c6af7', str: '#4ade80' },
+    { id: 'theme-monokai', name: 'Monokai', bg: '#1a1b16', bg1: '#272822', accent: '#a6e22e', text: '#f8f8f2', kw: '#f92672', str: '#e6db74' },
+    { id: 'theme-nord', name: 'Nord', bg: '#1a1e26', bg1: '#2e3440', accent: '#88c0d0', text: '#eceff4', kw: '#81a1c1', str: '#a3be8c' },
+    { id: 'theme-solarized', name: 'Solarized', bg: '#001219', bg1: '#002029', accent: '#268bd2', text: '#93a1a1', kw: '#268bd2', str: '#859900' },
+    { id: 'theme-dracula', name: 'Dracula', bg: '#191a21', bg1: '#282a36', accent: '#bd93f9', text: '#f8f8f2', kw: '#ff79c6', str: '#50fa7b' },
+    { id: 'theme-github-light', name: 'GitHub Light', bg: '#f6f8fa', bg1: '#ffffff', accent: '#0969da', text: '#1f2328', kw: '#cf222e', str: '#1a7f37' },
+    { id: 'theme-ayu', name: 'Ayu Dark', bg: '#0a0e14', bg1: '#0d1017', accent: '#ffcc66', text: '#bfbdb6', kw: '#ffcc66', str: '#aad94c' },
+    { id: 'theme-catppuccin', name: 'Catppuccin', bg: '#1e1e2e', bg1: '#181825', accent: '#cba6f7', text: '#cdd6f4', kw: '#cba6f7', str: '#a6e3a1' },
+    { id: 'theme-rose-pine', name: 'Rosé Pine', bg: '#191724', bg1: '#1f1d2e', accent: '#c4a7e7', text: '#e0def4', kw: '#c4a7e7', str: '#9ccfd8' },
+  ];
+  const grid = document.getElementById('themes-grid');
+  grid.innerHTML = THEMES.map(t => `
+    <div class="theme-card ${IDE.settings.theme === t.id ? 'active' : ''}" onclick="applyTheme('${t.id}','${t.name}',this)" data-id="${t.id}">
+      <div class="theme-preview" style="background:${t.bg}">
+        <div class="theme-preview-bar" style="background:${t.bg1}">
+          <div class="theme-preview-dot" style="background:${t.accent}"></div>
+          <div class="theme-preview-dot" style="background:${t.str};opacity:0.7"></div>
+          <div class="theme-preview-dot" style="background:${t.kw};opacity:0.5"></div>
+        </div>
+        <div class="theme-preview-code" style="background:${t.bg}">
+          <span style="color:${t.kw}">const </span><span style="color:${t.text}">x </span><span style="color:${t.accent}">= </span><span style="color:${t.str}">"hi"</span><br>
+          <span style="color:${t.kw}">function </span><span style="color:${t.accent}">f</span><span style="color:${t.text}">()</span><br>
+          <span style="color:${t.text}">  </span><span style="color:t.kw">return </span><span style="color:${t.str}">true</span>
+        </div>
+      </div>
+      <div class="theme-name" style="background:${t.bg1};color:${t.text}">${t.name}</div>
+    </div>`).join('');
+}
+
+function applyTheme(id, name, el) {
+  document.body.className = id;
+  IDE.settings.theme = id;
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+  el?.classList.add('active');
+  document.getElementById('status-theme').textContent = name;
+  saveSettings();
+  notify(`Theme: ${name}`, 'info');
+}
+
+function buildPluginsList() {
+  const plugins = [
+    { name: 'Prettier', icon: '✨', desc: 'Opinionated code formatter supporting many languages', author: 'prettier', installed: true },
+    { name: 'ESLint', icon: '🔍', desc: 'Find and fix problems in your JavaScript code', author: 'eslint', installed: true },
+    { name: 'GitLens', icon: '🔮', desc: 'Supercharge Git capabilities built into CodeForge', author: 'eamodio', installed: false },
+    { name: 'Live Share', icon: '🤝', desc: 'Real-time collaborative development', author: 'ms-vsliveshare', installed: false },
+    { name: 'Docker', icon: '🐋', desc: 'Build, manage, and deploy containerized applications', author: 'ms-azuretools', installed: false },
+    { name: 'REST Client', icon: '🌐', desc: 'Send HTTP requests and view responses in the editor', author: 'humao', installed: false },
+    { name: 'Color Highlight', icon: '🎨', desc: 'Highlight web colors in your editor', author: 'naumovs', installed: true },
+    { name: 'Bracket Colorizer', icon: '🌈', desc: 'Colorize matching brackets', author: 'cbracket', installed: false },
+    { name: 'Path Intellisense', icon: '📂', desc: 'Visual autocomplete for file paths', author: 'christian-kohler', installed: false },
+    { name: 'Code Runner', icon: '▶', desc: 'Run code snippets for 40+ languages', author: 'formulahendry', installed: true },
+  ];
+  IDE.plugins = plugins;
+  const list = document.getElementById('plugins-list');
+  list.innerHTML = plugins.map(p => `
+    <div class="plugin-card">
+      <div class="plugin-icon">${p.icon}</div>
+      <div class="plugin-info">
+        <h4>${p.name}</h4>
+        <p>${p.desc}</p>
+        <div class="plugin-meta">by ${p.author}</div>
+      </div>
+      <div class="plugin-actions">
+        <button class="plugin-btn ${p.installed?'installed':''}" onclick="togglePlugin(this,'${p.name}')">${p.installed?'✓ Installed':'Install'}</button>
+      </div>
+    </div>`).join('');
+}
+
+function togglePlugin(btn, name) {
+  const isInstalled = btn.classList.contains('installed');
+  btn.classList.toggle('installed', !isInstalled);
+  btn.textContent = isInstalled ? 'Install' : '✓ Installed';
+  notify(isInstalled ? `${name} uninstalled` : `${name} installed!`, isInstalled ? 'info' : 'success');
+}
+
+function installPluginURL() {
+  const url = prompt('Enter plugin URL or package name:');
+  if (url) notify(`Plugin "${url}" install simulated`, 'success');
+}
+
+function buildKeybindList() {
+  const binds = [
+    ['Ctrl+S','Save file'],['Ctrl+F','Search'],['Ctrl+P','Command palette'],
+    ['Ctrl+B','Toggle sidebar'],['Ctrl+`','Toggle terminal'],['Ctrl+Z','Undo'],
+    ['Ctrl+Y','Redo'],['Ctrl+/','Toggle comment'],['Ctrl+D','Duplicate line'],
+    ['Alt+↑/↓','Move line'],['Tab','Indent / Autocomplete'],['Shift+Tab','Unindent'],
+    ['F5','Run code'],['F11','Fullscreen'],['Escape','Close panels'],
+    ['Ctrl+W','Close tab'],['Ctrl+Enter (AI)','Send AI message'],['Ctrl+A','Select all'],
+  ];
+  const list = document.getElementById('keybind-list');
+  list.innerHTML = binds.map(([kb,desc]) => `
+    <div style="display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px solid var(--border);align-items:center">
+      <span style="font-size:13px;color:var(--text1)">${desc}</span>
+      <code style="background:var(--bg3);border:1px solid var(--border);padding:3px 8px;border-radius:4px;font-size:12px;font-family:var(--font-code);color:var(--accent2)">${kb}</code>
+    </div>`).join('');
+}
+
+// Settings controls
+function setFontSize(v) {
+  IDE.settings.fontSize = parseInt(v);
+  document.getElementById('font-size-val').textContent = v + 'px';
+  applyFontSize();
+}
+
+function applyFontSize() {
+  const fs = IDE.settings.fontSize;
+  const lh = IDE.settings.lineHeight;
+  ['code-input','code-highlight'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.fontSize = fs + 'px'; el.style.lineHeight = lh; }
+  });
+  document.getElementById('font-size-slider').value = fs;
+  document.getElementById('font-size-val').textContent = fs + 'px';
+  updateLineNumbers();
+}
+
+function setLineHeight(v) {
+  IDE.settings.lineHeight = parseFloat(v);
+  document.getElementById('line-height-val').textContent = v;
+  applyFontSize();
+}
+
+function setFontFamily(v) {
+  IDE.settings.fontFamily = v;
+  ['code-input','code-highlight','line-numbers'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.fontFamily = `'${v}', monospace`;
+  });
+}
+
+function setLigatures(v) {
+  ['code-input','code-highlight'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.fontVariantLigatures = v ? 'normal' : 'none';
+  });
+}
+
+function setTabSize(v) { IDE.settings.tabSize = parseInt(v); }
+function setUseSpaces(v) { IDE.settings.useSpaces = v; updateStatusBar(); }
+function setWordWrap(v) { IDE.settings.wordWrap = v; applySettings(); }
+function setAutoSave(v) { IDE.settings.autoSave = parseInt(v) || 0; }
+function setDefaultLang(v) { IDE.settings.lang = v; }
+
+function applySettings() {
+  const input = document.getElementById('code-input');
+  const hl = document.getElementById('code-highlight');
+  input.style.whiteSpace = IDE.settings.wordWrap ? 'pre-wrap' : 'pre';
+  hl.style.whiteSpace = IDE.settings.wordWrap ? 'pre-wrap' : 'pre';
+}
+
+function toggleLineNumbers(v) {
+  document.getElementById('line-numbers').style.display = v ? '' : 'none';
+}
+
+function toggleMinimap(v) {
+  document.getElementById('minimap').style.display = v ? '' : 'none';
+}
+
+function setHlActive(v) { IDE.settings.hlActive = v; }
+function setSidebarPos(v) { /* sidebar positioning */ }
+function setUILang(v) { notify('Language change requires reload (coming soon)', 'info'); }
+
+function toggleActivityBar(v) {
+  document.getElementById('activity-bar').style.display = v ? '' : 'none';
+}
+
+function toggleStatusBar(v) {
+  document.getElementById('status-bar').style.display = v ? '' : 'none';
+}
+
+function saveSettings() {
+  const s = IDE.settings;
+  try { localStorage.setItem('codeforge_settings', JSON.stringify(s)); } catch {}
+}
+
+function loadSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('codeforge_settings') || '{}');
+    Object.assign(IDE.settings, saved);
+  } catch {}
+  applyFontSize();
+  document.body.className = IDE.settings.theme || '';
+  applySettings();
+  if (IDE.settings.fontFamily) setFontFamily(IDE.settings.fontFamily);
+  document.getElementById('font-size-slider').value = IDE.settings.fontSize;
+  document.getElementById('line-height-slider').value = IDE.settings.lineHeight;
+}
+
+// =====================================================================
+// STATUS BAR
+// =====================================================================
+function updateStatusBar() {
+  const tab = IDE.activeTab;
+  if (!tab) return;
+  const langNames = { js:'JavaScript', ts:'TypeScript', html:'HTML', css:'CSS', py:'Python', rs:'Rust', go:'Go', cpp:'C++', c:'C', json:'JSON', md:'Markdown', yaml:'YAML', xml:'XML', sql:'SQL', sh:'Shell', rb:'Ruby', swift:'Swift', kt:'Kotlin', java:'Java', php:'PHP' };
+  document.getElementById('status-lang').textContent = langNames[tab.lang] || tab.lang?.toUpperCase() || 'Plain Text';
+  document.getElementById('status-indent').textContent = `Spaces: ${IDE.settings.tabSize}`;
+  updateCursorPos();
+}
+
+function updateCursorPos() {
+  const input = document.getElementById('code-input');
+  const pos = input.selectionStart;
+  const text = input.value.slice(0, pos);
+  const lines = text.split('\n');
+  const line = lines.length;
+  const col = lines[lines.length - 1].length + 1;
+  document.getElementById('status-cursor').textContent = `Ln ${line}, Col ${col}`;
+}
+
+// =====================================================================
+// SPLITTERS
+// =====================================================================
+function setupSplitters() {
+  const splitter = document.getElementById('sidebar-splitter');
+  let dragging = false, startX = 0, startW = 0;
+  splitter.addEventListener('mousedown', e => {
+    dragging = true;
+    startX = e.clientX;
+    startW = document.getElementById('sidebar').offsetWidth;
+    splitter.classList.add('dragging');
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const diff = e.clientX - startX;
+    const newW = Math.max(150, Math.min(400, startW + diff));
+    document.getElementById('sidebar').style.width = newW + 'px';
+    document.documentElement.style.setProperty('--sidebar-w', newW + 'px');
+  });
+  document.addEventListener('mouseup', () => { dragging = false; splitter.classList.remove('dragging'); });
+}
+
+// =====================================================================
+// MINIMAP
+// =====================================================================
+function updateMinimap() {
+  const canvas = document.getElementById('minimap-canvas');
+  const mm = document.getElementById('minimap');
+  if (!mm || mm.style.display === 'none') return;
+  const ctx = canvas.getContext('2d');
+  const w = mm.offsetWidth || 60;
+  const code = document.getElementById('code-input').value;
+  const lines = code.split('\n');
+  const lineH = 3;
+  const h = Math.max(lines.length * lineH, 200);
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.height = h + 'px';
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg0') || '#0d0d0f';
+  ctx.fillRect(0, 0, w, h);
+  lines.forEach((line, i) => {
+    const y = i * lineH;
+    if (line.trim().startsWith('//') || line.trim().startsWith('#')) {
+      ctx.fillStyle = 'rgba(100,100,130,0.5)';
+    } else if (line.match(/^\s*(function|const|let|var|class|def|fn|func)/)) {
+      ctx.fillStyle = 'rgba(124,106,247,0.6)';
+    } else if (line.match(/["'`]/)) {
+      ctx.fillStyle = 'rgba(74,222,128,0.4)';
+    } else {
+      ctx.fillStyle = 'rgba(180,180,220,0.25)';
+    }
+    const len = Math.min(line.length * 0.5, w - 4);
+    const indent = (line.match(/^\s*/)[0].length) * 0.5;
+    if (len > 0) ctx.fillRect(indent + 2, y + 0.5, len, lineH - 1);
+  });
+  updateMinimapViewport();
+}
+
+function updateMinimapViewport() {
+  const scroll = document.getElementById('code-scroll');
+  const mm = document.getElementById('minimap');
+  const vp = document.getElementById('mm-viewport');
+  if (!mm || !vp) return;
+  const code = document.getElementById('code-input').value;
+  const total = code.split('\n').length * 3;
+  const ratio = scroll.clientHeight / Math.max(scroll.scrollHeight, 1);
+  const top = (scroll.scrollTop / Math.max(scroll.scrollHeight, 1)) * total;
+  const h = ratio * total;
+  vp.style.top = top + 'px';
+  vp.style.height = Math.max(20, h) + 'px';
+}
+
+document.getElementById('minimap')?.addEventListener('click', e => {
+  const mm = document.getElementById('minimap');
+  const ratio = e.offsetY / mm.offsetHeight;
+  const scroll = document.getElementById('code-scroll');
+  scroll.scrollTop = ratio * scroll.scrollHeight;
+});
+
+// =====================================================================
+// SIDEBAR
+// =====================================================================
+function toggleSidebar(panel, btn) {
+  const sidebar = document.getElementById('sidebar');
+  if (panel) {
+    const panelEl = document.getElementById(panel);
+    const wasActive = panelEl?.classList.contains('active');
+    const wasCollapsed = sidebar.classList.contains('collapsed');
+    document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.ab-btn').forEach(b => b.classList.remove('active'));
+    if (wasCollapsed || !wasActive) {
+      panelEl?.classList.add('active');
+      sidebar.classList.remove('collapsed');
+      btn?.classList.add('active');
+    } else {
+      sidebar.classList.add('collapsed');
+    }
+  } else {
+    sidebar.classList.toggle('collapsed');
+  }
+}
+
+// =====================================================================
+// FULLSCREEN
+// =====================================================================
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+// =====================================================================
+// MODALS
+// =====================================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+// =====================================================================
+// NOTIFICATIONS
+// =====================================================================
+function notify(msg, type = 'info') {
+  const container = document.getElementById('notif-container');
+  const div = document.createElement('div');
+  div.className = `notif ${type}`;
+  div.textContent = msg;
+  container.appendChild(div);
+  setTimeout(() => { div.style.opacity = '0'; div.style.transition = 'opacity 0.3s'; setTimeout(() => div.remove(), 300); }, 3000);
+}
+
+// =====================================================================
+// MISC HELPERS
+// =====================================================================
+function copyToClipboard(text) {
+  navigator.clipboard?.writeText(text).catch(() => {});
+  notify('Copied to clipboard', 'info');
+}
+
+function formatCode() {
+  const input = document.getElementById('code-input');
+  const lang = IDE.activeTab?.lang;
+  let code = input.value;
+  if (lang === 'json') {
+    try { code = JSON.stringify(JSON.parse(code), null, 2); } catch(e) { notify('Invalid JSON', 'error'); return; }
+  }
+  input.value = code;
+  if (IDE.activeTab) IDE.activeTab.content = code;
+  highlight();
+  notify('Code formatted', 'success');
+}
+
+function gitCommit() {
+  const msg = document.getElementById('commit-msg').value;
+  if (!msg) { notify('Enter a commit message', 'error'); return; }
+  notify(`Committed: "${msg}"`, 'success');
+  document.getElementById('commit-msg').value = '';
+}
+
+function updateCursorPos() {
+  const input = document.getElementById('code-input');
+  const pos = input.selectionStart || 0;
+  const text = input.value.slice(0, pos);
+  const lines = text.split('\n');
+  document.getElementById('status-cursor').textContent = `Ln ${lines.length}, Col ${lines[lines.length-1].length+1}`;
+}
+
+// =====================================================================
+// PLUGIN API (window.CodeForge)
+// =====================================================================
+window.CodeForge = {
+  version: '1.0.0',
+  _saveCallbacks: [],
+  _plugins: {},
+
+  registerPlugin(id, opts = {}) {
+    this._plugins[id] = opts;
+    if (opts.onActivate) opts.onActivate(this);
+    notify(`Plugin "${opts.name || id}" loaded`, 'success');
+  },
+
+  addCommand(label, fn, kb = '') {
+    IDE.cmdItems.push({ label, icon: '🔌', kb, fn });
+  },
+
+  getCode() { return document.getElementById('code-input').value; },
+  setCode(code) {
+    document.getElementById('code-input').value = code;
+    if (IDE.activeTab) IDE.activeTab.content = code;
+    highlight();
+  },
+
+  getLanguage() { return IDE.activeTab?.lang || 'txt'; },
+  setLanguage(lang) { if (IDE.activeTab) { IDE.activeTab.lang = lang; highlight(); updateStatusBar(); } },
+  getCurrentTab() { return IDE.activeTab; },
+  getTabs() { return IDE.tabs; },
+
+  onSave(cb) { this._saveCallbacks.push(cb); },
+
+  addSidebarPanel(id, html) {
+    const sidebar = document.getElementById('sidebar');
+    const panel = document.createElement('div');
+    panel.className = 'sidebar-panel';
+    panel.id = id;
+    panel.innerHTML = html;
+    sidebar.appendChild(panel);
+    const btn = document.createElement('button');
+    btn.className = 'ab-btn';
+    btn.title = id;
+    btn.textContent = '🔌';
+    btn.onclick = () => toggleSidebar(id, btn);
+    document.getElementById('activity-bar').insertBefore(btn, document.getElementById('activity-bar').querySelector('.ab-spacer'));
+  },
+
+  notify(msg, type) { notify(msg, type); },
+  openSettings(sec) { openSettings(sec); },
+  getSettings() { return IDE.settings; },
+  applyTheme(id, name) { applyTheme(id, name); },
+
+  // Events
+  _events: {},
+  on(event, cb) { (this._events[event] = this._events[event] || []).push(cb); },
+  emit(event, ...args) { (this._events[event] || []).forEach(cb => cb(...args)); }
+};
+
+// Emit events on code changes
+document.getElementById('code-input')?.addEventListener('input', () => {
+  window.CodeForge.emit('change', document.getElementById('code-input').value);
+});
+
+// =====================================================================
+// TOUCHPAD / IPAD SUPPORT
+// =====================================================================
+let touchStartY = 0;
+document.getElementById('code-scroll')?.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+document.getElementById('code-scroll')?.addEventListener('touchmove', e => {
+  const dy = touchStartY - e.touches[0].clientY;
+  document.getElementById('code-scroll').scrollTop += dy;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+// =====================================================================
+// WELCOME / FINAL INIT
+// =====================================================================
+highlight();
+updateLineNumbers();
+updateStatusBar();
+updateMinimap();
+
+console.log('%cCodeForge IDE v1.0 loaded', 'color:#7c6af7;font-size:16px;font-weight:bold');
+console.log('%cPlugin API available at window.CodeForge', 'color:#4ade80;font-size:12px');
+</script>
+</body>
 </html>
